@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -11,7 +13,11 @@ class AuthController extends Controller
     {
         return view('auth.login');
     }
-
+    // Show the registration form
+    public function showRegisterForm()
+    {
+        return view('auth.register');
+    }
     public function processLogin(Request $request)
     {
         $email = $request->input('email');
@@ -34,5 +40,26 @@ class AuthController extends Controller
         return back()->withErrors([
             'email' => 'Invalid email or password'
         ])->onlyInput('email'); // Keep email input but clear password
+    }
+    // Handle registration form submission
+    public function processRegister(Request $request)
+    {
+        // Validate user input
+        $request->validate([
+            'email' => 'required|email|unique:users|max:255',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        // Create user in the database
+        $user = User::create([
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'user', // Default role
+        ]);
+
+        // Log the user in automatically after registering
+        Auth::login($user);
+
+        return redirect()->route('home')->with('success', 'Account created successfully!');
     }
 }

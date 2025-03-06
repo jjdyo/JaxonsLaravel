@@ -7,18 +7,29 @@
     text-align: center;
 }
 
+/* Form Group Styling */
 .form-group {
     margin-bottom: 15px;
+    text-align: left;
 }
 
+/* Input Fields */
 input {
     width: 100%;
     padding: 8px;
     margin-top: 5px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    font-size: 16px;
 }
 
+/* Secure Password Inputs */
+input[type="password"] {
+    font-family: monospace; /* Makes password dots uniform */
+    letter-spacing: 2px; /* Adds a bit of security by making dots harder to count */
+}
+
+/* Submit Button */
 button {
     width: 100%;
     padding: 10px;
@@ -27,12 +38,29 @@ button {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 16px;
 }
 
 button:hover {
     background-color: #555;
 }
 
+/* Error Messages */
+.error-messages {
+    background-color: #ffdddd;
+    color: red;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    text-align: left;
+}
+
+.error-messages p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Login and Registration Links */
 .login-links {
     margin-top: 10px;
 }
@@ -42,4 +70,8 @@ button:hover {
     margin: 5px 0;
     color: #007bff;
     text-decoration: none;
+}
+
+.login-links a:hover {
+    text-decoration: underline;
 }

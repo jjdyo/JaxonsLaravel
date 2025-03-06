@@ -27,7 +27,7 @@
 
         <div class="login-links">
             <a href="#">Forgot Password?</a>
-            <a href="#">Create an Account</a>
+            <a href="/register">Create an Account</a>
         </div>
     </div>
 @endsection
