@@ -5,17 +5,17 @@ header {
     padding: 15px;
 }
 
-/* Navigation Bar */
+/* Navigation Wrapper */
 nav {
     display: flex;
-    justify-content: space-between; /* Pushes login indicator to the right */
-    align-items: center;
-    max-width: 1200px; /* Prevents stretching */
-    margin: 0 auto; /* Centers the nav bar */
-    padding: 0 20px; /* Adds space on the sides */
+    align-items: center; /* Keeps everything vertically aligned */
+    justify-content: center; /* Keeps nav links centered */
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative; /* Allows absolute positioning for the auth link */
 }
 
-/* Left navigation links */
+/* Left navigation links (Centered) */
 .nav-links {
     display: flex;
     gap: 15px;
@@ -23,7 +23,8 @@ nav {
 
 /* Login Indicator (Right-aligned) */
 .nav-auth {
-    margin-left: auto; /* Pushes login indicator to the right */
+    position: absolute;
+    right: 20px; /* Pushes it to the right */
 }
 
 /* General Link Styling */

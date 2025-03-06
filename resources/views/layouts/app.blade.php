@@ -20,9 +20,11 @@
         <h1>Welcome to Jaxon Laravel</h1>
         <h2>Lorum ipsum or something</h2>
         <nav>
-            <a href="{{ route('home') }}">Home</a>
-            <a href="{{ route('about') }}">About</a>
-            <a href="{{ route('contact') }}">Contact</a>
+            <div class="nav-links">
+                <a href="{{ route('home') }}">Home</a>
+                <a href="{{ route('about') }}">About</a>
+                <a href="{{ route('contact') }}">Contact</a>
+            </div>
             <!--Login Indicator-->
             <div class="nav-auth">
                 @auth
