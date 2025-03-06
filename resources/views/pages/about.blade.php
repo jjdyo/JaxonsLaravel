@@ -7,10 +7,11 @@
     <p>
     <ul>
         <li>Header, Content, Footer layout</li>
-        <li>Separate CSS files for better organization</li>
+        <li>Structured CSS files for better organization</li>
         <li>CloudFlare tunnel with ZeroAccess</li>
-        <li>SystemD processes for power management</li>
-        <li>MariaDB setup; Not yet utilized</li>
+        <li>SystemD processes for process management</li>
+        <li>Registration and Login with RateLimiting</li>
+        <li>Uses MariaDB</li>
     </ul>
     </p>
 @endsection
