@@ -3,31 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') - This is the title </title>
+    <title>@yield('title') - JaxonLaravel</title>
 
-    <!-- Link to CSS files -->
+    <!-- Styles -->
     <link rel="stylesheet" href="{{ asset('css/header.css') }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
     <link rel="stylesheet" href="{{ asset('css/content.css') }}">
 </head>
+
 <body>
-<header>
-    <h1>My Laravel Site</h1>
-    <nav>
-        <a href="{{ route('home') }}">Home</a>
-        <a href="{{ route('about') }}">About</a>
-        <a href="{{ route('contact') }}">Contact</a>
-    </nav>
-</header>
+<div class="wrapper">
 
-<main>
-    <p>Pre-Content</p>
-    @yield('content')
-    <p>Post-content</p>
-</main>
+    <!-- Header -->
+    <header>
+        <h1>Welcome to Jaxon Laravel</h1>
+        <h2>Lorum ipsum or something</h2>
+        <nav>
+            <a href="{{ route('home') }}">Home</a>
+            <a href="{{ route('about') }}">About</a>
+            <a href="{{ route('contact') }}">Contact</a>
+        </nav>
+    </header>
 
-<footer>
-    <p>This is the footer</p>
-</footer>
+    <!-- Main Content -->
+    <main>
+        @yield('content')
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>This is my footer</p>
+    </footer>
+
+</div>
 </body>
+
 </html>
