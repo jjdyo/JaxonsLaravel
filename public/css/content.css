@@ -1,21 +1,21 @@
-/* Make page take full height */
+/* Ensure full-page height */
 html, body {
     height: 100%;
     margin: 0;
     padding: 0;
 }
 
-/* Keep everything structured */
+/* Flexbox wrapper to structure the layout */
 .wrapper {
     display: flex;
     flex-direction: column;
-    min-height: 100vh; /* Full viewport height */
+    min-height: 100vh; /* Ensure the full viewport height is used */
 }
 
-/* Allow the main content to grow */
+/* Make main content area expand */
 main {
-    flex-grow: 1;
+    flex-grow: 1; /* Pushes the footer down */
     padding: 20px;
-    margin: 0 auto; /* Small margin on sides */
-    max-width: 90%; /* Keeps content from stretching too wide */
+    max-width: 90%;
+    margin: 0 auto; /* Centers content */
 }
