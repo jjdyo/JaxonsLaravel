@@ -23,6 +23,14 @@
             <a href="{{ route('home') }}">Home</a>
             <a href="{{ route('about') }}">About</a>
             <a href="{{ route('contact') }}">Contact</a>
+            <!--Login Indicator-->
+            <div class="nav-auth">
+                @auth
+                    <a href="#">{{ Auth::user()->email }}</a> <!-- Shows email if logged in -->
+                @else
+                    <a href="{{ route('login') }}">Sign In</a> <!-- Shows "Sign In" if not logged in -->
+                @endauth
+            </div>
         </nav>
     </header>
 
