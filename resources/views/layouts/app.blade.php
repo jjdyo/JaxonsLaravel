@@ -17,8 +17,10 @@
 
     <!-- Header -->
     <header>
-        <h1>Welcome to Jaxon Laravel</h1>
-        <h2>Lorum ipsum or something</h2>
+        <div class="header-title">
+            <h1>Welcome to Jaxon Laravel</h1>
+            <h2>Lorum ipsum or something</h2>
+        </div>
         <nav>
             <div class="nav-links">
                 <a href="{{ route('home') }}">Home</a>

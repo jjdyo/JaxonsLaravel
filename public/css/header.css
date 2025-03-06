@@ -5,14 +5,20 @@ header {
     padding: 15px;
 }
 
+/* Ensures h1 and h2 stay centered */
+.header-title {
+    text-align: center;
+    margin-bottom: 10px; /* Adds spacing between title and nav */
+}
+
 /* Navigation Wrapper */
 nav {
     display: flex;
-    align-items: center; /* Keeps everything vertically aligned */
-    justify-content: center; /* Keeps nav links centered */
+    align-items: center;
+    justify-content: center;
     max-width: 1200px;
     margin: 0 auto;
-    position: relative; /* Allows absolute positioning for the auth link */
+    position: relative;
 }
 
 /* Left navigation links (Centered) */
@@ -24,7 +30,7 @@ nav {
 /* Login Indicator (Right-aligned) */
 .nav-auth {
     position: absolute;
-    right: 20px; /* Pushes it to the right */
+    right: 20px;
 }
 
 /* General Link Styling */
@@ -37,5 +43,5 @@ nav a {
 }
 
 nav a:hover {
-    color: #ffcc00; /* Highlight on hover */
+    color: #ffcc00;
 }
