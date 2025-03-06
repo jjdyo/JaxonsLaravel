@@ -22,6 +22,11 @@
             @csrf
 
             <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" value="{{ old('name') }}" required>
+            </div>
+
+            <div class="form-group">
                 <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" value="{{ old('email') }}" required>
             </div>
