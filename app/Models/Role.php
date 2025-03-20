@@ -6,8 +6,9 @@ use Spatie\Permission\Models\Role as SpatieRole;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Role extends Model
+class Role extends SpatieRole
 {
+
     protected $fillable = ['name'];
 
     /**
