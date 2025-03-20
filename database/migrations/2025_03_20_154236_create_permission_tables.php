@@ -21,6 +21,7 @@ return new class extends Migration
         Schema::create($tableNames['permissions'], function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
+            $table->string('guard_name')->default('web');
             $table->timestamps();
         });
 
