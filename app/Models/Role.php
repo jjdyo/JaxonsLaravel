@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Role extends SpatieRole
 {
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name, guard_name'];
 
     /**
      * Define the many-to-many relationship with users.
