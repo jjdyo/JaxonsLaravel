@@ -42,6 +42,16 @@ class AuthController extends Controller
             'email' => 'Invalid email or password'
         ])->onlyInput('email'); // Keep email input but clear password
     }
+    //Logout function
+    public function logout(Request $request)
+    {
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('home');
+    }
+
     // Handle registration form submission
     public function processRegister(Request $request)
     {

@@ -11,6 +11,7 @@ Route::middleware(['auth', 'permission:view contact page url'])->group(function 
 });
 Route::get('/user', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/user', [AuthController::class, 'processLogin'])->name('login.process');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'processRegister'])->name('register.process');
 
