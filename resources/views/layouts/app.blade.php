@@ -30,9 +30,19 @@
             <!--Login Indicator-->
             <div class="nav-auth">
                 @auth
-                    <a href="#">{{ Auth::user()->email }}</a> <!-- Shows email if logged in -->
+                    <div class="dropdown">
+                        <button class="dropbtn">{{ Auth::user()->email }} ▼</button>
+                        <div class="dropdown-content">
+                            <a href="#">Profile</a>
+                            <a href="#">Dashboard</a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="logout-btn">Logout</button>
+                            </form>
+                        </div>
+                    </div>
                 @else
-                    <a href="{{ route('login') }}">Sign In</a> <!-- Shows "Sign In" if not logged in -->
+                    <a href="{{ route('login') }}">Sign In</a>
                 @endauth
             </div>
         </nav>
