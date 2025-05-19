@@ -22,7 +22,7 @@
             <h2>Lorum ipsum or something</h2>
         </div>
         <nav>
-            <div class="nav-links-container">
+            <div class="nav-center-wrapper">
                 <div class="nav-links">
                     <a href="{{ route('home') }}">Home</a>
                     <a href="{{ route('about') }}">About</a>

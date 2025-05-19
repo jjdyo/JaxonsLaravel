@@ -12,30 +12,27 @@ header {
 }
 
 /* Navigation Wrapper */
-nav {
-    display: flex;
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
-    align-items: center;
-    justify-content: center; /* Still center links by default */
-    max-width: 1200px;
-    margin: 0 auto;
-    gap: 10px;
+.nav {
     position: relative;
+    padding: 10px 0;
 }
 
+.nav-center-wrapper {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+}
 
 .nav-links {
     display: flex;
     gap: 15px;
-    justify-content: center;
-    flex: 1 1 auto; /* Allow links to grow/shrink and wrap nicely */
-    flex-wrap: wrap;
 }
 
 .nav-auth {
-    flex-shrink: 0;
-    margin-left: auto; /* Pushes this to the far right when enough space */
-    margin-top: 10px;   /* Adds breathing room when it drops down */
+    position: absolute;
+    right: 20px;
+    top: 10px;
 }
 
 
