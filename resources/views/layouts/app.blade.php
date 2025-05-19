@@ -21,13 +21,11 @@
             <h1>Welcome to Jaxon Laravel</h1>
             <h2>Lorum ipsum or something</h2>
         </div>
-        <nav>
-            <div class="nav-center-wrapper">
-                <div class="nav-links">
-                    <a href="{{ route('home') }}">Home</a>
-                    <a href="{{ route('about') }}">About</a>
-                    <a href="{{ route('contact') }}">Contact</a>
-                </div>
+        <nav class="nav-bar">
+            <div class="nav-links">
+                <a href="{{ route('home') }}">Home</a>
+                <a href="{{ route('about') }}">About</a>
+                <a href="{{ route('contact') }}">Contact</a>
             </div>
             <div class="nav-auth">
                 @auth
@@ -47,6 +45,7 @@
                 @endauth
             </div>
         </nav>
+
     </header>
 
     <!-- Main Content -->
