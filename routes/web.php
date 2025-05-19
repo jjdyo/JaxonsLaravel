@@ -6,7 +6,7 @@ use App\Http\Controllers\AuthController;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/about', [PageController::class, 'about'])->name('about');
-Route::middleware(['middleware', 'permission:view contact page url'])->group(function () {
+Route::middleware(['auth', 'permission:view contact page url'])->group(function () {
     Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 });
 Route::get('/user', [AuthController::class, 'showLoginForm'])->name('login');
