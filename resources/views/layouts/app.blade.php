@@ -22,12 +22,13 @@
             <h2>Lorum ipsum or something</h2>
         </div>
         <nav>
-            <div class="nav-links">
-                <a href="{{ route('home') }}">Home</a>
-                <a href="{{ route('about') }}">About</a>
-                <a href="{{ route('contact') }}">Contact</a>
+            <div class="nav-links-container">
+                <div class="nav-links">
+                    <a href="{{ route('home') }}">Home</a>
+                    <a href="{{ route('about') }}">About</a>
+                    <a href="{{ route('contact') }}">Contact</a>
+                </div>
             </div>
-            <!--Login Indicator-->
             <div class="nav-auth">
                 @auth
                     <div class="dropdown">
