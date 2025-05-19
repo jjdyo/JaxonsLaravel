@@ -51,7 +51,7 @@ nav a:hover {
 @media (max-width: 600px) {
     .nav-bar {
         display: flex;
-        justify-content: space-between; /* spreads out nav-links and nav-auth */
+        justify-content: space-between;
         align-items: center;
         background-color: #333;
         padding: 10px 20px;
@@ -67,7 +67,10 @@ nav a:hover {
 
     .nav-auth {
         width: 100%;
-        text-align: right;
+        display: flex;
+        justify-content: flex-end; /* This line fixes the alignment */
+        align-items: center;
+        margin: 10px 0 0 auto; /* Optional: space between links and auth */
     }
 }
 
