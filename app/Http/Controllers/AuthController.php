@@ -57,8 +57,9 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'user', // Default role
         ]);
+
+        $user->assignRole('user')
 
         // Log the user in automatically after registering
         Auth::login($user);
