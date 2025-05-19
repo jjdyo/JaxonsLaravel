@@ -32,8 +32,7 @@
                     <div class="dropdown">
                         <button class="dropbtn">{{ Auth::user()->email }} ▼</button>
                         <div class="dropdown-content">
-                            <a href="#">Profile</a>
-                            <a href="#">Dashboard</a>
+                            <a href="{{ route('profile') }}">Profile</a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" class="logout-btn">Logout</button>

@@ -14,4 +14,5 @@ Route::post('/user', [AuthController::class, 'processLogin'])->name('login.proce
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'processRegister'])->name('register.process');
+Route::get('/profile', [PageController::class, 'profile'])->middleware('auth')->name('profile');
 

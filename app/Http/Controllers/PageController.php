@@ -20,4 +20,9 @@ class PageController extends Controller
     {
         return view('pages.contact');
     }
+
+    public function profile()
+    {
+        return view('pages.profile');
+    }
 }
