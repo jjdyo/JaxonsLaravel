@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DocsController;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/about', [PageController::class, 'about'])->name('about');
@@ -16,3 +17,6 @@ Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('regi
 Route::post('/register', [AuthController::class, 'processRegister'])->name('register.process');
 Route::get('/profile', [PageController::class, 'profile'])->middleware('auth')->name('profile');
 
+// Documentation routes
+Route::get('/docs', [DocsController::class, 'index'])->name('docs.index');
+Route::get('/docs/{filename}', [DocsController::class, 'show'])->name('docs.show');

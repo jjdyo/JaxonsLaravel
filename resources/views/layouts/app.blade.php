@@ -26,6 +26,7 @@
                 <a href="{{ route('home') }}">Home</a>
                 <a href="{{ route('about') }}">About</a>
                 <a href="{{ route('contact') }}">Contact</a>
+                <a href="{{ route('docs.index') }}">Docs</a>
             </div>
             <div class="nav-auth">
                 @auth
