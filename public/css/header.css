@@ -12,26 +12,27 @@ header {
 }
 
 .nav-bar {
-    display: flex;
-    justify-content: space-between; /* spreads out nav-links and nav-auth */
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
     background-color: #333;
     padding: 10px 20px;
-    flex-wrap: wrap;
     max-width: 1200px;
     margin: 0 auto;
 }
 
 .nav-links {
+    grid-column: 2;
     display: flex;
     gap: 15px;
+    justify-content: center;
 }
 
 .nav-auth {
-    margin-left: auto;
-    margin-right: 20px;
+    grid-column: 3;
     display: flex;
     align-items: center;
+    justify-content: flex-end;
 }
 
 
@@ -50,27 +51,25 @@ nav a:hover {
 
 @media (max-width: 600px) {
     .nav-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: #333;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+        gap: 10px;
         padding: 10px 20px;
-        flex-wrap: wrap;
-        max-width: 1200px;
-        margin: 0 auto;
     }
 
     .nav-links {
+        grid-column: 1;
+        grid-row: 1;
         justify-content: center;
         width: 100%;
     }
 
     .nav-auth {
+        grid-column: 1;
+        grid-row: 2;
+        justify-content: flex-end;
         width: 100%;
-        display: flex;
-        justify-content: flex-end; /* This line fixes the alignment */
-        align-items: center;
-        margin: 10px 0 0 auto; /* Optional: space between links and auth */
     }
 
     .dropdown {
@@ -170,4 +169,3 @@ nav a:hover {
 .dropdown:hover .dropdown-content {
     display: block;
 }
-
