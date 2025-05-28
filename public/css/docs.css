@@ -6,6 +6,70 @@
     padding: 20px;
 }
 
+/* Layout with sidebar */
+.docs-layout {
+    display: flex;
+    gap: 30px;
+}
+
+/* Sidebar styles */
+.docs-sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 20px;
+    border-right: 1px solid #eaeaea;
+}
+
+.docs-sidebar h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eaeaea;
+    font-size: 1.2rem;
+}
+
+.docs-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.docs-nav-item {
+    margin-bottom: 10px;
+}
+
+.docs-nav-item a {
+    display: block;
+    padding: 8px 10px;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.docs-nav-item a:hover {
+    background-color: #e9ecef;
+}
+
+.docs-nav-item.active a {
+    background-color: #007bff;
+    color: white;
+}
+
+.back-to-index {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eaeaea;
+}
+
+/* Main content area */
+.docs-main {
+    flex-grow: 1;
+    min-width: 0; /* Prevents flex items from overflowing */
+}
+
 .docs-intro {
     margin-bottom: 40px;
     padding: 20px;
@@ -137,4 +201,26 @@
 
 .docs-content tr:nth-child(even) {
     background-color: #f8f9fa;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .docs-layout {
+        flex-direction: column;
+    }
+
+    .docs-sidebar {
+        width: 100%;
+        margin-bottom: 20px;
+        border-right: none;
+        border-bottom: 1px solid #eaeaea;
+    }
+
+    .docs-main {
+        width: 100%;
+    }
+
+    .docs-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
 }

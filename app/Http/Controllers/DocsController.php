@@ -60,9 +60,34 @@ class DocsController extends Controller
         $htmlContent = $this->parseMarkdown($content);
         $title = Str::title(str_replace('-', ' ', $filename));
 
+        // Get all documents for the sidebar
+        $files = File::files($docsPath);
+        $documents = [];
+        foreach ($files as $file) {
+            if (pathinfo($file, PATHINFO_EXTENSION) === 'md') {
+                $docFilename = pathinfo($file, PATHINFO_FILENAME);
+                $docTitle = Str::title(str_replace('-', ' ', $docFilename));
+
+                // Skip README as it's special
+                if ($docFilename !== 'README') {
+                    $documents[] = [
+                        'filename' => $docFilename,
+                        'title' => $docTitle,
+                        'path' => '/docs/' . $docFilename,
+                    ];
+                }
+            }
+        }
+
+        // Sort documents alphabetically by title
+        usort($documents, function($a, $b) {
+            return $a['title'] <=> $b['title'];
+        });
+
         return view('docs.show', [
             'title' => $title,
-            'content' => $htmlContent
+            'content' => $htmlContent,
+            'documents' => $documents
         ]);
     }
 

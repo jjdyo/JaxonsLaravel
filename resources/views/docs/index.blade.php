@@ -8,23 +8,26 @@
 
 @section('content')
     <div class="docs-container">
-        <h1>Project Documentation</h1>
+        <div class="docs-layout">
+            <div class="docs-sidebar">
+                <h2>Documentation Index</h2>
+                <ul class="docs-nav">
+                    @foreach($documents as $doc)
+                        <li class="docs-nav-item">
+                            <a href="{{ route('docs.show', ['filename' => $doc['filename']]) }}">
+                                {{ $doc['title'] }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
 
-        <div class="docs-intro">
-            {!! $readme !!}
-        </div>
+            <div class="docs-main">
+                <h1>Project Documentation</h1>
 
-        <div class="docs-index">
-            <h2>Documentation Index</h2>
-
-            <div class="docs-grid">
-                @foreach($documents as $doc)
-                    <div class="docs-item">
-                        <a href="{{ route('docs.show', ['filename' => $doc['filename']]) }}">
-                            <h3>{{ $doc['title'] }}</h3>
-                        </a>
-                    </div>
-                @endforeach
+                <div class="docs-intro">
+                    {!! $readme !!}
+                </div>
             </div>
         </div>
     </div>
