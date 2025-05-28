@@ -1,0 +1,21 @@
+:root {
+  /* Primary colors */
+  --color-primary: #050707;
+  --color-secondary: #444;
+
+  /* Text colors */
+  --color-h1: #FDE273;
+  --color-h2: #C4C4C4;
+  --color-text: #FFFFFF;
+
+  /* Background colors */
+  --color-bg-main: #444;
+  --color-bg-header: #050707;
+  --color-bg-footer: #050707;
+
+  /* Other UI elements */
+  --color-link: #FFFFFF;
+  --color-link-hover: #ffcc00;
+  --color-button: #555;
+  --color-button-hover: #666;
+}

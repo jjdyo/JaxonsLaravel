@@ -1,7 +1,7 @@
 /* Header Styling */
 header {
-    background: #050707;
-    color: white;
+    background: var(--color-bg-header);
+    color: var(--color-text);
     padding: 15px;
 }
 
@@ -15,7 +15,7 @@ header {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    background-color: #050707;
+    background-color: var(--color-bg-header);
     padding: 10px 20px;
     max-width: 1200px;
     margin: 0 auto;
@@ -38,7 +38,7 @@ header {
 
 /* General Link Styling */
 nav a {
-    color: white;
+    color: var(--color-link);
     text-decoration: none;
     font-weight: bold;
     padding: 8px 12px;
@@ -46,7 +46,7 @@ nav a {
 }
 
 nav a:hover {
-    color: #ffcc00;
+    color: var(--color-link-hover);
 }
 
 @media (max-width: 600px) {
@@ -140,7 +140,7 @@ nav a:hover {
     display: none;
     position: absolute;
     right: 0;
-    background-color: #444;
+    background-color: var(--color-secondary);
     min-width: 160px;
     box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
     z-index: 1;
@@ -150,7 +150,7 @@ nav a:hover {
 
 .dropdown-content a,
 .dropdown-content .logout-btn {
-    color: white;
+    color: var(--color-text);
     padding: 10px 16px;
     text-decoration: none;
     display: block;
@@ -163,7 +163,7 @@ nav a:hover {
 
 .dropdown-content a:hover,
 .dropdown-content .logout-btn:hover {
-    background-color: #555;
+    background-color: var(--color-button);
 }
 
 .dropdown:hover .dropdown-content {

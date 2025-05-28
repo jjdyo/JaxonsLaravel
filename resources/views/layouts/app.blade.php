@@ -6,6 +6,7 @@
     <title>@yield('title') - JaxonLaravel</title>
 
     <!-- Styles -->
+    <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
     <link rel="stylesheet" href="{{ asset('css/header.css') }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
     <link rel="stylesheet" href="{{ asset('css/content.css') }}">

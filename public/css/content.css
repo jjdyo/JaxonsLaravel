@@ -3,6 +3,7 @@ html, body {
     height: 100vh;
     margin: 0;
     padding: 0;
+    color: var(--color-text);
 }
 
 /* Flexbox wrapper to structure the layout */
@@ -18,4 +19,18 @@ main {
     padding: 20px;
     max-width: 90%;
     margin: 0 auto; /* Centers content */
+    background-color: var(--color-bg-main);
+}
+
+/* Typography styling */
+h1 {
+    color: var(--color-h1);
+}
+
+h2 {
+    color: var(--color-h2);
+}
+
+p, span, div, li {
+    color: var(--color-text);
 }

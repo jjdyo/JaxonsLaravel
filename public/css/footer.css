@@ -1,6 +1,6 @@
 footer {
-    background: #050707;
-    color: white;
+    background: var(--color-bg-footer);
+    color: var(--color-text);
     text-align: center;
     padding: 15px;
     margin-top: auto; /* Ensures the footer is pushed down */
