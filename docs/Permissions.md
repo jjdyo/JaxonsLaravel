@@ -34,12 +34,6 @@ The package creates several tables in your database:
 - `model_has_permissions` - Pivot table linking users to permissions
 - `role_has_permissions` - Pivot table linking roles to permissions
 
-To create these tables, run:
-
-```bash
-php artisan migrate
-```
-
 ## Basic Usage
 
 ### Working with Roles and Permissions
