@@ -54,22 +54,8 @@ Route::middleware(['auth', 'permission:view contact page url'])->group(function 
 });
 ```
 
-### `profile()`
-Displays the user profile page. This route is protected by authentication middleware.
-
-**Parameters:** None  
-**Returns:** View (`pages.profile`)  
-**Middleware:** 
-- `auth` - Requires user to be authenticated
-
-**Example Usage:**
-```php
-// In routes/web.php
-Route::get('/profile', [PageController::class, 'profile'])->middleware('auth')->name('profile');
-```
 
 ## Views Used
 - `pages.home` - Home page view
 - `pages.about` - About page view
 - `pages.contact` - Contact page view
-- `pages.profile` - User profile view

@@ -21,7 +21,8 @@ resources/views/
 │   ├── home.blade.php      # Home page
 │   ├── about.blade.php     # About page
 │   ├── contact.blade.php   # Contact page
-│   └── profile.blade.php   # User profile page
+│   ├── profile.blade.php   # User profile page
+│   └── profile_edit.blade.php # Profile edit page
 └── welcome.blade.php   # Default Laravel welcome page
 ```
 
@@ -71,7 +72,10 @@ The about page view, used by `PageController@about`.
 The contact page view, used by `PageController@contact`. This page is protected by authentication and permission middleware.
 
 #### `pages/profile.blade.php`
-The user profile page view, used by `PageController@profile`. This page is protected by authentication middleware.
+The user profile page view, used by `AuthController@profile`. This page is protected by authentication middleware. It displays the user's profile information and provides a link to edit the profile.
+
+#### `pages/profile_edit.blade.php`
+The profile edit page view, used by `AuthController@editProfile`. This page is protected by authentication middleware. It provides a form for updating the user's profile information, specifically the name field.
 
 ### Documentation Views
 Documentation views handle the display of markdown documentation files.

@@ -14,7 +14,6 @@ These routes handle the rendering of basic pages in the application.
 | `/` | GET | `PageController@home` | `home` | None | Displays the home page |
 | `/about` | GET | `PageController@about` | `about` | None | Displays the about page |
 | `/contact` | GET | `PageController@contact` | `contact` | `auth`, `permission:view contact page url` | Displays the contact page (requires authentication and permission) |
-| `/profile` | GET | `PageController@profile` | `profile` | `auth` | Displays the user profile page (requires authentication) |
 
 ### Authentication Routes
 These routes handle user authentication, including login, registration, and logout.
@@ -26,6 +25,9 @@ These routes handle user authentication, including login, registration, and logo
 | `/logout` | POST | `AuthController@logout` | `logout` | `auth` | Logs out the authenticated user |
 | `/register` | GET | `AuthController@showRegisterForm` | `register` | None | Displays the registration form |
 | `/register` | POST | `AuthController@processRegister` | `register.process` | None | Processes the registration form submission |
+| `/profile` | GET | `AuthController@profile` | `profile` | `auth` | Displays the user profile page (requires authentication) |
+| `/profile/edit` | GET | `AuthController@editProfile` | `profile.edit` | `auth` | Displays the profile edit form (requires authentication) |
+| `/profile/edit` | PUT | `AuthController@updateProfile` | `profile.update` | `auth` | Processes the profile update form submission (requires authentication) |
 
 ### Documentation Routes
 These routes handle the documentation system, allowing users to browse and view markdown documentation files.
@@ -42,6 +44,7 @@ The application uses route groups to apply middleware to multiple routes at once
 The following routes require the user to be authenticated:
 - `/contact` (also requires the 'view contact page url' permission)
 - `/profile`
+- `/profile/edit` (GET and PUT methods)
 - `/logout`
 
 ### Permission Middleware Group

@@ -72,6 +72,54 @@ Logs out the currently authenticated user and invalidates their session.
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 ```
 
+### `profile()`
+Displays the user profile page. This route is protected by authentication middleware.
+
+**Parameters:** None  
+**Returns:** View (`pages.profile`)  
+**Middleware:** 
+- `auth` - Requires user to be authenticated
+
+**Example Usage:**
+```php
+// In routes/web.php
+Route::get('/profile', [AuthController::class, 'profile'])->middleware('auth')->name('profile');
+```
+
+### `editProfile()`
+Displays the profile edit form. This route is protected by authentication middleware.
+
+**Parameters:** None  
+**Returns:** View (`pages.profile_edit`) with the authenticated user data  
+**Middleware:** 
+- `auth` - Requires user to be authenticated
+
+**Example Usage:**
+```php
+// In routes/web.php
+Route::get('/profile/edit', [AuthController::class, 'editProfile'])->middleware('auth')->name('profile.edit');
+```
+
+### `updateProfile(Request $request)`
+Handles the profile update form submission. This route is protected by authentication middleware.
+
+**Parameters:**
+- `$request` (Request): Contains form data including name
+
+**Returns:** Redirect to profile route with success message  
+**Validation Rules:**
+- Name: required, string, max 20 characters, regex pattern for letters, spaces, apostrophes, and hyphens
+
+**Security Features:**
+- Input validation with custom error messages
+- Input sanitization (trimming whitespace and normalizing spaces)
+
+**Example Usage:**
+```php
+// In routes/web.php
+Route::put('/profile/edit', [AuthController::class, 'updateProfile'])->middleware('auth')->name('profile.update');
+```
+
 ### `processRegister(Request $request)`
 Handles the registration form submission, creates a new user, and automatically logs them in.
 

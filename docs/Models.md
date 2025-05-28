@@ -20,6 +20,21 @@ The User model represents users in the application and is used for authenticatio
 - `Notifiable` - Allows the model to receive notifications
 - `HasRoles` - Provides role-based permissions (from Spatie's permission package)
 
+### Properties
+The User model has the following properties defined using PHPDoc annotations to prevent PHP 8.2 dynamic property deprecation warnings:
+```php
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property string $password
+ * @property string|null $remember_token
+ * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ */
+```
+
 ### Fillable Attributes
 These attributes can be mass-assigned:
 ```php
