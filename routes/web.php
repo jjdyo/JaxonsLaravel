@@ -19,4 +19,4 @@ Route::get('/profile', [PageController::class, 'profile'])->middleware('auth')->
 
 // Documentation routes
 Route::get('/docs', [DocsController::class, 'index'])->name('docs.index');
-Route::get('/docs/{filename}', [DocsController::class, 'show'])->name('docs.show');
+Route::get('/docs/{filename}', [DocsController::class, 'show'])->name('docs.show')->where('filename', '.*');
