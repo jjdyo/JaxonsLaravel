@@ -15,9 +15,9 @@ Route::post('/user', [AuthController::class, 'processLogin'])->name('login.proce
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'processRegister'])->name('register.process');
-Route::get('/profile', [PageController::class, 'profile'])->middleware('auth')->name('profile');
-Route::get('/profile/edit', [PageController::class, 'editProfile'])->middleware('auth')->name('profile.edit');
-Route::put('/profile/edit', [PageController::class, 'updateProfile'])->middleware('auth')->name('profile.update');
+Route::get('/profile', [AuthController::class, 'profile'])->middleware('auth')->name('profile');
+Route::get('/profile/edit', [AuthController::class, 'editProfile'])->middleware('auth')->name('profile.edit');
+Route::put('/profile/edit', [AuthController::class, 'updateProfile'])->middleware('auth')->name('profile.update');
 
 // Documentation routes
 Route::get('/docs', [DocsController::class, 'index'])->name('docs.index');
