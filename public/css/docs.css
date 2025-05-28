@@ -20,6 +20,7 @@
     border-radius: 5px;
     padding: 20px;
     border-right: 1px solid #eaeaea;
+    align-self: flex-start;
 }
 
 .docs-sidebar h2 {
@@ -114,10 +115,6 @@
 }
 
 /* Individual documentation page styles */
-.docs-header {
-    margin-bottom: 30px;
-}
-
 .back-link {
     display: inline-block;
     margin-bottom: 10px;

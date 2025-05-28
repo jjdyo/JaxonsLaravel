@@ -10,7 +10,6 @@
     <div class="docs-container">
         <div class="docs-layout">
             <div class="docs-sidebar">
-                <h2>Documentation Index</h2>
                 <ul class="docs-nav">
                     @foreach($documents as $doc)
                         <li class="docs-nav-item {{ $doc['filename'] == request()->route('filename') ? 'active' : '' }}">
@@ -26,10 +25,6 @@
             </div>
 
             <div class="docs-main">
-                <div class="docs-header">
-                    <h1>{{ $title }}</h1>
-                </div>
-
                 <div class="docs-content">
                     {!! $content !!}
                 </div>
