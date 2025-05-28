@@ -1,6 +1,6 @@
 /* Header Styling */
 header {
-    background: #333;
+    background: #050707;
     color: white;
     padding: 15px;
 }
@@ -15,7 +15,7 @@ header {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    background-color: #333;
+    background-color: #050707;
     padding: 10px 20px;
     max-width: 1200px;
     margin: 0 auto;
