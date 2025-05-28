@@ -41,10 +41,6 @@
             </div>
 
             <div class="docs-main">
-                <div class="docs-header">
-                    <h1>{{ $title }}</h1>
-                </div>
-
                 <div class="docs-content">
                     {!! $content !!}
                 </div>

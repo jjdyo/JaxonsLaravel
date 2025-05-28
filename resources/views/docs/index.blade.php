@@ -38,8 +38,6 @@
             </div>
 
             <div class="docs-main">
-                <h1>Project Documentation</h1>
-
                 <div class="docs-intro">
                     {!! $readme !!}
                 </div>
