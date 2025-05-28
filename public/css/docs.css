@@ -16,10 +16,10 @@
 .docs-sidebar {
     width: 250px;
     flex-shrink: 0;
-    background-color: #f8f9fa;
+    background-color: var(--color-secondary);
     border-radius: 5px;
     padding: 20px;
-    border-right: 1px solid #eaeaea;
+    border: 1px solid black;
     align-self: flex-start;
 }
 
@@ -27,8 +27,9 @@
     margin-top: 0;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 2px solid #eaeaea;
+    border-bottom: 2px solid var(--color-primary);
     font-size: 1.2rem;
+    color: var(--color-h2);
 }
 
 .docs-nav {
@@ -44,19 +45,20 @@
 .docs-nav-item a {
     display: block;
     padding: 8px 10px;
-    color: #333;
+    color: var(--color-link);
     text-decoration: none;
     border-radius: 4px;
     transition: background-color 0.2s;
 }
 
 .docs-nav-item a:hover {
-    background-color: #e9ecef;
+    background-color: var(--color-primary);
+    color: var(--color-link-hover);
 }
 
 .docs-nav-item.active a {
-    background-color: #007bff;
-    color: white;
+    background-color: var(--color-primary);
+    color: var(--color-text);
 }
 
 /* Directory styles for hierarchical navigation */
@@ -68,10 +70,10 @@
     display: block;
     font-weight: bold;
     padding: 8px 10px;
-    background-color: #e9ecef;
+    background-color: var(--color-primary);
     border-radius: 4px;
     margin-bottom: 5px;
-    color: #495057;
+    color: var(--color-text);
 }
 
 .docs-nav-subdirectory {
@@ -79,7 +81,7 @@
     padding-left: 15px;
     margin-top: 5px;
     margin-bottom: 0;
-    border-left: 2px solid #dee2e6;
+    border-left: 2px solid var(--color-primary);
 }
 
 .docs-nav-subdirectory .docs-nav-item {
@@ -94,7 +96,7 @@
 .back-to-index {
     margin-top: 20px;
     padding-top: 15px;
-    border-top: 1px solid #eaeaea;
+    border-top: 1px solid var(--color-primary);
 }
 
 /* Main content area */
@@ -106,7 +108,7 @@
 .docs-intro {
     margin-bottom: 40px;
     padding: 20px;
-    background-color: #f8f9fa;
+    background-color: var(--color-secondary);
     border-radius: 5px;
     border-left: 5px solid #007bff;
 }
@@ -189,14 +191,16 @@
 
 .docs-content code {
     padding: 2px 5px;
-    background-color: #f1f1f1;
+    background-color: var(--color-primary);
+    color: white;
     border-radius: 3px;
     font-family: monospace;
 }
 
 .docs-content pre {
     padding: 15px;
-    background-color: #f8f9fa;
+    background-color: var(--color-primary);
+    color: white;
     border-radius: 5px;
     overflow-x: auto;
     margin-bottom: 1em;
