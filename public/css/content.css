@@ -4,6 +4,7 @@ html, body {
     margin: 0;
     padding: 0;
     color: var(--color-text);
+    background-color: var(--color-bg-main);
 }
 
 /* Flexbox wrapper to structure the layout */
@@ -11,6 +12,7 @@ html, body {
     display: flex;
     flex-direction: column;
     min-height: 100vh; /* Ensure the full viewport height is used */
+    background-color: var(--color-bg-main);
 }
 
 /* Make main content area expand */
