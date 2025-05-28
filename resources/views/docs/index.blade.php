@@ -10,6 +10,7 @@
     <div class="docs-container">
         <div class="docs-layout">
             <div class="docs-sidebar">
+                <h2>Index</h2>
                 <ul class="docs-nav">
                     @foreach($documents as $doc)
                         <li class="docs-nav-item">
