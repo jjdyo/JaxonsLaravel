@@ -17,7 +17,7 @@ This folder contains comprehensive documentation for the Laravel application. Th
 - [Routes Documentation](Routes.md) - Comprehensive overview of all routes in the application
 
 ### Console Commands
-- [Console Commands Documentation](ConsoleCommands.md) - Documentation for Artisan console commands
+- [Console Commands Documentation](Console Commands.md) - Documentation for Artisan console commands
 
 ### Views
 - [Views Documentation](Views.md) - Documentation for Blade templates and view structure
@@ -53,4 +53,4 @@ The application includes the following pages:
 - For details about specific controllers, refer to the controller documentation files
 - For information about data models and relationships, see the [Models Documentation](Models.md)
 - For information about views and Blade templates, see the [Views Documentation](Views.md)
-- For information about console commands, see the [Console Commands Documentation](ConsoleCommands.md)
+- For information about console commands, see the [Console Commands Documentation](Console Commands.md)
