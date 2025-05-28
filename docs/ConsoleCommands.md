@@ -54,3 +54,4 @@ php artisan list
 
 ## Related Documentation
 - [Routes Documentation](Routes.md) - Documentation for application routes
+- [DocsController Documentation](Controllers/DocsController.md) - Documentation for the documentation system

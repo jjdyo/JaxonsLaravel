@@ -27,6 +27,14 @@ These routes handle user authentication, including login, registration, and logo
 | `/register` | GET | `AuthController@showRegisterForm` | `register` | None | Displays the registration form |
 | `/register` | POST | `AuthController@processRegister` | `register.process` | None | Processes the registration form submission |
 
+### Documentation Routes
+These routes handle the documentation system, allowing users to browse and view markdown documentation files.
+
+| URL | Method | Controller Action | Name | Middleware | Description |
+|-----|--------|------------------|------|------------|-------------|
+| `/docs` | GET | `DocsController@index` | `docs.index` | None | Displays the documentation index page with README content |
+| `/docs/{filename}` | GET | `DocsController@show` | `docs.show` | None | Displays a specific documentation page based on the filename parameter (supports subdirectories) |
+
 ## Route Groups
 The application uses route groups to apply middleware to multiple routes at once.
 
@@ -53,3 +61,4 @@ $url = route('profile');
 ## Related Documentation
 - [PageController Documentation](Controllers/PageController.md) - Documentation for the PageController
 - [AuthController Documentation](Controllers/AuthController.md) - Documentation for the AuthController
+- [DocsController Documentation](Controllers/DocsController.md) - Documentation for the DocsController

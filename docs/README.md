@@ -7,6 +7,7 @@ This folder contains comprehensive documentation for the Laravel application. Th
 
 ### Controllers
 - [AuthController Documentation](Controllers/AuthController.md) - Documentation for authentication-related functionality
+- [DocsController Documentation](Controllers/DocsController.md) - Documentation for the documentation system
 - [PageController Documentation](Controllers/PageController.md) - Documentation for page rendering functionality
 
 ### Models

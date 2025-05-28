@@ -11,6 +11,9 @@ resources/views/
 ├── auth/               # Authentication-related views
 │   ├── login.blade.php     # Login form
 │   └── register.blade.php  # Registration form
+├── docs/               # Documentation-related views
+│   ├── index.blade.php     # Documentation index page
+│   └── show.blade.php      # Documentation page display
 ├── errors/             # Error pages
 ├── layouts/            # Layout templates
 │   └── app.blade.php       # Main application layout
@@ -70,6 +73,22 @@ The contact page view, used by `PageController@contact`. This page is protected 
 #### `pages/profile.blade.php`
 The user profile page view, used by `PageController@profile`. This page is protected by authentication middleware.
 
+### Documentation Views
+Documentation views handle the display of markdown documentation files.
+
+#### `docs/index.blade.php`
+The documentation index page view, used by `DocsController@index`. It includes:
+- Hierarchical navigation sidebar with directories and files
+- Rendered HTML content of the README.md file
+- Links to all documentation pages
+
+#### `docs/show.blade.php`
+The documentation page view, used by `DocsController@show`. It includes:
+- Hierarchical navigation sidebar with directories and files
+- Rendered HTML content of the selected markdown file
+- Title derived from the filename
+- Back to index link
+
 ### Error Views
 Error views display error messages to users when something goes wrong.
 
@@ -87,7 +106,7 @@ The application uses Laravel's Blade templating engine, which provides:
 
 @section('content')
     <h1>Welcome to the Home Page</h1>
-    
+
     @if(auth()->check())
         <p>Hello, {{ auth()->user()->name }}!</p>
     @else
@@ -100,3 +119,4 @@ The application uses Laravel's Blade templating engine, which provides:
 - [Routes Documentation](Routes.md) - Documentation for application routes
 - [PageController Documentation](Controllers/PageController.md) - Documentation for page rendering functionality
 - [AuthController Documentation](Controllers/AuthController.md) - Documentation for authentication functionality
+- [DocsController Documentation](Controllers/DocsController.md) - Documentation for the documentation system
