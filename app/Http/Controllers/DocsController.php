@@ -63,6 +63,24 @@ class DocsController extends Controller
      */
     private function parseMarkdown($content)
     {
+        // Fix internal links before parsing markdown
+        $content = preg_replace_callback(
+            '/\[([^\]]+)\]\(([^)]+\.md)\)/',
+            function ($matches) {
+                $linkText = $matches[1];
+                $linkUrl = $matches[2];
+
+                // Remove .md extension
+                $linkUrl = str_replace('.md', '', $linkUrl);
+
+                // Generate the correct route URL
+                $routeUrl = route('docs.show', ['filename' => $linkUrl]);
+
+                return "[$linkText]($routeUrl)";
+            },
+            $content
+        );
+
         // Using Laravel's built-in Str::markdown method
         return Str::markdown($content);
     }
