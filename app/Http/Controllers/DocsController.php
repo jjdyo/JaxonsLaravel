@@ -14,29 +14,7 @@ class DocsController extends Controller
     public function index()
     {
         $docsPath = base_path('docs');
-        $files = File::files($docsPath);
-
-        $documents = [];
-        foreach ($files as $file) {
-            if (pathinfo($file, PATHINFO_EXTENSION) === 'md') {
-                $filename = pathinfo($file, PATHINFO_FILENAME);
-                $title = Str::title(str_replace('-', ' ', $filename));
-
-                // Skip README as it's special
-                if ($filename !== 'README') {
-                    $documents[] = [
-                        'filename' => $filename,
-                        'title' => $title,
-                        'path' => '/docs/' . $filename,
-                    ];
-                }
-            }
-        }
-
-        // Sort documents alphabetically by title
-        usort($documents, function($a, $b) {
-            return $a['title'] <=> $b['title'];
-        });
+        $documents = $this->getDocumentsHierarchy();
 
         return view('docs.index', [
             'documents' => $documents,
@@ -50,7 +28,17 @@ class DocsController extends Controller
     public function show($filename)
     {
         $docsPath = base_path('docs');
-        $filePath = $docsPath . '/' . $filename . '.md';
+
+        // Check if the filename contains a directory path
+        if (strpos($filename, '/') !== false) {
+            $parts = explode('/', $filename);
+            $actualFilename = end($parts);
+            $filePath = $docsPath . '/' . $filename . '.md';
+            $title = Str::title(str_replace('-', ' ', $actualFilename));
+        } else {
+            $filePath = $docsPath . '/' . $filename . '.md';
+            $title = Str::title(str_replace('-', ' ', $filename));
+        }
 
         if (!File::exists($filePath)) {
             abort(404);
@@ -58,36 +46,15 @@ class DocsController extends Controller
 
         $content = File::get($filePath);
         $htmlContent = $this->parseMarkdown($content);
-        $title = Str::title(str_replace('-', ' ', $filename));
 
         // Get all documents for the sidebar
-        $files = File::files($docsPath);
-        $documents = [];
-        foreach ($files as $file) {
-            if (pathinfo($file, PATHINFO_EXTENSION) === 'md') {
-                $docFilename = pathinfo($file, PATHINFO_FILENAME);
-                $docTitle = Str::title(str_replace('-', ' ', $docFilename));
-
-                // Skip README as it's special
-                if ($docFilename !== 'README') {
-                    $documents[] = [
-                        'filename' => $docFilename,
-                        'title' => $docTitle,
-                        'path' => '/docs/' . $docFilename,
-                    ];
-                }
-            }
-        }
-
-        // Sort documents alphabetically by title
-        usort($documents, function($a, $b) {
-            return $a['title'] <=> $b['title'];
-        });
+        $documents = $this->getDocumentsHierarchy();
 
         return view('docs.show', [
             'title' => $title,
             'content' => $htmlContent,
-            'documents' => $documents
+            'documents' => $documents,
+            'currentFilename' => $filename
         ]);
     }
 
@@ -98,5 +65,86 @@ class DocsController extends Controller
     {
         // Using Laravel's built-in Str::markdown method
         return Str::markdown($content);
+    }
+
+    /**
+     * Get documents organized in a hierarchical structure
+     */
+    private function getDocumentsHierarchy()
+    {
+        $docsPath = base_path('docs');
+        $hierarchy = [];
+
+        // Get all directories in the docs folder
+        $directories = File::directories($docsPath);
+
+        // First, add files from the root docs directory
+        $rootFiles = File::files($docsPath);
+        foreach ($rootFiles as $file) {
+            if (pathinfo($file, PATHINFO_EXTENSION) === 'md') {
+                $filename = pathinfo($file, PATHINFO_FILENAME);
+                $title = Str::title(str_replace('-', ' ', $filename));
+
+                // Skip README as it's special
+                if ($filename !== 'README') {
+                    $hierarchy[] = [
+                        'filename' => $filename,
+                        'title' => $title,
+                        'path' => '/docs/' . $filename,
+                        'type' => 'file'
+                    ];
+                }
+            }
+        }
+
+        // Then, add directories and their files
+        foreach ($directories as $directory) {
+            $dirName = basename($directory);
+            $dirTitle = Str::title(str_replace('-', ' ', $dirName));
+
+            $dirFiles = File::files($directory);
+            $children = [];
+
+            foreach ($dirFiles as $file) {
+                if (pathinfo($file, PATHINFO_EXTENSION) === 'md') {
+                    $filename = pathinfo($file, PATHINFO_FILENAME);
+                    $title = Str::title(str_replace('-', ' ', $filename));
+
+                    $children[] = [
+                        'filename' => $dirName . '/' . $filename,
+                        'title' => $title,
+                        'path' => '/docs/' . $dirName . '/' . $filename,
+                        'type' => 'file'
+                    ];
+                }
+            }
+
+            // Sort children alphabetically
+            usort($children, function($a, $b) {
+                return $a['title'] <=> $b['title'];
+            });
+
+            // Only add directory if it has markdown files
+            if (count($children) > 0) {
+                $hierarchy[] = [
+                    'title' => $dirTitle,
+                    'type' => 'directory',
+                    'children' => $children
+                ];
+            }
+        }
+
+        // Sort root items alphabetically by title, but keep directories at the top
+        usort($hierarchy, function($a, $b) {
+            // If both are the same type, sort by title
+            if ($a['type'] === $b['type']) {
+                return $a['title'] <=> $b['title'];
+            }
+
+            // Otherwise, directories come first
+            return $a['type'] === 'directory' ? -1 : 1;
+        });
+
+        return $hierarchy;
     }
 }

@@ -13,11 +13,26 @@
                 <h2>Index</h2>
                 <ul class="docs-nav">
                     @foreach($documents as $doc)
-                        <li class="docs-nav-item">
-                            <a href="{{ route('docs.show', ['filename' => $doc['filename']]) }}">
-                                {{ $doc['title'] }}
-                            </a>
-                        </li>
+                        @if($doc['type'] === 'directory')
+                            <li class="docs-nav-item docs-nav-directory">
+                                <span class="docs-nav-directory-title">{{ $doc['title'] }}</span>
+                                <ul class="docs-nav-subdirectory">
+                                    @foreach($doc['children'] as $child)
+                                        <li class="docs-nav-item">
+                                            <a href="{{ route('docs.show', ['filename' => $child['filename']]) }}">
+                                                {{ $child['title'] }}
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </li>
+                        @else
+                            <li class="docs-nav-item">
+                                <a href="{{ route('docs.show', ['filename' => $doc['filename']]) }}">
+                                    {{ $doc['title'] }}
+                                </a>
+                            </li>
+                        @endif
                     @endforeach
                 </ul>
             </div>
