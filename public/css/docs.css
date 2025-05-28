@@ -207,7 +207,7 @@
 }
 
 .docs-content a {
-    color: #007bff;
+    color: var(--color-h1);
     text-decoration: none;
 }
 
@@ -228,12 +228,14 @@
 }
 
 .docs-content th {
-    background-color: #f8f9fa;
+    background-color: var(--color-primary);
+    color: var(--color-text);
     text-align: left;
 }
 
 .docs-content tr:nth-child(even) {
-    background-color: #f8f9fa;
+    background-color: var(--color-primary);
+    color: var(--color-text);
 }
 
 /* Responsive styles */
