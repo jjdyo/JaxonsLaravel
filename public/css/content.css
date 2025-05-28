@@ -36,3 +36,13 @@ h2 {
 p, span, div, li {
     color: var(--color-text);
 }
+
+/* Link styling */
+a {
+    color: var(--color-link);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--color-link-hover);
+}
