@@ -118,4 +118,4 @@ Route::middleware(['permission:view contact page url'])->group(function () {
 
 ## Related Documentation
 - [Routes Documentation](Routes.md) - Documentation for application routes
-- [AuthController Documentation](AuthController.md) - Documentation for authentication functionality
+- [AuthController Documentation](Controllers/AuthController.md) - Documentation for authentication functionality

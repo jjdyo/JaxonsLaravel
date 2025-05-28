@@ -98,5 +98,5 @@ The application uses Laravel's Blade templating engine, which provides:
 
 ## Related Documentation
 - [Routes Documentation](Routes.md) - Documentation for application routes
-- [PageController Documentation](PageController.md) - Documentation for page rendering functionality
-- [AuthController Documentation](AuthController.md) - Documentation for authentication functionality
+- [PageController Documentation](Controllers/PageController.md) - Documentation for page rendering functionality
+- [AuthController Documentation](Controllers/AuthController.md) - Documentation for authentication functionality

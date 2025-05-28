@@ -51,5 +51,5 @@ $url = route('profile');
 ```
 
 ## Related Documentation
-- [PageController Documentation](PageController.md) - Documentation for the PageController
-- [AuthController Documentation](AuthController.md) - Documentation for the AuthController
+- [PageController Documentation](Controllers/PageController.md) - Documentation for the PageController
+- [AuthController Documentation](Controllers/AuthController.md) - Documentation for the AuthController
