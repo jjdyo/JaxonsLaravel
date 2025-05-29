@@ -22,7 +22,11 @@ main {
     max-width: 90%;
     margin: 0 auto; /* Centers content */
     background-color: var(--color-bg-main);
-    text-align: center; /* Center the content inside */
+}
+
+/* Class for centering text content */
+.text-center {
+    text-align: center;
 }
 
 /* Typography styling */
