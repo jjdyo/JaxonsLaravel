@@ -2,14 +2,23 @@
 
 /* Common styles for starry background */
 
-/* Prevent image flashing during page transitions */
+/* CSS-only approach with slow fade-in to prevent flashing */
 .starry-background::before {
     opacity: 0;
-    transition: opacity 0.3s ease-in-out;
+    animation: fadeIn 2s ease-in-out forwards;
+    transition: opacity 2s ease-in-out;
 }
 
+/* Keep the JavaScript enhancement for subsequent page loads */
 body.bg-loaded .starry-background::before {
-    opacity: 0.7; /* Match the opacity value from below */
+    opacity: 0.7;
+    animation: none;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 0.7; }
 }
 .starry-background {
     position: relative;
@@ -32,7 +41,7 @@ body.bg-loaded .starry-background::before {
     z-index: -1; /* Place behind the content */
     pointer-events: none; /* Allow clicks to pass through */
     max-height: 100%; /* Ensure it doesn't exceed container height */
-    will-change: transform; /* Optimize for animations and transitions */
+    will-change: opacity; /* Optimize for animations and transitions */
 }
 
 /* Content shadow effect */

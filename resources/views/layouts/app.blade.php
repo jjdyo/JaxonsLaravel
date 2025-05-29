@@ -63,7 +63,6 @@
 </div>
 
 <!-- Import JavaScript files -->
-<script src="{{ asset('js/starry-background.js') }}"></script>
 </body>
 
 </html>
