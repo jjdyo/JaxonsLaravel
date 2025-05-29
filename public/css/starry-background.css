@@ -35,7 +35,6 @@ body.bg-loaded .starry-background::before {
     height: 100%;
     background-image: url('../media/night_stars.png');
     background-size: cover; /* Maintain aspect ratio while covering the container */
-    background-position: center;
     background-repeat: no-repeat;
     /* opacity controlled by the bg-loaded class */
     z-index: -1; /* Place behind the content */
@@ -64,9 +63,19 @@ header.starry-background .nav-bar {
     text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
 }
 
+/* Ensure header shows the center portion of the image */
+header.starry-background::before {
+    background-position: center; /* Default position, explicitly set for clarity */
+}
+
 /* Footer specific styles */
 footer.starry-background p {
     text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+}
+
+/* Offset the background image in the footer */
+footer.starry-background::before {
+    background-position: bottom right; /* Show a different portion of the image */
 }
 
 /* Responsive adjustments */
