@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{{ asset('css/header.css') }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
     <link rel="stylesheet" href="{{ asset('css/content.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/starry-background.css') }}">
     @yield('styles') <!-- This will load CSS files from specific views -->
 </head>
 
@@ -17,12 +18,12 @@
 <div class="wrapper">
 
     <!-- Header -->
-    <header>
-        <div class="header-title">
+    <header class="starry-background">
+        <div class="header-title content-shadow">
             <h1>Welcome to Jaxon Laravel</h1>
             <h2>Lorum ipsum or something</h2>
         </div>
-        <nav class="nav-bar">
+        <nav class="nav-bar content-shadow">
             <div class="nav-links">
                 <a href="{{ route('home') }}">Home</a>
                 <a href="{{ route('about') }}">About</a>
@@ -55,8 +56,8 @@
     </main>
 
     <!-- Footer -->
-    <footer>
-        <p>This is my footer</p>
+    <footer class="starry-background">
+        <p class="content-shadow">This is my footer</p>
     </footer>
 
 </div>

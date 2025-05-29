@@ -1,0 +1,63 @@
+/* Starry background styling for header and footer */
+
+/* Common styles for starry background */
+.starry-background {
+    position: relative;
+    z-index: 0; /* Ensure the background is behind the content */
+    overflow: hidden; /* Prevent content from spilling out */
+}
+
+.starry-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../media/night_stars.png');
+    background-size: 100% 100%; /* Ensure image fits exactly within the container */
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.7; /* Adjust opacity as needed */
+    z-index: -1; /* Place behind the content */
+    pointer-events: none; /* Allow clicks to pass through */
+    max-height: 100%; /* Ensure it doesn't exceed container height */
+}
+
+/* Content shadow effect */
+.content-shadow {
+    position: relative;
+    z-index: 1;
+    padding: 10px;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(5, 7, 7, 0.7) 0%,
+        rgba(5, 7, 7, 0.5) 50%,
+        rgba(5, 7, 7, 0) 100%
+    );
+    border-radius: 8px;
+}
+
+/* Header specific styles */
+header.starry-background .header-title,
+header.starry-background .nav-bar {
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+}
+
+/* Footer specific styles */
+footer.starry-background p {
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .content-shadow {
+        padding: 8px;
+        background: radial-gradient(
+            ellipse at center,
+            rgba(5, 7, 7, 0.8) 0%,
+            rgba(5, 7, 7, 0.6) 50%,
+            rgba(5, 7, 7, 0.1) 100%
+        );
+    }
+}
