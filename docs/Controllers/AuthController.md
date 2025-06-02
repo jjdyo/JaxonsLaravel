@@ -73,64 +73,80 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 ```
 
 ### `profile()`
-Displays the user profile page. This route is protected by authentication middleware.
+Displays the user profile page. This route is protected by authentication and email verification middleware.
 
 **Parameters:** None  
 **Returns:** View (`pages.profile`)  
 **Middleware:** 
 - `auth` - Requires user to be authenticated
+- `verified` - Requires user to have a verified email address
 
 **Example Usage:**
 ```php
 // In routes/web.php
-Route::get('/profile', [AuthController::class, 'profile'])->middleware('auth')->name('profile');
+Route::get('/profile', [AuthController::class, 'profile'])->middleware(['auth', 'verified'])->name('profile');
 ```
 
 ### `editProfile()`
-Displays the profile edit form. This route is protected by authentication middleware.
+Displays the profile edit form. This route is protected by authentication and email verification middleware.
 
 **Parameters:** None  
 **Returns:** View (`pages.profile_edit`) with the authenticated user data  
 **Middleware:** 
 - `auth` - Requires user to be authenticated
+- `verified` - Requires user to have a verified email address
 
 **Example Usage:**
 ```php
 // In routes/web.php
-Route::get('/profile/edit', [AuthController::class, 'editProfile'])->middleware('auth')->name('profile.edit');
+Route::get('/profile/edit', [AuthController::class, 'editProfile'])->middleware(['auth', 'verified'])->name('profile.edit');
 ```
 
 ### `updateProfile(Request $request)`
-Handles the profile update form submission. This route is protected by authentication middleware.
+Handles the profile update form submission. This route is protected by authentication and email verification middleware.
 
 **Parameters:**
-- `$request` (Request): Contains form data including name
+- `$request` (Request): Contains form data including name and email
 
-**Returns:** Redirect to profile route with success message  
+**Returns:** 
+- If email is changed: Redirect to verification notice route with success message
+- Otherwise: Redirect to profile route with success message
+
 **Validation Rules:**
 - Name: required, string, max 20 characters, regex pattern for letters, spaces, apostrophes, and hyphens
+- Email: required, string, valid email format, unique in users table (except for current user), max 255 characters
+
+**Email Change Behavior:**
+- If the email address is changed, the user's email_verified_at field is set to null
+- A new verification email is sent to the new address
+- The user is redirected to the verification notice page
 
 **Security Features:**
 - Input validation with custom error messages
 - Input sanitization (trimming whitespace and normalizing spaces)
+- Email verification requirement for email changes
 
 **Example Usage:**
 ```php
 // In routes/web.php
-Route::put('/profile/edit', [AuthController::class, 'updateProfile'])->middleware('auth')->name('profile.update');
+Route::put('/profile/edit', [AuthController::class, 'updateProfile'])->middleware(['auth', 'verified'])->name('profile.update');
 ```
 
 ### `processRegister(Request $request)`
-Handles the registration form submission, creates a new user, and automatically logs them in.
+Handles the registration form submission, creates a new user, logs them in, and sends a verification email.
 
 **Parameters:**
 - `$request` (Request): Contains form data including name, email, and password
 
-**Returns:** Redirect to home route with success message  
+**Returns:** Redirect to verification notice route  
 **Validation Rules:**
 - Name: required, string, max 255 characters
 - Email: required, valid email format, unique in users table, max 255 characters
 - Password: required, minimum 8 characters, must be confirmed
+
+**Email Verification:**
+- Sends a verification email to the user's email address
+- Redirects to the verification notice page where the user is informed to check their email
 
 **Example Usage:**
 ```php
@@ -150,3 +166,6 @@ The controller assigns the 'user' role to newly registered users via the `assign
 - Session regeneration to prevent session fixation attacks
 - Validation of user inputs
 - Secure password requirements (minimum 8 characters, confirmation required)
+- Email verification for new user registrations
+- Email verification required for changing email addresses
+- Protected routes requiring verified email addresses

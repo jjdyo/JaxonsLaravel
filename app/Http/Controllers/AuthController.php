@@ -35,9 +35,11 @@ class AuthController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:20|regex:/^[\p{L}\s\'\-]+$/u',
+            'email' => 'required|string|email|max:255|unique:users,email,' . Auth::id(),
         ], [
             'name.regex' => 'The name may only contain letters, spaces, apostrophes, and hyphens.',
             'name.max' => 'The name may not be greater than 20 characters.',
+            'email.unique' => 'The email address is already taken by another user.',
         ]);
 
         $user = Auth::user();
@@ -46,9 +48,25 @@ class AuthController extends Controller
         $sanitizedName = trim(preg_replace('/\s+/', ' ', $request->name));
 
         $user->name = $sanitizedName;
-        $user->save();
 
-        return redirect()->route('profile')->with('success', 'Profile updated successfully!');
+        // Check if email has changed
+        $emailChanged = $request->email !== $user->email;
+
+        if ($emailChanged) {
+            // Update email and reset verification status
+            $user->email = $request->email;
+            $user->email_verified_at = null;
+            $user->save();
+
+            // Send verification email
+            $user->sendEmailVerificationNotification();
+
+            return redirect()->route('verification.notice')
+                ->with('success', 'Profile updated successfully! Please verify your new email address.');
+        } else {
+            $user->save();
+            return redirect()->route('profile')->with('success', 'Profile updated successfully!');
+        }
     }
     public function processLogin(Request $request)
     {
