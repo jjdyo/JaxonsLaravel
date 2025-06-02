@@ -3,6 +3,8 @@ header {
     background: var(--color-bg-header);
     color: var(--color-text);
     padding: 15px;
+    position: relative;
+    z-index: 1000;
 }
 
 /* Ensures h1 and h2 stay centered */
@@ -19,6 +21,8 @@ header {
     padding: 10px 20px;
     max-width: 1200px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1000;
 }
 
 .nav-links {
