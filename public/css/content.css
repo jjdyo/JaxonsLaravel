@@ -22,6 +22,8 @@ main {
     max-width: 90%;
     margin: 0 auto; /* Centers content */
     background-color: var(--color-bg-main);
+    position: relative;
+    z-index: 1; /* Ensure it's below the dropdown which has z-index: 1000 */
 }
 
 /* Class for centering text content */
