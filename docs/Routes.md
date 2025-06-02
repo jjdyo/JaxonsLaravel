@@ -25,9 +25,18 @@ These routes handle user authentication, including login, registration, and logo
 | `/logout` | POST | `AuthController@logout` | `logout` | `auth` | Logs out the authenticated user |
 | `/register` | GET | `AuthController@showRegisterForm` | `register` | None | Displays the registration form |
 | `/register` | POST | `AuthController@processRegister` | `register.process` | None | Processes the registration form submission |
-| `/profile` | GET | `AuthController@profile` | `profile` | `auth` | Displays the user profile page (requires authentication) |
-| `/profile/edit` | GET | `AuthController@editProfile` | `profile.edit` | `auth` | Displays the profile edit form (requires authentication) |
-| `/profile/edit` | PUT | `AuthController@updateProfile` | `profile.update` | `auth` | Processes the profile update form submission (requires authentication) |
+| `/profile` | GET | `AuthController@profile` | `profile` | `auth`, `verified` | Displays the user profile page (requires authentication and email verification) |
+| `/profile/edit` | GET | `AuthController@editProfile` | `profile.edit` | `auth`, `verified` | Displays the profile edit form (requires authentication and email verification) |
+| `/profile/edit` | PUT | `AuthController@updateProfile` | `profile.update` | `auth`, `verified` | Processes the profile update form submission (requires authentication and email verification) |
+
+### Email Verification Routes
+These routes handle the email verification process for new users.
+
+| URL | Method | Controller Action | Name | Middleware | Description |
+|-----|--------|------------------|------|------------|-------------|
+| `/email/verify` | GET | Closure | `verification.notice` | `auth` | Displays the email verification notice page |
+| `/email/verify/{id}/{hash}` | GET | Closure | `verification.verify` | `auth`, `signed` | Verifies the user's email address using the verification link |
+| `/email/verification-notification` | POST | Closure | `verification.send` | `auth`, `throttle:6,1` | Resends the verification email (limited to 6 attempts per minute) |
 
 ### Documentation Routes
 These routes handle the documentation system, allowing users to browse and view markdown documentation files.
@@ -43,9 +52,17 @@ The application uses route groups to apply middleware to multiple routes at once
 ### Authentication Middleware Group
 The following routes require the user to be authenticated:
 - `/contact` (also requires the 'view contact page url' permission)
+- `/profile` (also requires email verification)
+- `/profile/edit` (GET and PUT methods) (also requires email verification)
+- `/logout`
+- `/email/verify` (email verification notice page)
+- `/email/verify/{id}/{hash}` (email verification link)
+- `/email/verification-notification` (resend verification email)
+
+### Verified Middleware Group
+The following routes require the user to have a verified email address:
 - `/profile`
 - `/profile/edit` (GET and PUT methods)
-- `/logout`
 
 ### Permission Middleware Group
 The following routes require specific permissions:

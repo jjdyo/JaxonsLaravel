@@ -15,6 +15,9 @@ The User model represents users in the application and is used for authenticatio
 ### Extends
 `Illuminate\Foundation\Auth\User as Authenticatable`
 
+### Implements
+`Illuminate\Contracts\Auth\MustVerifyEmail` - Enables email verification functionality
+
 ### Traits
 - `HasFactory` - Provides factory functionality for testing
 - `Notifiable` - Allows the model to receive notifications
@@ -42,6 +45,7 @@ protected $fillable = [
     'name',
     'email',
     'password',
+    'email_verified_at',
 ];
 ```
 
@@ -73,8 +77,12 @@ protected function casts(): array
 The User model is used for:
 - Authentication (login/logout)
 - User registration
+- Email verification
 - Role-based access control
 - User profile management
+
+#### Email Verification
+The User model implements the `MustVerifyEmail` interface, which enables Laravel's email verification functionality. When a user registers, they receive an email with a verification link. Certain routes are protected with the `verified` middleware to ensure only users with verified email addresses can access them.
 
 ## Role Model
 The Role model represents user roles in the application and is used for role-based access control.

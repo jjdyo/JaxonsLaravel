@@ -10,7 +10,8 @@ The views are organized in the following directory structure:
 resources/views/
 ├── auth/               # Authentication-related views
 │   ├── login.blade.php     # Login form
-│   └── register.blade.php  # Registration form
+│   ├── register.blade.php  # Registration form
+│   └── verify-email.blade.php # Email verification notice
 ├── docs/               # Documentation-related views
 │   ├── index.blade.php     # Documentation index page
 │   └── show.blade.php      # Documentation page display
@@ -59,6 +60,13 @@ The registration form view, used by `AuthController@showRegisterForm`. It includ
 - Register button
 - Link to login page
 
+#### `auth/verify-email.blade.php`
+The email verification notice view, used by the `/email/verify` route. It is displayed to users who have registered but not yet verified their email address. It includes:
+- Information about the verification process
+- A form to request a new verification email
+- Success message when a new verification email is sent
+- Link back to the home page
+
 ### Page Views
 Page views contain the main content for each page of the application.
 
@@ -72,10 +80,10 @@ The about page view, used by `PageController@about`.
 The contact page view, used by `PageController@contact`. This page is protected by authentication and permission middleware.
 
 #### `pages/profile.blade.php`
-The user profile page view, used by `AuthController@profile`. This page is protected by authentication middleware. It displays the user's profile information and provides a link to edit the profile.
+The user profile page view, used by `AuthController@profile`. This page is protected by authentication and email verification middleware. It displays the user's profile information and provides a link to edit the profile.
 
 #### `pages/profile_edit.blade.php`
-The profile edit page view, used by `AuthController@editProfile`. This page is protected by authentication middleware. It provides a form for updating the user's profile information, specifically the name field.
+The profile edit page view, used by `AuthController@editProfile`. This page is protected by authentication and email verification middleware. It provides a form for updating the user's profile information, specifically the name field.
 
 ### Documentation Views
 Documentation views handle the display of markdown documentation files.

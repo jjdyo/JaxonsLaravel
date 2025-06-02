@@ -105,6 +105,9 @@ class AuthController extends Controller
         // Log the user in automatically after registering
         Auth::login($user);
 
-        return redirect()->route('home')->with('success', 'Account created successfully!');
+        // Send email verification notification
+        $user->sendEmailVerificationNotification();
+
+        return redirect()->route('verification.notice');
     }
 }
