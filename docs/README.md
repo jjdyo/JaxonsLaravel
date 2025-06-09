@@ -25,6 +25,9 @@ This folder contains comprehensive documentation for the Laravel application. Th
 ### Configuration
 - [Email Settings](Configuration/EmailSettings.md) - Guide for configuring email settings and fixing common issues
 
+### Styling
+- [Theme System](Styling/ThemeSystem.md) - Documentation for the CSS variable-based theme system
+
 ## Application Structure
 The application follows a standard Laravel structure:
 
@@ -42,6 +45,15 @@ The application implements a custom authentication system using Laravel's built-
 - Role-based access control
 - Email verification for new users
 - Password reset functionality
+
+## Theme System
+The application implements a CSS variable-based theme system for easy customization of colors and visual elements. The theme system includes:
+
+- Centralized color variables in `public/css/theme.css`
+- Variables for primary/secondary colors, text colors, background colors, and UI element colors
+- Easy customization by modifying variable values
+- Consistent styling across the application
+- Starry background effect for header and footer
 
 ## Page Structure
 The application includes the following pages:
@@ -62,3 +74,5 @@ The application includes the following pages:
 - For information about data models and relationships, see the [Models Documentation](Models.md)
 - For information about views and Blade templates, see the [Views Documentation](Views.md)
 - For information about console commands, see the [Console Commands Documentation](Console Commands.md)
+- For information about the theme system and styling, see the [Theme System Documentation](Styling/ThemeSystem.md) and [Starry Background Documentation](Styling/StarryBackground.md)
+- For information about email configuration, see the [Email Settings Documentation](Configuration/EmailSettings.md)

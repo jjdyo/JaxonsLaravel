@@ -26,6 +26,8 @@ resources/views/
 │   ├── contact.blade.php   # Contact page
 │   ├── profile.blade.php   # User profile page
 │   └── profile_edit.blade.php # Profile edit page
+├── vendor/             # Vendor-specific views
+│   └── mail/               # Custom email templates
 └── welcome.blade.php   # Default Laravel welcome page
 ```
 
@@ -121,6 +123,29 @@ The documentation page view, used by `DocsController@show`. It includes:
 
 ### Error Views
 Error views display error messages to users when something goes wrong.
+
+### Vendor Views
+Vendor views are views that override or extend functionality provided by Laravel or third-party packages.
+
+#### `vendor/mail/`
+The `vendor/mail/` directory is used for customizing email templates. Laravel's email notification system uses these templates for sending emails. By placing custom templates in this directory, you can override the default Laravel email templates without modifying core files.
+
+The directory structure follows Laravel's convention:
+```
+vendor/mail/
+├── html/               # HTML email templates
+```
+
+Currently, this directory is empty, which means the application is using Laravel's default email templates. To customize email templates:
+
+1. Publish Laravel's default email templates:
+   ```bash
+   php artisan vendor:publish --tag=laravel-mail
+   ```
+
+2. Modify the published templates in the `vendor/mail/` directory.
+
+3. Laravel will automatically use your custom templates instead of the default ones.
 
 ## Blade Templating
 The application uses Laravel's Blade templating engine, which provides:

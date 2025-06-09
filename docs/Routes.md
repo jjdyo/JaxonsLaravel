@@ -45,8 +45,8 @@ These routes handle the password reset process for users who have forgotten thei
 |-----|--------|------------------|------|------------|-------------|
 | `/forgot-password` | GET | `AuthController@showForgotPasswordForm` | `password.request` | `guest` | Displays the forgot password form |
 | `/forgot-password` | POST | `AuthController@sendResetLinkEmail` | `password.email` | `guest` | Sends a password reset link to the user's email |
-| `/reset-password/{token}` | GET | `AuthController@showResetPasswordForm` | `password.reset` | `guest` | Displays the reset password form |
-| `/reset-password` | POST | `AuthController@resetPassword` | `password.update` | `guest` | Processes the password reset form submission |
+| `/reset-password/{token}` | GET | `AuthController@showResetPasswordForm` | `password.reset` | `guest`, `throttle:5,1` | Displays the reset password form (limited to 5 attempts per minute) |
+| `/reset-password` | POST | `AuthController@resetPassword` | `password.update` | `guest`, `throttle:5,1` | Processes the password reset form submission (limited to 5 attempts per minute) |
 
 ### Documentation Routes
 These routes handle the documentation system, allowing users to browse and view markdown documentation files.
