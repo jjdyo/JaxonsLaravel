@@ -11,7 +11,9 @@ resources/views/
 ├── auth/               # Authentication-related views
 │   ├── login.blade.php     # Login form
 │   ├── register.blade.php  # Registration form
-│   └── verify-email.blade.php # Email verification notice
+│   ├── verify-email.blade.php # Email verification notice
+│   ├── forgot-password.blade.php # Forgot password form
+│   └── reset-password.blade.php # Reset password form
 ├── docs/               # Documentation-related views
 │   ├── index.blade.php     # Documentation index page
 │   └── show.blade.php      # Documentation page display
@@ -66,6 +68,22 @@ The email verification notice view, used by the `/email/verify` route. It is dis
 - A form to request a new verification email
 - Success message when a new verification email is sent
 - Link back to the home page
+
+#### `auth/forgot-password.blade.php`
+The forgot password form view, used by `AuthController@showForgotPasswordForm`. It is displayed to users who have forgotten their password and need to reset it. It includes:
+- Information about the password reset process
+- Email input field
+- Submit button to request a password reset link
+- Success message when a password reset link is sent
+- Link back to the login page
+
+#### `auth/reset-password.blade.php`
+The reset password form view, used by `AuthController@showResetPasswordForm`. It is displayed to users who have clicked on a password reset link in their email. It includes:
+- Email input field (pre-filled and read-only)
+- New password input field
+- Password confirmation field
+- Submit button to reset the password
+- Link back to the login page
 
 ### Page Views
 Page views contain the main content for each page of the application.

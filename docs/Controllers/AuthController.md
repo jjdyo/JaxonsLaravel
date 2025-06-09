@@ -16,6 +16,9 @@ The controller relies on the following imports:
 - `Illuminate\Support\Facades\Auth` - Laravel's authentication system
 - `Illuminate\Support\Facades\Hash` - For secure password hashing
 - `Illuminate\Support\Facades\RateLimiter` - For rate limiting login attempts
+- `Illuminate\Support\Facades\Password` - For password reset functionality
+- `Illuminate\Auth\Events\PasswordReset` - For firing password reset events
+- `Illuminate\Support\Str` - For generating random strings
 
 ## Methods
 
@@ -154,6 +157,72 @@ Handles the registration form submission, creates a new user, logs them in, and 
 Route::post('/register', [AuthController::class, 'processRegister'])->name('register.process');
 ```
 
+### `showForgotPasswordForm()`
+Displays the forgot password form to the user.
+
+**Parameters:** None  
+**Returns:** View (`auth.forgot-password`)  
+**Example Usage:**
+```php
+// In routes/web.php
+Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->middleware('guest')->name('password.request');
+```
+
+### `sendResetLinkEmail(Request $request)`
+Handles the forgot password form submission and sends a password reset link to the user's email.
+
+**Parameters:**
+- `$request` (Request): Contains form data including email
+
+**Returns:** Redirect back with status message or errors  
+**Validation Rules:**
+- Email: required, valid email format
+
+**Example Usage:**
+```php
+// In routes/web.php
+Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->middleware('guest')->name('password.email');
+```
+
+### `showResetPasswordForm(Request $request)`
+Displays the reset password form to the user.
+
+**Parameters:**
+- `$request` (Request): Contains token and email parameters
+
+**Returns:** View (`auth.reset-password`) with the request data  
+**Example Usage:**
+```php
+// In routes/web.php
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->middleware('guest')->name('password.reset');
+```
+
+### `resetPassword(Request $request)`
+Handles the reset password form submission and updates the user's password.
+
+**Parameters:**
+- `$request` (Request): Contains form data including token, email, password, and password_confirmation
+
+**Returns:** 
+- If successful: Redirect to login route with success message
+- Otherwise: Redirect back with errors
+
+**Validation Rules:**
+- Token: required
+- Email: required, valid email format
+- Password: required, minimum 8 characters, must be confirmed
+
+**Security Features:**
+- Password hashing using Laravel's Hash facade
+- Generation of new remember token
+- Firing of PasswordReset event
+
+**Example Usage:**
+```php
+// In routes/web.php
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('guest')->name('password.update');
+```
+
 ## Models Used
 - `User` - For creating and authenticating users
 
@@ -169,3 +238,6 @@ The controller assigns the 'user' role to newly registered users via the `assign
 - Email verification for new user registrations
 - Email verification required for changing email addresses
 - Protected routes requiring verified email addresses
+- Secure password reset functionality
+- Token-based password reset links
+- Password reset links expire after a certain time

@@ -37,6 +37,8 @@ The application implements a custom authentication system using Laravel's built-
 - User registration with validation
 - Secure password hashing
 - Role-based access control
+- Email verification for new users
+- Password reset functionality
 
 ## Page Structure
 The application includes the following pages:
@@ -47,6 +49,9 @@ The application includes the following pages:
 - Profile page (`/profile`) - Requires authentication
 - Login page (`/user`)
 - Registration page (`/register`)
+- Email verification page (`/email/verify`)
+- Forgot password page (`/forgot-password`)
+- Reset password page (`/reset-password/{token}`)
 
 ## How to Use This Documentation
 - Start with the [Routes Documentation](Routes.md) for an overview of all available routes

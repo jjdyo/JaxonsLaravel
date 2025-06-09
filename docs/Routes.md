@@ -38,6 +38,16 @@ These routes handle the email verification process for new users.
 | `/email/verify/{id}/{hash}` | GET | Closure | `verification.verify` | `auth`, `signed` | Verifies the user's email address using the verification link |
 | `/email/verification-notification` | POST | Closure | `verification.send` | `auth`, `throttle:6,1` | Resends the verification email (limited to 6 attempts per minute) |
 
+### Password Reset Routes
+These routes handle the password reset process for users who have forgotten their passwords.
+
+| URL | Method | Controller Action | Name | Middleware | Description |
+|-----|--------|------------------|------|------------|-------------|
+| `/forgot-password` | GET | `AuthController@showForgotPasswordForm` | `password.request` | `guest` | Displays the forgot password form |
+| `/forgot-password` | POST | `AuthController@sendResetLinkEmail` | `password.email` | `guest` | Sends a password reset link to the user's email |
+| `/reset-password/{token}` | GET | `AuthController@showResetPasswordForm` | `password.reset` | `guest` | Displays the reset password form |
+| `/reset-password` | POST | `AuthController@resetPassword` | `password.update` | `guest` | Processes the password reset form submission |
+
 ### Documentation Routes
 These routes handle the documentation system, allowing users to browse and view markdown documentation files.
 
@@ -63,6 +73,12 @@ The following routes require the user to be authenticated:
 The following routes require the user to have a verified email address:
 - `/profile`
 - `/profile/edit` (GET and PUT methods)
+
+### Guest Middleware Group
+The following routes are only accessible to non-authenticated users:
+- `/forgot-password` (GET and POST methods)
+- `/reset-password/{token}` (GET method)
+- `/reset-password` (POST method)
 
 ### Permission Middleware Group
 The following routes require specific permissions:
