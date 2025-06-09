@@ -22,8 +22,7 @@ body.bg-loaded .starry-background::before {
 }
 .starry-background {
     position: relative;
-    z-index: 0; /* Ensure the background is behind the content */
-    /* Removed overflow: hidden to prevent dropdown from being clipped */
+    z-index: 2;
 }
 
 .starry-background::before {
