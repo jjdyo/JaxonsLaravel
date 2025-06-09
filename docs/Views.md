@@ -145,8 +145,21 @@ The application uses Laravel's Blade templating engine, which provides:
 @endsection
 ```
 
+## Language Files
+The application uses language files for localization and customization of messages:
+
+```
+resources/lang/
+├── en/               # English language files
+│   └── passwords.php     # Custom password reset messages
+```
+
+### Custom Password Reset Messages
+The application includes custom password reset messages in `resources/lang/en/passwords.php`. These messages override the default Laravel messages without modifying core files.
+
 ## Related Documentation
 - [Routes Documentation](Routes.md) - Documentation for application routes
 - [PageController Documentation](Controllers/PageController.md) - Documentation for page rendering functionality
 - [AuthController Documentation](Controllers/AuthController.md) - Documentation for authentication functionality
 - [DocsController Documentation](Controllers/DocsController.md) - Documentation for the documentation system
+- [Email Settings](Configuration/EmailSettings.md) - Guide for configuring email settings and fixing common issues

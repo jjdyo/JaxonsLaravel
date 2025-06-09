@@ -22,6 +22,9 @@ This folder contains comprehensive documentation for the Laravel application. Th
 ### Views
 - [Views Documentation](Views.md) - Documentation for Blade templates and view structure
 
+### Configuration
+- [Email Settings](Configuration/EmailSettings.md) - Guide for configuring email settings and fixing common issues
+
 ## Application Structure
 The application follows a standard Laravel structure:
 
