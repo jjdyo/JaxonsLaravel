@@ -23,10 +23,11 @@ This folder contains comprehensive documentation for the Laravel application. Th
 - [Views Documentation](Views.md) - Documentation for Blade templates and view structure
 
 ### Configuration
-- [Email Settings](Configuration/EmailSettings.md) - Guide for configuring email settings and fixing common issues
+- [Email Settings](Configuration/Email Notifications.md) - Guide for configuring email settings and fixing common issues
+- [Application Configuration](Configuration/Application Configuration.md) - Guide for core application settings and environment configuration
 
 ### Styling
-- [Theme System](Styling/ThemeSystem.md) - Documentation for the CSS variable-based theme system
+- [Theme System](Styling/Themes.md) - Documentation for the CSS variable-based theme system
 
 ## Application Structure
 The application follows a standard Laravel structure:
@@ -74,5 +75,6 @@ The application includes the following pages:
 - For information about data models and relationships, see the [Models Documentation](Models.md)
 - For information about views and Blade templates, see the [Views Documentation](Views.md)
 - For information about console commands, see the [Console Commands Documentation](Console Commands.md)
-- For information about the theme system and styling, see the [Theme System Documentation](Styling/ThemeSystem.md) and [Starry Background Documentation](Styling/StarryBackground.md)
-- For information about email configuration, see the [Email Settings Documentation](Configuration/EmailSettings.md)
+- For information about the theme system and styling, see the [Theme System Documentation](Styling/Themes.md) and [Starry Background Documentation](Styling/StarryBackground.md)
+- For information about email configuration, see the [Email Settings Documentation](Configuration/Email Notifications.md)
+- For information about core application settings and environment configuration, see the [Application Configuration Documentation](Configuration/Application Configuration.md)
