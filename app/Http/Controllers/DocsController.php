@@ -10,8 +10,10 @@ class DocsController extends Controller
 {
     /**
      * Display the documentation index page
+     *
+     * @return \Illuminate\View\View The documentation index view with documents hierarchy and readme content
      */
-    public function index()
+    public function index(): \Illuminate\View\View
     {
         $docsPath = base_path('docs');
         $documents = $this->getDocumentsHierarchy();
@@ -24,8 +26,11 @@ class DocsController extends Controller
 
     /**
      * Display a specific documentation page
+     *
+     * @param string $filename The documentation file to display (can include directory path)
+     * @return \Illuminate\View\View The documentation page view with parsed content
      */
-    public function show($filename)
+    public function show($filename): \Illuminate\View\View
     {
         $docsPath = base_path('docs');
 
@@ -60,8 +65,11 @@ class DocsController extends Controller
 
     /**
      * Parse markdown content to HTML
+     *
+     * @param string $content The markdown content to parse
+     * @return string The parsed HTML content
      */
-    private function parseMarkdown($content)
+    private function parseMarkdown($content): string
     {
         // Fix internal links before parsing markdown
         $content = preg_replace_callback(
@@ -87,8 +95,10 @@ class DocsController extends Controller
 
     /**
      * Get documents organized in a hierarchical structure
+     *
+     * @return array An array of documents organized by directories and files
      */
-    private function getDocumentsHierarchy()
+    private function getDocumentsHierarchy(): array
     {
         $docsPath = base_path('docs');
         $hierarchy = [];

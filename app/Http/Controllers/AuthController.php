@@ -13,28 +13,54 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
-    public function showLoginForm()
+    /**
+     * Display the login form
+     *
+     * @return \Illuminate\View\View The login form view
+     */
+    public function showLoginForm(): \Illuminate\View\View
     {
         return view('auth.login');
     }
-    // Show the registration form
-    public function showRegisterForm()
+
+    /**
+     * Display the registration form
+     *
+     * @return \Illuminate\View\View The registration form view
+     */
+    public function showRegisterForm(): \Illuminate\View\View
     {
         return view('auth.register');
     }
 
-    public function profile()
+    /**
+     * Display the user profile page
+     *
+     * @return \Illuminate\View\View The profile page view
+     */
+    public function profile(): \Illuminate\View\View
     {
         return view('pages.profile');
     }
 
-    public function editProfile()
+    /**
+     * Display the profile edit form
+     *
+     * @return \Illuminate\View\View The profile edit form view with user data
+     */
+    public function editProfile(): \Illuminate\View\View
     {
         $user = Auth::user();
         return view('pages.profile_edit', compact('user'));
     }
 
-    public function updateProfile(Request $request)
+    /**
+     * Update the user's profile information
+     *
+     * @param \Illuminate\Http\Request $request The HTTP request containing profile data
+     * @return \Illuminate\Http\RedirectResponse Redirect to profile or verification notice
+     */
+    public function updateProfile(Request $request): \Illuminate\Http\RedirectResponse
     {
         $request->validate([
             'name' => 'required|string|max:20|regex:/^[\p{L}\s\'\-]+$/u',
@@ -71,7 +97,13 @@ class AuthController extends Controller
             return redirect()->route('profile')->with('success', 'Profile updated successfully!');
         }
     }
-    public function processLogin(Request $request)
+    /**
+     * Process the login request
+     *
+     * @param \Illuminate\Http\Request $request The HTTP request containing login credentials
+     * @return \Illuminate\Http\RedirectResponse Redirect to intended page or back with errors
+     */
+    public function processLogin(Request $request): \Illuminate\Http\RedirectResponse
     {
         $email = $request->input('email');
 
@@ -94,8 +126,13 @@ class AuthController extends Controller
             'email' => 'Invalid email or password'
         ])->onlyInput('email'); // Keep email input but clear password
     }
-    //Logout function
-    public function logout(Request $request)
+    /**
+     * Log the user out of the application
+     *
+     * @param \Illuminate\Http\Request $request The HTTP request
+     * @return \Illuminate\Http\RedirectResponse Redirect to home page
+     */
+    public function logout(Request $request): \Illuminate\Http\RedirectResponse
     {
         auth()->logout();
         $request->session()->invalidate();
@@ -104,8 +141,13 @@ class AuthController extends Controller
         return redirect()->route('home');
     }
 
-    // Handle registration form submission
-    public function processRegister(Request $request)
+    /**
+     * Process the registration form submission
+     *
+     * @param \Illuminate\Http\Request $request The HTTP request containing registration data
+     * @return \Illuminate\Http\RedirectResponse Redirect to email verification notice
+     */
+    public function processRegister(Request $request): \Illuminate\Http\RedirectResponse
     {
         // Validate user input
         $request->validate([
@@ -132,13 +174,23 @@ class AuthController extends Controller
         return redirect()->route('verification.notice');
     }
 
-    // Password Reset Methods
-    public function showForgotPasswordForm()
+    /**
+     * Display the forgot password form
+     *
+     * @return \Illuminate\View\View The forgot password form view
+     */
+    public function showForgotPasswordForm(): \Illuminate\View\View
     {
         return view('auth.forgot-password');
     }
 
-    public function sendResetLinkEmail(Request $request)
+    /**
+     * Send a password reset link to the given user
+     *
+     * @param \Illuminate\Http\Request $request The HTTP request containing the user's email
+     * @return \Illuminate\Http\RedirectResponse Redirect back with status or errors
+     */
+    public function sendResetLinkEmail(Request $request): \Illuminate\Http\RedirectResponse
     {
         $request->validate([
             'email' => 'required|email',
@@ -153,12 +205,24 @@ class AuthController extends Controller
             : back()->withErrors(['email' => __($status)]);
     }
 
-    public function showResetPasswordForm(Request $request)
+    /**
+     * Display the password reset form
+     *
+     * @param \Illuminate\Http\Request $request The HTTP request containing the reset token
+     * @return \Illuminate\View\View The password reset form view
+     */
+    public function showResetPasswordForm(Request $request): \Illuminate\View\View
     {
         return view('auth.reset-password', ['request' => $request]);
     }
 
-    public function resetPassword(Request $request)
+    /**
+     * Reset the user's password
+     *
+     * @param \Illuminate\Http\Request $request The HTTP request containing reset credentials
+     * @return \Illuminate\Http\RedirectResponse Redirect to login page or back with errors
+     */
+    public function resetPassword(Request $request): \Illuminate\Http\RedirectResponse
     {
         $request->validate([
             'token' => 'required',
