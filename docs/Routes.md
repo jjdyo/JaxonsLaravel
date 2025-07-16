@@ -36,7 +36,7 @@ These routes handle the email verification process for new users.
 |-----|--------|------------------|------|------------|-------------|
 | `/email/verify` | GET | Closure | `verification.notice` | `auth` | Displays the email verification notice page |
 | `/email/verify/{id}/{hash}` | GET | Closure | `verification.verify` | `auth`, `signed` | Verifies the user's email address using the verification link |
-| `/email/verification-notification` | POST | Closure | `verification.send` | `auth`, `throttle:6,1` | Resends the verification email (limited to 6 attempts per minute) |
+| `/email/verification-notification` | POST | Closure | `verification.send` | `auth`, `throttle:5,1` | Resends the verification email (limited to 5 attempts per minute) |
 
 ### Password Reset Routes
 These routes handle the password reset process for users who have forgotten their passwords.

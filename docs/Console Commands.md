@@ -5,6 +5,80 @@ This document provides information about the custom Artisan console commands ava
 
 ## Available Commands
 
+### `dev:clear`
+Clears development caches (views, config, routes) - perfect for template/logic changes.
+
+**Usage:**
+```bash
+php artisan dev:clear
+# With all caches (including application cache and compiled services)
+php artisan dev:clear --all
+```
+
+**Purpose:** Clear various caches during development to ensure changes take effect.
+
+**Example Output:**
+```
+🧹 Clearing development caches...
+   Clearing compiled views...
+   Clearing configuration cache...
+   Clearing route cache...
+   Clearing event cache...
+
+✅ Development caches cleared successfully!
+💡 Use --all flag to clear application cache and compiled services too
+
+Perfect for after adding new email notifications, views, or config changes!
+```
+
+**Implementation:** See `app\Console\Commands\ClearDevelopmentCache.php`
+
+### `site:info`
+Displays comprehensive site information including database, memory usage, and system details.
+
+**Usage:**
+```bash
+php artisan site:info
+# Output in JSON format
+php artisan site:info --json
+```
+
+**Purpose:** Provide detailed information about the application environment for debugging and documentation.
+
+**Example Output (partial):**
+```
+=== Site Information ===
+
+Application:
++----------------+------------------+
+| Property       | Value            |
++----------------+------------------+
+| Name           | JaxonsLaravel    |
+| URL            | http://localhost |
+| Environment    | local            |
+| Debug Mode     | Enabled          |
+| Timezone       | UTC              |
+| Locale         | en               |
+| Laravel Version| 10.x.x           |
+| PHP Version    | 8.1.x            |
++----------------+------------------+
+
+Database:
++----------------+------------------+
+| Property       | Value            |
++----------------+------------------+
+| Connection     | mysql            |
+| Driver         | mysql            |
+| Database       | jaxons_laravel   |
+| Host           | 127.0.0.1        |
+| Port           | 3306             |
+| Version        | 10.5.x-MariaDB   |
+| Status         | Connected        |
++----------------+------------------+
+```
+
+**Implementation:** See `app\Console\Commands\SiteInfoCommand.php`
+
 ### `inspire`
 Displays an inspiring quote in the console.
 

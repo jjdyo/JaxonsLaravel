@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') - JaxonLaravel</title>
+    <title>@yield('title') - JaxonsLaravel</title>
 
     <!-- Styles -->
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
@@ -20,8 +20,8 @@
     <!-- Header -->
     <header class="starry-background">
         <div class="header-title content-shadow">
-            <h1>Welcome to Jaxon Laravel</h1>
-            <h2>Lorum ipsum or something</h2>
+            <h1>Welcome to JaxonsLaravel</h1>
+            <h2>A Custom Laravel Application</h2>
         </div>
         <nav class="nav-bar content-shadow">
             <div class="nav-links">
@@ -57,7 +57,7 @@
 
     <!-- Footer -->
     <footer class="starry-background">
-        <p class="content-shadow">This is my footer</p>
+        <p class="content-shadow">&copy; 2025 JaxonsLaravel - All Rights Reserved</p>
     </footer>
 
 </div>

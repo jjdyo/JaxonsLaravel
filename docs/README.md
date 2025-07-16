@@ -26,6 +26,10 @@ This folder contains comprehensive documentation for the Laravel application. Th
 - [Email Settings](Configuration/Email Notifications.md) - Guide for configuring email settings and fixing common issues
 - [Application Configuration](Configuration/Application Configuration.md) - Guide for core application settings and environment configuration
 
+### Development Environments
+- [Database Migrations with MariaDB](Development%20Environments/Database%20Migrations%20with%20MariaDB.md) - Guide for database migrations with MariaDB
+- [Services and Startup](Development%20Environments/Services%20and%20Startup.md) - Guide for services and startup procedures
+
 ### Styling
 - [Theme System](Styling/Themes.md) - Documentation for the CSS variable-based theme system
 

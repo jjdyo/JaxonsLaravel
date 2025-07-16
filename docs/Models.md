@@ -99,7 +99,7 @@ The Role model represents user roles in the application and is used for role-bas
 ### Fillable Attributes
 These attributes can be mass-assigned:
 ```php
-protected $fillable = ['name, guard_name'];
+protected $fillable = ['name', 'guard_name'];
 ```
 
 ### Relationships
