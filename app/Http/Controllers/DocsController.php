@@ -18,9 +18,18 @@ class DocsController extends Controller
         $docsPath = base_path('docs');
         $documents = $this->getDocumentsHierarchy();
 
+        // Path canonicalization and validation for README.md
+        $realDocsPath = realpath($docsPath);
+        $readmePath = realpath($docsPath . '/README.md');
+
+        // Ensure README.md exists and is within the docs directory
+        if (!$readmePath || strpos($readmePath, $realDocsPath) !== 0 || !File::exists($readmePath)) {
+            abort(404);
+        }
+
         return view('docs.index', [
             'documents' => $documents,
-            'readme' => $this->parseMarkdown(File::get($docsPath . '/README.md'))
+            'readme' => $this->parseMarkdown(File::get($readmePath))
         ]);
     }
 
@@ -34,6 +43,11 @@ class DocsController extends Controller
     {
         $docsPath = base_path('docs');
 
+        // Reject any input containing path traversal sequences
+        if (strpos($filename, '..') !== false) {
+            abort(404);
+        }
+
         // Check if the filename contains a directory path
         if (strpos($filename, '/') !== false) {
             $parts = explode('/', $filename);
@@ -45,11 +59,16 @@ class DocsController extends Controller
             $title = Str::title(str_replace('-', ' ', $filename));
         }
 
-        if (!File::exists($filePath)) {
+        // Path canonicalization and boundary check
+        $realDocsPath = realpath($docsPath);
+        $requestedPath = realpath($filePath);
+
+        // Ensure the requested file exists and is within the docs directory
+        if (!$requestedPath || strpos($requestedPath, $realDocsPath) !== 0 || !File::exists($requestedPath)) {
             abort(404);
         }
 
-        $content = File::get($filePath);
+        $content = File::get($requestedPath);
         $htmlContent = $this->parseMarkdown($content);
 
         // Get all documents for the sidebar
@@ -101,7 +120,13 @@ class DocsController extends Controller
     private function getDocumentsHierarchy(): array
     {
         $docsPath = base_path('docs');
+        $realDocsPath = realpath($docsPath);
         $hierarchy = [];
+
+        // Ensure docs directory exists
+        if (!$realDocsPath || !is_dir($realDocsPath)) {
+            return $hierarchy;
+        }
 
         // Get all directories in the docs folder
         $directories = File::directories($docsPath);

@@ -98,5 +98,5 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])
 Route::get('/docs', [DocsController::class, 'index'])->name('docs.index');
 
 // Documentation detail page - Publicly accessible
-// The 'where' constraint allows for nested paths with dots and slashes
-Route::get('/docs/{filename}', [DocsController::class, 'show'])->name('docs.show')->where('filename', '.*');
+// The 'where' constraint restricts to alphanumeric characters, dashes, underscores, and forward slashes
+Route::get('/docs/{filename}', [DocsController::class, 'show'])->name('docs.show')->where('filename', '[a-zA-Z0-9\-_\/]+');
