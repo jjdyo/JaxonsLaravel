@@ -1,6 +1,6 @@
 # Laravel + MariaDB Startup Guide
 
-This document outlines how to start and verify both the MariaDB database server and a Laravel application on your local development environment. This guide follows standard conventions for web application deployment.
+This document outlines how to set up, start, and verify both the MariaDB database server and a Laravel application on your local development environment. This guide follows standard conventions for web application deployment.
 
 ```
 /var/www/your-project-name
@@ -8,9 +8,81 @@ This document outlines how to start and verify both the MariaDB database server 
 
 ---
 
-## 🐬 Start the MariaDB Server
+## 🔧 Initial Setup
+
+Before starting services, you need to ensure they are properly configured.
+
+### 1. Set Up Your Laravel Environment
+
+Make sure you've set up your `.env` file properly. See the companion guide "Setting up .env.md" for detailed instructions.
+
+### 2. Create Laravel Service File
+
+Create a systemd service file for your Laravel application:
+
+```bash
+sudo nano /etc/systemd/system/laravel-app.service
+```
+
+Add the following content (adjust paths as needed, especially the PHP directory under ExecStart):
+
+```
+[Unit]
+Description=Laravel Development Server
+After=network.target mariadb.service
+Requires=mariadb.service
+
+[Service]
+User=your_user
+Group=your_user
+WorkingDirectory=/var/www/site_root
+ExecStart=/home/your_user/.config/herd-lite/bin/php /var/www/site_root/artisan serve --host=0.0.0.0 --port=8000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+
+
+Save and exit the editor.
+
+After creating or modifying service files, reload systemd:
+
+```bash
+sudo systemctl daemon-reload
+```
+
+---
+
+## 🐬 Install the MariaDB Server
 
 MariaDB is installed as a `systemd` service and can be controlled using `systemctl`.
+
+### 1. Update package list
+```bash
+$ sudo apt update
+```
+### 2. Install MariaDB server
+```bash
+$ sudo apt install mariadb-server -y
+```
+### 3. Enable the MariaDB service upon startup
+```bash
+$ sudo systemctl enable mariadb.service
+```
+### 4. Start the MariaDB database
+```bash
+sudo systemctl start mariadb.service
+```
+### 5. Check status of database
+```bash
+$ sudo systemctl status mariadb.service
+```
+
+---
+## Maintnence
+Relevant commands and tools for your database
 
 ### Start MariaDB:
 
@@ -43,7 +115,7 @@ The Laravel app is located at:
 /var/www/your-project-name
 ```
 
-It runs via Artisan's built-in server and is managed by a custom `systemd` service. You'll need to create a service file for your application (example: `laravel-app.service`).
+It runs via Artisan's built-in server and is managed by the custom `systemd` service you created earlier.
 
 ### Start Laravel:
 

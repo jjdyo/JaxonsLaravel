@@ -1,6 +1,6 @@
 # Setting Up Your Laravel .env File for Herd
 
-This guide explains how to configure your Laravel environment variables for local development using Herd. The `.env` file contains crucial configuration settings that your application needs to run properly.
+This guide explains how to configure your Laravel environment variables for local development using Herd. The `.env` file contains crucial configuration settings that your application needs to run properly. **This is typically the first step** before setting up services (see the companion guide "Services and Startup.md").
 
 ---
 
@@ -18,9 +18,11 @@ These settings should **never** be committed to version control, which is why La
 
 ---
 
-## 📋 Creating Your .env File
+## 📋 Step-by-Step Setup Process
 
-### Copy the Example File:
+### 1. Create Your .env File
+
+First, copy the example file to create your own .env file:
 
 ```bash
 copy .env.example .env
@@ -28,13 +30,9 @@ copy .env.example .env
 
 This creates a new `.env` file based on the example template.
 
----
+### 2. Configure Basic Application Settings
 
-## ⚙️ Configuring for Herd
-
-Herd provides a pre-configured PHP development environment with database services. Here's how to set up your `.env` file for use with Herd:
-
-### 1. Basic Application Settings:
+Edit your .env file and update the following settings:
 
 ```
 APP_NAME="Your App Name"
@@ -46,11 +44,13 @@ APP_URL=http://localhost
 
 * `APP_NAME`: Set this to your project name
 * `APP_ENV`: Keep as `local` for development
-* `APP_KEY`: Will be generated in a later step
 * `APP_DEBUG`: Set to `true` for development (shows detailed error messages)
 * `APP_URL`: Set to your local development URL (typically `http://localhost` or a custom domain configured in Herd)
+* `APP_KEY`: Leave empty for now - we'll generate it in step 4
 
-### 2. Database Configuration:
+### 3. Configure Database Connection
+
+Herd provides a pre-configured database environment. Update these settings:
 
 ```
 DB_CONNECTION=mysql
@@ -69,21 +69,9 @@ For Herd:
 * `DB_USERNAME`: Default is `root` in Herd
 * `DB_PASSWORD`: Herd typically uses no password for local development (leave empty)
 
-### 3. Mail Configuration:
+### 4. Generate Application Key
 
-For local development, set the mail driver to log:
-
-```
-MAIL_MAILER=log
-```
-
-This will write emails to your log file instead of actually sending them.
-
----
-
-## 🔐 Generating the Application Key
-
-After setting up your `.env` file, you need to generate an application key:
+After setting up your `.env` file, generate an application key:
 
 ```bash
 php artisan key:generate
@@ -96,6 +84,16 @@ If you're using Herd's PHP:
 ```
 
 This will update your `.env` file with a random application key used for encryption.
+
+### 5. Configure Mail Settings
+
+For local development, set the mail driver to log:
+
+```
+MAIL_MAILER=log
+```
+
+This will write emails to your log file instead of actually sending them.
 
 ---
 
