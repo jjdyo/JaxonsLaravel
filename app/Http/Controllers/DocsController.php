@@ -43,6 +43,9 @@ class DocsController extends Controller
     {
         $docsPath = base_path('docs');
 
+        // URL decode the filename to handle spaces and special characters
+        $filename = urldecode($filename);
+
         // Reject any input containing path traversal sequences
         if (strpos($filename, '..') !== false) {
             abort(404);
@@ -101,6 +104,7 @@ class DocsController extends Controller
                 $linkUrl = str_replace('.md', '', $linkUrl);
 
                 // Generate the correct route URL
+                // No need to URL encode here as the route() helper will handle it
                 $routeUrl = route('docs.show', ['filename' => $linkUrl]);
 
                 return "[$linkText]($routeUrl)";
@@ -143,7 +147,7 @@ class DocsController extends Controller
                     $hierarchy[] = [
                         'filename' => $filename,
                         'title' => $title,
-                        'path' => '/docs/' . $filename,
+                        'path' => '/docs/' . urlencode($filename),
                         'type' => 'file'
                     ];
                 }
@@ -166,7 +170,7 @@ class DocsController extends Controller
                     $children[] = [
                         'filename' => $dirName . '/' . $filename,
                         'title' => $title,
-                        'path' => '/docs/' . $dirName . '/' . $filename,
+                        'path' => '/docs/' . urlencode($dirName) . '/' . urlencode($filename),
                         'type' => 'file'
                     ];
                 }
