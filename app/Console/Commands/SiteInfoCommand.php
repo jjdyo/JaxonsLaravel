@@ -169,15 +169,23 @@ class SiteInfoCommand extends Command
             $info['error'] = $e->getMessage();
         }
 
-        // Redis specific info
-        if (config('cache.default') === 'redis') {
+        // Redis specific info - only if Redis is configured and available
+        if ($this->isRedisConfigured() && $this->isRedisAvailable()) {
             try {
                 $redis = Redis::connection();
-                $info['redis_version'] = $redis->command('INFO', ['server'])['redis_version'] ?? 'Unknown';
-                $info['redis_memory'] = $redis->command('INFO', ['memory'])['used_memory_human'] ?? 'Unknown';
+                $serverInfo = $redis->command('INFO', ['server']);
+                $memoryInfo = $redis->command('INFO', ['memory']);
+
+                $info['redis_version'] = $serverInfo['redis_version'] ?? 'Unknown';
+                $info['redis_memory'] = $memoryInfo['used_memory_human'] ?? 'Unknown';
+                $info['redis_connected'] = true;
             } catch (\Exception $e) {
+                $info['redis_connected'] = false;
                 $info['redis_error'] = $e->getMessage();
             }
+        } else {
+            $info['redis_configured'] = false;
+            $info['redis_note'] = 'Redis not configured or not available';
         }
 
         return $info;
@@ -213,23 +221,53 @@ class SiteInfoCommand extends Command
 
         foreach (config('filesystems.disks') as $name => $config) {
             try {
-                $disk = Storage::disk($name);
                 $diskInfo = [
                     'driver' => $config['driver'],
                     'root' => $config['root'] ?? 'N/A',
                 ];
 
-                if ($config['driver'] === 'local') {
-                    $path = $config['root'];
-                    if (is_dir($path)) {
-                        $diskInfo['free_space'] = $this->formatBytes(disk_free_space($path));
-                        $diskInfo['total_space'] = $this->formatBytes(disk_total_space($path));
+                // Handle S3 disks separately
+                if ($config['driver'] === 's3') {
+                    if ($this->isS3Available()) {
+                        try {
+                            $disk = Storage::disk($name);
+                            // Test S3 connectivity with a simple operation
+                            $disk->exists('.test-connectivity-check');
+                            $diskInfo['status'] = 'Connected';
+                            $diskInfo['bucket'] = $config['bucket'] ?? 'Unknown';
+                            $diskInfo['region'] = $config['region'] ?? 'Unknown';
+                        } catch (\Exception $e) {
+                            $diskInfo['status'] = 'Connection Failed';
+                            $diskInfo['s3_error'] = $e->getMessage();
+                        }
+                    } else {
+                        $diskInfo['status'] = 'AWS SDK not available';
+                        $diskInfo['note'] = 'AWS SDK or S3 dependencies not installed';
+                    }
+                } else {
+                    // Handle other disk types
+                    $disk = Storage::disk($name);
+
+                    if ($config['driver'] === 'local') {
+                        $path = $config['root'];
+                        if (is_dir($path)) {
+                            $diskInfo['free_space'] = $this->formatBytes(disk_free_space($path));
+                            $diskInfo['total_space'] = $this->formatBytes(disk_total_space($path));
+                            $diskInfo['status'] = 'Available';
+                        } else {
+                            $diskInfo['status'] = 'Directory not found';
+                        }
+                    } else {
+                        $diskInfo['status'] = 'Configured';
                     }
                 }
 
                 $info['disks'][$name] = $diskInfo;
             } catch (\Exception $e) {
-                $info['disks'][$name] = ['error' => $e->getMessage()];
+                $info['disks'][$name] = [
+                    'error' => $e->getMessage(),
+                    'driver' => $config['driver'] ?? 'Unknown'
+                ];
             }
         }
 
@@ -266,6 +304,49 @@ class SiteInfoCommand extends Command
             'loaded_extensions' => count(get_loaded_extensions()),
             'opcache_enabled' => extension_loaded('opcache') && ini_get('opcache.enable'),
         ];
+    }
+
+    /**
+     * Check if Redis is configured
+     *
+     * @return bool
+     */
+    private function isRedisConfigured(): bool
+    {
+        return config('cache.default') === 'redis' ||
+            config('database.redis.default') !== null ||
+            config('queue.default') === 'redis';
+    }
+
+    /**
+     * Check if Redis is available
+     *
+     * @return bool
+     */
+    private function isRedisAvailable(): bool
+    {
+        try {
+            return class_exists('Redis') ||
+                class_exists('Predis\Client') ||
+                extension_loaded('redis');
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Check if AWS S3 is available
+     *
+     * @return bool
+     */
+    private function isS3Available(): bool
+    {
+        try {
+            return class_exists('Aws\S3\S3Client') &&
+                class_exists('League\Flysystem\AwsS3V3\AwsS3V3Adapter');
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**
@@ -330,9 +411,15 @@ class SiteInfoCommand extends Command
             ['Status', $info['cache']['working'] ? 'Working' : 'Failed'],
         ];
 
-        if (isset($info['cache']['redis_version'])) {
-            $cacheTable[] = ['Redis Version', $info['cache']['redis_version']];
-            $cacheTable[] = ['Redis Memory', $info['cache']['redis_memory']];
+        if (isset($info['cache']['redis_connected'])) {
+            if ($info['cache']['redis_connected']) {
+                $cacheTable[] = ['Redis Version', $info['cache']['redis_version']];
+                $cacheTable[] = ['Redis Memory', $info['cache']['redis_memory']];
+            } else {
+                $cacheTable[] = ['Redis Status', 'Connection Failed'];
+            }
+        } elseif (isset($info['cache']['redis_configured'])) {
+            $cacheTable[] = ['Redis Status', 'Not Configured'];
         }
 
         $this->table(['Property', 'Value'], $cacheTable);
@@ -342,9 +429,18 @@ class SiteInfoCommand extends Command
         $this->line('Default Disk: ' . $info['storage']['default_disk']);
         foreach ($info['storage']['disks'] as $name => $disk) {
             if (isset($disk['error'])) {
-                $this->error("Disk '{$name}': " . $disk['error']);
+                $this->error("Disk '{$name}' ({$disk['driver']}): " . $disk['error']);
             } else {
-                $this->line("Disk '{$name}' ({$disk['driver']}): " . ($disk['free_space'] ?? 'N/A'));
+                $status = $disk['status'] ?? 'Unknown';
+                $extra = '';
+
+                if ($disk['driver'] === 's3') {
+                    $extra = isset($disk['bucket']) ? " (Bucket: {$disk['bucket']})" : '';
+                } elseif ($disk['driver'] === 'local') {
+                    $extra = isset($disk['free_space']) ? " (Free: {$disk['free_space']})" : '';
+                }
+
+                $this->line("Disk '{$name}' ({$disk['driver']}): {$status}{$extra}");
             }
         }
 
