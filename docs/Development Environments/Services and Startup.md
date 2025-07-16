@@ -1,4 +1,5 @@
 # Laravel + MariaDB Startup Guide
+### Debian 12 (Bookworm)
 
 This document outlines how to set up, start, and verify both the MariaDB database server and a Laravel application on your local development environment. This guide follows standard conventions for web application deployment.
 
