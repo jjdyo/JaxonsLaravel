@@ -81,7 +81,7 @@ class ResetPasswordEmail extends Notification
             ->subject(Lang::get('Reset Password Notification'))
             ->line(Lang::get('You are receiving this email because we received a password reset request for your account.'))
             ->action(Lang::get('Reset Password'), $url)
-            ->markdown('emails.password-reset', ['url' => $url]); // Use custom markdown template
+            ->view('emails.password-reset', ['url' => $url]); // Use custom blade template
     }
 
     /**
