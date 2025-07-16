@@ -1,4 +1,3 @@
-@component('mail::message')
     {{-- Custom CSS for dark theme --}}
     <style>
         body {
@@ -227,4 +226,3 @@
             </div>
         </div>
     </div>
-@endcomponent
