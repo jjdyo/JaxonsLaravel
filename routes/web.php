@@ -98,5 +98,5 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])
 Route::get('/docs', [DocsController::class, 'index'])->name('docs.index');
 
 // Documentation detail page - Publicly accessible
-// The 'where' constraint restricts to alphanumeric characters, dashes, underscores, forward slashes, spaces, and percent signs
-Route::get('/docs/{filename}', [DocsController::class, 'show'])->name('docs.show')->where('filename', '[a-zA-Z0-9\-_\/\s%]+');
+// The 'where' constraint restricts to alphanumeric characters, dashes, underscores, forward slashes, spaces, periods, and percent signs
+Route::get('/docs/{filename}', [DocsController::class, 'show'])->name('docs.show')->where('filename', '[a-zA-Z0-9\-_\/\s%.]+');
