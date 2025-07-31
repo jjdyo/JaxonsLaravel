@@ -6,7 +6,7 @@
     <title>@yield('title') - JaxonsLaravel</title>
 
     <!-- Scripts -->
-
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <!-- Styles -->
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
     <link rel="stylesheet" href="{{ asset('css/header.css') }}">
