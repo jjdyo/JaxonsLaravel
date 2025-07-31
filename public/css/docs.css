@@ -4,6 +4,8 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Layout with sidebar */
@@ -103,6 +105,8 @@
 .docs-main {
     flex-grow: 1;
     min-width: 0; /* Prevents flex items from overflowing */
+    overflow-x: auto; /* Adds horizontal scrolling for wide content */
+    max-width: 100%; /* Ensures content doesn't exceed container width */
 }
 
 .docs-intro {
@@ -162,6 +166,9 @@
 
 .docs-content {
     line-height: 1.6;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    max-width: 100%;
 }
 
 .docs-content h1,
@@ -204,6 +211,8 @@
     border-radius: 5px;
     overflow-x: auto;
     margin-bottom: 1em;
+    max-width: 100%;
+    white-space: pre-wrap;
 }
 
 .docs-content a {
@@ -219,6 +228,9 @@
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 1em;
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
 }
 
 .docs-content th,
@@ -240,6 +252,10 @@
 
 /* Responsive styles */
 @media (max-width: 768px) {
+    .docs-container {
+        padding: 10px;
+    }
+
     .docs-layout {
         flex-direction: column;
     }
@@ -249,13 +265,25 @@
         margin-bottom: 20px;
         border-right: none;
         border-bottom: 1px solid #eaeaea;
+        box-sizing: border-box;
     }
 
     .docs-main {
         width: 100%;
+        box-sizing: border-box;
+    }
+
+    .docs-content img {
+        max-width: 100%;
+        height: auto;
     }
 
     .docs-grid {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+
+    .docs-content pre,
+    .docs-content code {
+        word-break: break-word;
     }
 }

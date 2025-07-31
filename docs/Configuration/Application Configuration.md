@@ -101,6 +101,8 @@ This configuration:
 - Uses your production domain
 - Sets the environment to 'production'
 
+> **⚠️ SECURITY WARNING**: Before deploying to production, ensure you remove the default users created by the database seeders (admin@example.com/password and user@example.com/password). These default accounts are intended for development only and pose a significant security risk in production environments. Create your own admin accounts with strong passwords instead.
+
 ## Maintenance Mode
 
 The application includes configuration for maintenance mode:

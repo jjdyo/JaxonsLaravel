@@ -179,6 +179,8 @@ php artisan migrate:fresh --seed
 
 > **Note**: When setting up a new development environment or after cloning the repository, always run migrations with seeders to ensure all required roles and permissions are created.
 
+> **⚠️ SECURITY WARNING**: The seeders create default users with predictable credentials (admin@example.com/password and user@example.com/password) for development purposes. These default users are a significant security risk and **MUST BE REMOVED** before deploying to production. After setting up your production environment, create your own admin users and delete these default accounts.
+
 ---
 
 ## ⚠️ Troubleshooting
