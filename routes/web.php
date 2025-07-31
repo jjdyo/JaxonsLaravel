@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DocsController;
+use App\Http\Controllers\UserManagementController;
 
 /**
  * Public Page Routes
@@ -48,6 +49,26 @@ Route::get('/profile', [AuthController::class, 'profile'])->middleware(['auth', 
 // Edit profile page (GET) and update profile (PUT)
 Route::get('/profile/edit', [AuthController::class, 'editProfile'])->middleware(['auth', 'verified'])->name('profile.edit');
 Route::put('/profile/edit', [AuthController::class, 'updateProfile'])->middleware(['auth', 'verified'])->name('profile.update');
+
+/**
+ * Admin Routes
+ * These routes handle user administration and require admin role
+ */
+Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    // User management routes
+    Route::get('/users', [UserManagementController::class, 'listUsers'])->name('users.index');
+    Route::get('/users/{user}', [UserManagementController::class, 'showUser'])->name('users.show');
+    Route::get('/users/{user}/edit', [UserManagementController::class, 'editUser'])->name('users.edit');
+    Route::put('/users/{user}', [UserManagementController::class, 'updateUser'])->name('users.update');
+    Route::delete('/users/{user}', [UserManagementController::class, 'deleteUser'])->name('users.destroy');
+
+    // Optional: User verification management
+    Route::post('/users/{user}/verify', [UserManagementController::class, 'verifyUser'])->name('users.verify');
+    Route::post('/users/{user}/unverify', [UserManagementController::class, 'unverifyUser'])->name('users.unverify');
+
+    // Optional: User role management
+    Route::post('/users/{user}/roles', [UserManagementController::class, 'updateRoles'])->name('users.roles.update');
+});
 
 /**
  * Email Verification Routes
