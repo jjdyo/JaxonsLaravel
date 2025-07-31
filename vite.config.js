@@ -14,7 +14,7 @@ export default defineConfig({
         host: '0.0.0.0',  // Accept connections from any IP
         port: 5173,
         hmr: {
-            host: 'localhost'  // Or your server IP
+            host: '192.168.3.175'  // Or your server IP
         }
     },
 });
