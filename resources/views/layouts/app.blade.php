@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title') - JaxonsLaravel</title>
 
+    <!-- Scripts -->
+
     <!-- Styles -->
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
     <link rel="stylesheet" href="{{ asset('css/header.css') }}">
@@ -65,7 +67,6 @@
 
 </div>
 
-<!-- Import JavaScript files -->
 </body>
 
 </html>

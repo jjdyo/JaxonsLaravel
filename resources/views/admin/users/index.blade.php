@@ -45,8 +45,5 @@
         </table>
     </div>
 
-    <div class="pagination-container">
-        {{ $users->links() }}
-    </div>
 </div>
 @endsection
