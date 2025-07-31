@@ -161,19 +161,23 @@ To reset and re-run all migrations:
 php artisan migrate:refresh
 ```
 
-### Seed the Database with Test Data
+### Seed the Database with Test Data (Important!)
 
-If your project includes seeders:
+This project requires database seeding to create necessary roles and permissions. Without running the seeders, user registration and role-based features will not work properly.
+
+To run the seeders:
 
 ```bash
 php artisan db:seed
 ```
 
-Or combine migration and seeding:
+Or combine migration and seeding (recommended for new installations):
 
 ```bash
 php artisan migrate:fresh --seed
 ```
+
+> **Note**: When setting up a new development environment or after cloning the repository, always run migrations with seeders to ensure all required roles and permissions are created.
 
 ---
 
