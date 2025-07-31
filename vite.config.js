@@ -10,10 +10,14 @@ export default defineConfig({
         }),
     ],
     server: {
-        host: '0.0.0.0', // allows access from your local network
+        host: '192.168.3.175',
         port: 5173,
+        cors: {
+            origin: ['http://192.168.3.175:8000', 'http://localhost:8000'],
+            credentials: true,
+        },
         hmr: {
-            host: '192.168.3.175', // your machine's IP on the VPN or LAN
+            host: '192.168.3.175',
         },
     },
 });
