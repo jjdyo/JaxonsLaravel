@@ -44,6 +44,6 @@
             </tbody>
         </table>
     </div>
-    {{ $users->links() }}
+    {{ $users->links('admin.users.pagination') }}
 </div>
 @endsection
