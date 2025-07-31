@@ -29,38 +29,6 @@
     background-color: #555;
 }
 
-.pagination {
-    display: flex;
-    justify-content: center;
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
-}
-
-.pagination li {
-    margin: 0 5px;
-}
-
-.pagination li a, .pagination li span {
-    display: block;
-    padding: 8px 12px;
-    text-decoration: none;
-    color: var(--color-text);
-    background-color: var(--color-bg-main);
-    border: 1px solid #555;
-    border-radius: 4px;
-}
-
-.pagination li.active span {
-    background-color: var(--color-primary);
-    color: var(--color-text);
-    border-color: var(--color-primary);
-}
-
-.pagination li a:hover {
-    background-color: #555;
-}
-
 .alert {
     padding: 15px;
     margin-bottom: 20px;
