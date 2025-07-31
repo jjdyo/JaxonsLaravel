@@ -8,13 +8,12 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.js'],
             refresh: true,
         }),
-        tailwindcss(),
     ],
     server: {
-        host: '0.0.0.0',  // Accept connections from any IP
+        host: '0.0.0.0', // allows access from your local network
         port: 5173,
         hmr: {
-            host: '192.168.3.175'  // Or your server IP
+            host: '192.168.3.175', // your machine's IP on the VPN or LAN
         },
     },
 });
