@@ -1,4 +1,4 @@
-# Setting Up Your Laravel .env File for Herd
+# Setting Up Your Laravel .env File for Local Dev
 
 This guide explains how to configure your Laravel environment variables for local development using Herd. The `.env` file contains crucial configuration settings that your application needs to run properly. **This is typically the first step** before setting up services (see the companion guide "Services and Startup.md").
 
@@ -61,13 +61,15 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
+
+
 For Herd:
 * `DB_CONNECTION`: Use `mysql` for MySQL or `mariadb` for MariaDB
 * `DB_HOST`: Usually `127.0.0.1` (localhost)
 * `DB_PORT`: Default is `3306`
 * `DB_DATABASE`: Create a database in Herd and enter its name here
 * `DB_USERNAME`: Default is `root` in Herd
-* `DB_PASSWORD`: Herd typically uses no password for local development (leave empty)
+* `DB_PASSWORD`: your local MariaDB user may or may not require a password
 
 ### 4. Generate Application Key
 
@@ -77,7 +79,7 @@ After setting up your `.env` file, generate an application key:
 php artisan key:generate
 ```
 
-If you're using Herd's PHP:
+If you're using your PHP path (e.g. Herd, /usr/bin/php, etc.):
 
 ```bash
 /path/to/herd/php artisan key:generate
@@ -85,9 +87,28 @@ If you're using Herd's PHP:
 
 This will update your `.env` file with a random application key used for encryption.
 
-### 5. Configure Mail Settings
+## 📬 Configure Mail to Use MailHog
 
-For local development, set the mail driver to log:
+If you're running MailHog locally (SMTP on port 1025, UI on 8025), use the following:
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=127.0.0.1
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+You can then view any email output by visiting:
+
+```
+http://localhost:8025
+```
+
+Alternatively, set the mail driver to log:
 
 ```
 MAIL_MAILER=log
@@ -158,3 +179,37 @@ php artisan config:clear
   * Username: `root`
   * Password: (empty)
 * If you're using a custom domain with Herd, update your `APP_URL` accordingly
+---
+
+## 🛠 Create a Laravel Database and User
+
+Before Laravel can connect to a database, you'll need to create one and grant a user access to it.
+
+### 1. Open MariaDB:
+
+```bash
+sudo mariadb -u root
+```
+
+### 2. Create a database and user:
+
+```sql
+CREATE DATABASE laravelsite CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'laravel_user'@'localhost' IDENTIFIED BY 'your_secure_password';
+GRANT ALL PRIVILEGES ON laravelsite.* TO 'laravel_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+Update your `.env` file:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravelsite
+DB_USERNAME=laravel_user
+DB_PASSWORD=your_secure_password
+```
+
+---
