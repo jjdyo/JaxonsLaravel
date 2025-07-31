@@ -1,0 +1,91 @@
+.user-management {
+    padding: 20px;
+    background-color: var(--color-bg-main);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 1200px;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.user-table th, .user-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #555;
+}
+
+.user-table th {
+    background-color: var(--color-secondary);
+    color: var(--color-text);
+    font-weight: bold;
+}
+
+.user-table tr:hover {
+    background-color: #555;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.pagination li {
+    margin: 0 5px;
+}
+
+.pagination li a, .pagination li span {
+    display: block;
+    padding: 8px 12px;
+    text-decoration: none;
+    color: var(--color-text);
+    background-color: var(--color-bg-main);
+    border: 1px solid #555;
+    border-radius: 4px;
+}
+
+.pagination li.active span {
+    background-color: var(--color-primary);
+    color: var(--color-text);
+    border-color: var(--color-primary);
+}
+
+.pagination li a:hover {
+    background-color: #555;
+}
+
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.verified-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+}
+
+.verified-yes {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.verified-no {
+    background-color: #f8d7da;
+    color: #721c24;
+}

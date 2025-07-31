@@ -36,6 +36,9 @@
                         <button class="dropbtn">{{ Auth::user()->email }} ▼</button>
                         <div class="dropdown-content">
                             <a href="{{ route('profile') }}">Profile</a>
+                            @role('admin')
+                            <a href="{{ route('admin.users.index') }}">User Management</a>
+                            @endrole
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" class="logout-btn">Logout</button>
