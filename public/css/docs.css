@@ -263,7 +263,6 @@
     .docs-sidebar {
         width: 100%;
         margin-bottom: 20px;
-        border-right: none;
         border-bottom: 1px solid #eaeaea;
         box-sizing: border-box;
     }
