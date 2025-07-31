@@ -22,6 +22,7 @@
                 <tr>
                     <th>Name</th>
                     <th>Email</th>
+                    <th>Roles</th>
                     <th>Verified</th>
                     <th>Created</th>
                 </tr>
@@ -31,6 +32,15 @@
                     <tr>
                         <td>{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
+                        <td>
+                            @if($user->getRoleNames()->count() > 0)
+                                @foreach($user->getRoleNames() as $role)
+                                    <span class="role-badge">{{ $role }}</span>
+                                @endforeach
+                            @else
+                                <span class="role-badge role-none">None</span>
+                            @endif
+                        </td>
                         <td>
                             @if($user->email_verified_at)
                                 <span class="verified-status verified-yes">Yes</span>
