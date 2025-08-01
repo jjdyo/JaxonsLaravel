@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // If not, load the image and set the flag
         // Preload the starry background image
         const img = new Image();
-        img.src = '/media/night_stars.png';
+        img.src = '/media/night_stars_comp.png';
 
         // Apply a class to indicate the image is loaded
         img.onload = function() {
