@@ -32,7 +32,7 @@ body.bg-loaded .starry-background::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('../media/night_stars.png');
+    background-image: url('../media/night_stars_comp.png');
     background-size: cover; /* Maintain aspect ratio while covering the container */
     background-repeat: no-repeat;
     /* opacity controlled by the bg-loaded class */
