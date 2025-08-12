@@ -69,8 +69,37 @@
     margin: 0.5rem 0;
 }
 
+/* Breadcrumbs Styles */
+.breadcrumbs {
+    display: block;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    color: var(--color-text);
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #555;
+}
+
+.breadcrumbs a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
 .create-api-key-btn {
-    margin-bottom: 1rem;
+    margin: 1.5rem 0;
+    display: block;
+    clear: both;
+}
+
+.no-api-keys-message {
+    margin-top: 1.5rem;
+    display: block;
+    clear: both;
+    font-style: italic;
+    color: var(--color-text);
 }
 
 /* Form Styles */

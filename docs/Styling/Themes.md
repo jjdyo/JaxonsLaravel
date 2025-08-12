@@ -117,6 +117,8 @@ In addition to the theme variables, the application includes several other CSS f
 - `public/css/footer.css`: Styles for the footer
 - `public/css/header.css`: Styles for the header
 - `public/css/starry-background.css`: Styles for the starry background effect
+- `public/css/admin/users/api-keys.css`: Styles for API keys management pages
+- `public/css/admin/users/api-keys.css`: Styles for API keys management pages
 
 ## Best Practices
 1. **Always use theme variables**: Instead of hardcoding colors, always use the theme variables to ensure consistency and make future theme changes easier.

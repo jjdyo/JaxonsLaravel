@@ -33,7 +33,7 @@
     </div>
 
     @if($apiKeys->isEmpty())
-        <p>No API keys found for this user.</p>
+        <p class="no-api-keys-message">No API keys found for this user.</p>
     @else
         <div class="table-responsive">
             <table class="api-key-table">
