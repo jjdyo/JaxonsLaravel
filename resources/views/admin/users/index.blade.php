@@ -4,6 +4,7 @@
 
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/admin/users/useradministration.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/users/api-keys.css') }}">
 @endsection
 
 @section('content')
@@ -25,6 +26,7 @@
                     <th>Roles</th>
                     <th>Verified</th>
                     <th>Created</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -49,6 +51,12 @@
                             @endif
                         </td>
                         <td>{{ $user->created_at->format('M d, Y') }}</td>
+                        <td>
+                            <div class="user-actions">
+                                <a href="{{ route('admin.users.show', $user) }}" class="action-btn">View</a>
+                                <a href="{{ route('admin.users.api-keys.index', $user) }}" class="action-btn">API Keys</a>
+                            </div>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>

@@ -7,6 +7,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DocsController;
 use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\ApiKeyController;
 
 /**
  * Public Page Routes
@@ -68,6 +69,12 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
 
     // Optional: User role management
     Route::post('/users/{user}/roles', [UserManagementController::class, 'updateRoles'])->name('users.roles.update');
+
+    // API key management
+    Route::get('/users/{user}/api-keys', [ApiKeyController::class, 'index'])->name('users.api-keys.index');
+    Route::get('/users/{user}/api-keys/create', [ApiKeyController::class, 'create'])->name('users.api-keys.create');
+    Route::post('/users/{user}/api-keys', [ApiKeyController::class, 'store'])->name('users.api-keys.store');
+    Route::delete('/users/{user}/api-keys/{token}', [ApiKeyController::class, 'destroy'])->name('users.api-keys.destroy');
 });
 
 /**
