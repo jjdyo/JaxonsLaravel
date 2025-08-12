@@ -6,10 +6,18 @@
     margin: 20px auto;
 }
 
+.table-responsive {
+    overflow-x: auto;
+    max-width: 100%;
+    margin-bottom: 1rem;
+    -webkit-overflow-scrolling: touch;
+}
+
 .user-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    min-width: 650px; /* Ensures table doesn't get too compressed */
 }
 
 .user-table th, .user-table td {
