@@ -19,7 +19,7 @@
                             once the proxy is brought down. @TODO
                             <img src="{{ asset('media/jdwob.png') }}" alt="{{ config('app.name') }}" style="height: 60px; max-width: 200px;">
                             -->
-                            <img src="https://raw.githubusercontent.com/jjdyo/JaxonsLaravel/refs/heads/main/public/media/jdwob.png" style="height: 60px; max-width: 200px;">
+                            <img src="https://raw.githubusercontent.com/jjdyo/JaxonsLaravel/refs/heads/main/public/media/jdwob.png" style="height: 200px; max-width: 200px;">
                         </div>
 
                         <!-- Header -->
