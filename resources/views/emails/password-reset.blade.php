@@ -14,7 +14,7 @@
                     <td align="center">
                         <!-- Logo -->
                         <div style="margin-bottom: 30px;">
-                            <img src="{{ asset('images/your-logo.png') }}" alt="{{ config('app.name') }}" style="height: 60px; max-width: 200px;">
+                            <img src="{{ asset('media/jdwob.png') }}" alt="{{ config('app.name') }}" style="height: 60px; max-width: 200px;">
                         </div>
 
                         <!-- Header -->
