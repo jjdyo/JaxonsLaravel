@@ -122,9 +122,9 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])
  * Documentation Routes
  * These routes handle the documentation system
  */
-// Documentation index page - Publicly accessible
+// Documentation index page
 Route::get('/docs', [DocsController::class, 'index'])->name('docs.index');
 
-// Documentation detail page - Publicly accessible
+// Documentation detail page
 // The 'where' constraint restricts to alphanumeric characters, dashes, underscores, forward slashes, spaces, periods, and percent signs
 Route::get('/docs/{filename}', [DocsController::class, 'show'])->name('docs.show')->where('filename', '[a-zA-Z0-9\-_\/\s%.]+');
