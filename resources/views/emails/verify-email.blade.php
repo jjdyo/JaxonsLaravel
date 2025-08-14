@@ -14,7 +14,12 @@
                     <td align="center">
                         <!-- Logo -->
                         <div style="margin-bottom: 30px;">
+                            <!--This is temporarily linked to Github whilst the server is behind a
+                            cloudflare proxy. This will be changed to an actual asset server/local
+                            once the proxy is brought down. @TODO
                             <img src="{{ asset('media/jdwob.png') }}" alt="{{ config('app.name') }}" style="height: 60px; max-width: 200px;">
+                            -->
+                            <img src="https://raw.githubusercontent.com/jjdyo/JaxonsLaravel/refs/heads/main/public/media/jdwob.png" style="height: 60px; max-width: 200px;">
                         </div>
 
                         <!-- Header -->
