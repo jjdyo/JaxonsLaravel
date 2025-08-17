@@ -25,9 +25,6 @@ These routes handle user authentication, including login, registration, and logo
 | `/logout` | POST | `AuthController@logout` | `logout` | `auth` | Logs out the authenticated user |
 | `/register` | GET | `AuthController@showRegisterForm` | `register` | None | Displays the registration form |
 | `/register` | POST | `AuthController@processRegister` | `register.process` | None | Processes the registration form submission |
-| `/profile` | GET | `AuthController@profile` | `profile` | `auth`, `verified` | Displays the user profile page (requires authentication and email verification) |
-| `/profile/edit` | GET | `AuthController@editProfile` | `profile.edit` | `auth`, `verified` | Displays the profile edit form (requires authentication and email verification) |
-| `/profile/edit` | PUT | `AuthController@updateProfile` | `profile.update` | `auth`, `verified` | Processes the profile update form submission (requires authentication and email verification) |
 
 ### Email Verification Routes
 These routes handle the email verification process for new users.
@@ -37,6 +34,15 @@ These routes handle the email verification process for new users.
 | `/email/verify` | GET | Closure | `verification.notice` | `auth` | Displays the email verification notice page |
 | `/email/verify/{id}/{hash}` | GET | Closure | `verification.verify` | `auth`, `signed` | Verifies the user's email address using the verification link |
 | `/email/verification-notification` | POST | Closure | `verification.send` | `auth`, `throttle:5,1` | Resends the verification email (limited to 5 attempts per minute) |
+
+### Verified Email Routes
+These routes require authentication and a verified email address.
+
+| URL | Method | Controller Action | Name | Middleware | Description |
+|-----|--------|------------------|------|------------|-------------|
+| `/profile` | GET | `AuthController@profile` | `profile` | `auth`, `verified` | Displays the user profile page |
+| `/profile/edit` | GET | `AuthController@editProfile` | `profile.edit` | `auth`, `verified` | Displays the profile edit form |
+| `/profile/edit` | PUT | `AuthController@updateProfile` | `profile.update` | `auth`, `verified` | Processes the profile update form submission |
 
 ### Password Reset Routes
 These routes handle the password reset process for users who have forgotten their passwords.
@@ -56,33 +62,107 @@ These routes handle the documentation system, allowing users to browse and view 
 | `/docs` | GET | `DocsController@index` | `docs.index` | None | Displays the documentation index page with README content |
 | `/docs/{filename}` | GET | `DocsController@show` | `docs.show` | None | Displays a specific documentation page based on the filename parameter (supports subdirectories) |
 
-## Route Groups
-The application uses route groups to apply middleware to multiple routes at once.
+### Admin Routes
+These routes handle administrative functions and require admin role.
 
-### Authentication Middleware Group
-The following routes require the user to be authenticated:
-- `/contact` (also requires the 'view contact page url' permission)
-- `/profile` (also requires email verification)
-- `/profile/edit` (GET and PUT methods) (also requires email verification)
-- `/logout`
-- `/email/verify` (email verification notice page)
-- `/email/verify/{id}/{hash}` (email verification link)
-- `/email/verification-notification` (resend verification email)
+| URL | Method | Controller Action | Name | Middleware | Description |
+|-----|--------|------------------|------|------------|-------------|
+| `/admin/users` | GET | `UserManagementController@listUsers` | `admin.users.index` | `auth`, `verified`, `role:admin` | Lists all users |
+| `/admin/users/{user}` | GET | `UserManagementController@showUser` | `admin.users.show` | `auth`, `verified`, `role:admin` | Shows details for a specific user |
+| `/admin/users/{user}/edit` | GET | `UserManagementController@editUser` | `admin.users.edit` | `auth`, `verified`, `role:admin` | Shows the edit form for a specific user |
+| `/admin/users/{user}` | PUT | `UserManagementController@updateUser` | `admin.users.update` | `auth`, `verified`, `role:admin` | Updates a specific user |
+| `/admin/users/{user}` | DELETE | `UserManagementController@deleteUser` | `admin.users.destroy` | `auth`, `verified`, `role:admin` | Deletes a specific user |
+| `/admin/users/{user}/verify` | POST | `UserManagementController@verifyUser` | `admin.users.verify` | `auth`, `verified`, `role:admin` | Manually verifies a user's email |
+| `/admin/users/{user}/unverify` | POST | `UserManagementController@unverifyUser` | `admin.users.unverify` | `auth`, `verified`, `role:admin` | Manually unverifies a user's email |
+| `/admin/users/{user}/roles` | POST | `UserManagementController@updateRoles` | `admin.users.roles.update` | `auth`, `verified`, `role:admin` | Updates a user's roles |
+| `/admin/users/{user}/api-keys` | GET | `ApiKeyController@index` | `admin.users.api-keys.index` | `auth`, `verified`, `role:admin` | Lists a user's API keys |
+| `/admin/users/{user}/api-keys/create` | GET | `ApiKeyController@create` | `admin.users.api-keys.create` | `auth`, `verified`, `role:admin` | Shows the form to create a new API key |
+| `/admin/users/{user}/api-keys` | POST | `ApiKeyController@store` | `admin.users.api-keys.store` | `auth`, `verified`, `role:admin` | Creates a new API key for a user |
+| `/admin/users/{user}/api-keys/{token}` | DELETE | `ApiKeyController@destroy` | `admin.users.api-keys.destroy` | `auth`, `verified`, `role:admin` | Deletes a specific API key |
 
-### Verified Middleware Group
-The following routes require the user to have a verified email address:
-- `/profile`
-- `/profile/edit` (GET and PUT methods)
+## Route Organization
 
-### Guest Middleware Group
-The following routes are only accessible to non-authenticated users:
-- `/forgot-password` (GET and POST methods)
-- `/reset-password/{token}` (GET method)
-- `/reset-password` (POST method)
+The application's routes are organized into logical groups for better maintainability and clarity:
 
-### Permission Middleware Group
-The following routes require specific permissions:
+### Public Routes
+Routes that are accessible without authentication:
+- `/` - Home page
+- `/about` - About page
+- `/docs` - Documentation index
+- `/docs/{filename}` - Documentation detail pages
+- `/user` (GET and POST) - Login page and form processing
+- `/register` (GET and POST) - Registration page and form processing
+
+### Guest-Only Routes
+Routes that are only accessible to non-authenticated users:
+- `/forgot-password` (GET and POST) - Password reset request
+- `/reset-password/{token}` (GET) - Password reset form
+- `/reset-password` (POST) - Process password reset
+
+### Authenticated User Routes
+Routes that require user authentication:
+- `/logout` - User logout
+- `/email/verify` - Email verification notice
+- `/email/verify/{id}/{hash}` - Email verification link
+- `/email/verification-notification` - Resend verification email
+
+### Verified Email Routes
+Routes that require authentication and verified email:
+- `/profile` - User profile
+- `/profile/edit` (GET and PUT) - Edit profile
+
+### Permission-Protected Routes
+Routes that require specific permissions:
+- `/contact` - Contact page (requires 'view contact page url' permission)
+
+### Admin Routes
+Routes that require admin role (all under `/admin` prefix):
+- `/admin/users` - List all users
+- `/admin/users/{user}` - View user details
+- `/admin/users/{user}/edit` - Edit user
+- `/admin/users/{user}` (PUT) - Update user
+- `/admin/users/{user}` (DELETE) - Delete user
+- `/admin/users/{user}/verify` - Verify user's email
+- `/admin/users/{user}/unverify` - Unverify user's email
+- `/admin/users/{user}/roles` - Update user's roles
+- `/admin/users/{user}/api-keys` - List user's API keys
+- `/admin/users/{user}/api-keys/create` - Create new API key form
+- `/admin/users/{user}/api-keys` (POST) - Store new API key
+- `/admin/users/{user}/api-keys/{token}` (DELETE) - Delete API key
+
+## Middleware Groups
+
+The application uses middleware groups to apply protection to multiple routes:
+
+### Authentication Middleware
+Routes protected by the `auth` middleware require a logged-in user:
+- All routes under the Authenticated User Routes section
+- All routes under the Verified Email Routes section
+- All routes under the Permission-Protected Routes section
+- All routes under the Admin Routes section
+
+### Verified Email Middleware
+Routes protected by the `verified` middleware require a verified email address:
+- All routes under the Verified Email Routes section
+- All routes under the Admin Routes section
+
+### Guest Middleware
+Routes protected by the `guest` middleware are only accessible to non-authenticated users:
+- All routes under the Guest-Only Routes section
+
+### Permission Middleware
+Routes protected by specific permission requirements:
 - `/contact` - Requires the 'view contact page url' permission
+
+### Role Middleware
+Routes protected by role requirements:
+- All Admin Routes - Require the 'admin' role
+
+### Throttle Middleware
+Routes with rate limiting to prevent abuse:
+- `/email/verification-notification` - Limited to 5 attempts per minute
+- `/reset-password/{token}` - Limited to 5 attempts per minute
+- `/reset-password` (POST) - Limited to 5 attempts per minute
 
 ## Route Naming
 All routes in the application are named, which allows for easy URL generation using the `route()` helper function. For example:
