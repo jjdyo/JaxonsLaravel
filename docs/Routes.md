@@ -9,7 +9,7 @@ All web routes are defined in `routes/web.php`.
 ## API Routes
 All API routes are defined in `routes/api.php`.
 
-> **Note:** All API routes are protected by Cloudflare Zero Trust and require additional authentication headers. See [Cloudflare Zero Trust Access](Security/CloudflareZeroTrust.md) for details on how to access the API.
+> **Note:** All API routes are protected by Cloudflare Zero Trust and require additional authentication headers. See [Cloudflare Zero Trust Access](Security/Cloudflare%20Zero%20Trust%20Proxy.md) for details on how to access the API.
 
 ### Default API Routes
 These routes are accessible from any domain with proper authentication.

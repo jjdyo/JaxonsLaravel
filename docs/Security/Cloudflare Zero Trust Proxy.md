@@ -29,11 +29,11 @@ To access the API through Cloudflare Zero Trust, you need:
 
 Each request to the API must include the following headers:
 
-| Header | Description |
-|--------|-------------|
-| `CF-Access-Client-Id` | Your Cloudflare Access Client ID |
-| `CF-Access-Client-Secret` | Your Cloudflare Access Client Secret |
-| `Authorization` | Your application API token in the format: `Bearer YOUR_API_TOKEN` |
+| Header                    | Description                                                       |
+|---------------------------|-------------------------------------------------------------------|
+| `CF-Access-Client-Id`     | Your Cloudflare Access Client ID                                  |
+| `CF-Access-Client-Secret` | Your Cloudflare Access Client Secret                              |
+| `Authorization`           | Your application API token in the format: `Bearer YOUR_API_TOKEN` |
 
 ## How to Obtain Credentials
 
@@ -106,11 +106,11 @@ The rate limit is implemented using Laravel's throttle middleware with the 'api'
 
 ### Common Error Codes
 
-| Status Code | Description | Possible Cause |
-|-------------|-------------|----------------|
-| 401 | Unauthorized | Invalid or missing API token |
-| 403 | Forbidden | Invalid or missing Cloudflare credentials, or insufficient permissions |
-| 429 | Too Many Requests | Rate limit exceeded |
+| Status Code | Description       | Possible Cause                                                         |
+|-------------|-------------------|------------------------------------------------------------------------|
+| 401         | Unauthorized      | Invalid or missing API token                                           |
+| 403         | Forbidden         | Invalid or missing Cloudflare credentials, or insufficient permissions |
+| 429         | Too Many Requests | Rate limit exceeded                                                    |
 
 ### Error Response Format
 
@@ -142,5 +142,5 @@ If you encounter issues accessing the API:
 
 ## Related Documentation
 
-- [API Token Scopes Documentation](ApiTokenScopes.md) - Information about available API token scopes
-- [Route Protection Documentation](RouteProtection.md) - Information about route protection, including rate limiting
+- [API Token Scopes Documentation](API%20Token%20Scopes.md) - Information about available API token scopes
+- [Route Protection Documentation](Route%20Protection.md) - Information about route protection, including rate limiting

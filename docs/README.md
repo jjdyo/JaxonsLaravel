@@ -8,7 +8,6 @@ This folder contains comprehensive documentation for the Laravel application. Th
 ### Controllers
 - [AuthController Documentation](Controllers/AuthController.md) - Documentation for authentication-related functionality
 - [DocsController Documentation](Controllers/DocsController.md) - Documentation for the documentation system
-- [ExampleApiController Documentation](Controllers/ExampleApiController.md) - Documentation for example API endpoints
 - [PageController Documentation](Controllers/PageController.md) - Documentation for page rendering functionality
 
 ### Models
@@ -18,23 +17,22 @@ This folder contains comprehensive documentation for the Laravel application. Th
 - [Routes Documentation](Routes.md) - Comprehensive overview of all routes in the application
 
 ### Console Commands
-- [Console Commands Documentation](Console Commands.md) - Documentation for Artisan console commands
+- [Console Commands Documentation](Console%20Commands.md) - Documentation for Artisan console commands
 
 ### Views
 - [Views Documentation](Views.md) - Documentation for Blade templates and view structure
 
 ### Configuration
-- [Email Settings](Configuration/Email Notifications.md) - Guide for configuring email settings and fixing common issues
-- [Application Configuration](Configuration/Application Configuration.md) - Guide for core application settings and environment configuration
+- [Email Settings](Configuration/Email%20Notifications.md) - Guide for configuring email settings and fixing common issues
+- [Application Configuration](Configuration/Application%20Configuration.md) - Guide for core application settings and environment configuration
 
 ### Development Environments
 - [Database Migrations with MariaDB](Development%20Environments/Database%20Migrations%20with%20MariaDB.md) - Guide for database migrations with MariaDB
-- [Services and Startup](Development%20Environments/Services%20and%20Startup.md) - Guide for services and startup procedures
 
 ### Security
-- [Route Protection](Security/RouteProtection.md) - Documentation for protecting routes with middleware
-- [API Token Scopes](Security/ApiTokenScopes.md) - Documentation for API token scopes and abilities
-- [Cloudflare Zero Trust Access](Security/CloudflareZeroTrust.md) - Documentation for accessing the API through Cloudflare Zero Trust
+- [Route Protection](Security/Route%20Protection.md) - Documentation for protecting routes with middleware
+- [API Token Scopes](Security/API%20Token%20Scopes.md) - Documentation for API token scopes and abilities
+- [Cloudflare Zero Trust Access](Security/Cloudflare%20Zero%20Trust%20Proxy.md) - Documentation for accessing the API through Cloudflare Zero Trust
 
 ### Styling
 - [Theme System](Styling/Themes.md) - Documentation for the CSS variable-based theme system
@@ -91,7 +89,7 @@ The application includes the following API endpoints:
 - For details about specific controllers, refer to the controller documentation files
 - For information about data models and relationships, see the [Models Documentation](Models.md)
 - For information about views and Blade templates, see the [Views Documentation](Views.md)
-- For information about console commands, see the [Console Commands Documentation](Console Commands.md)
-- For information about the theme system and styling, see the [Theme System Documentation](Styling/Themes.md) and [Starry Background Documentation](Styling/StarryBackground.md)
-- For information about email configuration, see the [Email Settings Documentation](Configuration/Email Notifications.md)
-- For information about core application settings and environment configuration, see the [Application Configuration Documentation](Configuration/Application Configuration.md)
+- For information about console commands, see the [Console Commands Documentation](Console%20Commands.md)
+- For information about the theme system and styling, see the [Theme System Documentation](Styling/Themes.md)
+- For information about email configuration, see the [Email Settings Documentation](Configuration/Email%20Notifications.md)
+- For information about core application settings and environment configuration, see the [Application Configuration Documentation](Configuration/Application%20Configuration.md)

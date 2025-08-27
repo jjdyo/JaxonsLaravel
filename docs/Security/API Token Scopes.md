@@ -72,7 +72,7 @@ Users can create API tokens with specific scopes through the user interface at `
 
 ## Best Practices
 
-1. **Principle of Least Privilege**: Only grant the minimum scopes necessary for a token to perform its intended function.
+1. **Principle of The Least Privilege**: Only grant the minimum scopes necessary for a token to perform its intended function.
 
 2. **Separate Tokens for Different Purposes**: Create different tokens for different applications or services, each with its own set of scopes.
 
@@ -84,5 +84,5 @@ Users can create API tokens with specific scopes through the user interface at `
 
 ## Related Documentation
 
-- [RouteProtection Documentation](RouteProtection.md) - Information about protecting routes, including using token abilities
+- [RouteProtection Documentation](Route%20Protection.md) - Information about protecting routes, including using token abilities
 - [ApiKeyController Documentation](../Controllers/ApiKeyController.md) - Documentation for the controller that manages API tokens

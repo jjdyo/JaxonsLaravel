@@ -248,7 +248,7 @@ This application uses two separate systems for authorization:
 - **Use Spatie Permissions** for controlling access to web routes, views, and features for logged-in users.
 - **Use Sanctum Token Abilities** for controlling what API tokens can do when accessing API endpoints.
 
-For more information about API token scopes, see the [API Token Scopes Documentation](Security/ApiTokenScopes.md).
+For more information about API token scopes, see the [API Token Scopes Documentation](Security/API%20Token%20Scopes.md).
 
 ## Troubleshooting
 
