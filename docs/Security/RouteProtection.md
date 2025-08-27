@@ -275,6 +275,21 @@ For SPA authentication, mobile apps, and simple token-based API authentication:
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+// Protect API routes with Sanctum and specific token abilities
+Route::middleware(['auth:sanctum', 'abilities:write-data'])->post('/example/data', function (Request $request) {
+    // Only accessible with tokens that have the 'write-data' ability
+});
+```
+
+Token abilities (also called scopes) allow you to grant specific permissions to API tokens. Available abilities are defined in `config/api-scopes.php`. When creating a token, you can specify which abilities it should have:
+
+```php
+// Create a token with specific abilities
+$token = $user->createToken('token-name', ['read-data', 'write-data']);
+
+// Check if a token has a specific ability
+$request->user()->tokenCan('write-data');
 ```
 
 #### Laravel Passport

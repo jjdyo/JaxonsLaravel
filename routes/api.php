@@ -11,8 +11,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // Example API routes - protected by Sanctum and using the api_url configuration
 $host = parse_url(config('app.api_url'), PHP_URL_HOST);
 Route::domain($host)->middleware('auth:sanctum')->group(function () {
+    // Example route for getting data
     Route::get('/example/data', [ExampleApiController::class, 'getData']);
-
-    Route::get('/example/data', [ExampleApiController::class, 'getData'])
-        ->middleware('abilities:write-data');
 });

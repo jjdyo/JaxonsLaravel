@@ -44,9 +44,11 @@ This pattern provides:
 #### Application URL
 ```php
 'url' => env('APP_URL', 'http://laravel.jaxonville.com'),
+'api_url' => env('APP_API_URL', 'http://api.laravel.jaxonville.com'),
 ```
-- Used for generating URLs in the application
-- Set via `APP_URL` in your `.env` file
+- `url` is used for generating URLs in the main application
+- `api_url` is used for API routes and is typically set to a subdomain like `api.example.com`
+- Set via `APP_URL` and `APP_API_URL` in your `.env` file
 
 #### Encryption Key
 ```php

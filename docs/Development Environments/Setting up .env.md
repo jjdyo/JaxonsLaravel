@@ -40,12 +40,14 @@ APP_ENV=local
 APP_KEY=
 APP_DEBUG=true
 APP_URL=http://localhost
+APP_API_URL=http://api.localhost
 ```
 
 * `APP_NAME`: Set this to your project name
 * `APP_ENV`: Keep as `local` for development
 * `APP_DEBUG`: Set to `true` for development (shows detailed error messages)
 * `APP_URL`: Set to your local development URL (typically `http://localhost` or a custom domain configured in Herd)
+* `APP_API_URL`: Set to your API URL (typically a subdomain like `http://api.localhost` or `http://api.yourdomain.test`)
 * `APP_KEY`: Leave empty for now - we'll generate it in step 4
 
 ### 3. Configure Database Connection

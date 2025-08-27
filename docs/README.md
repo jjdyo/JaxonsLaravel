@@ -8,6 +8,7 @@ This folder contains comprehensive documentation for the Laravel application. Th
 ### Controllers
 - [AuthController Documentation](Controllers/AuthController.md) - Documentation for authentication-related functionality
 - [DocsController Documentation](Controllers/DocsController.md) - Documentation for the documentation system
+- [ExampleApiController Documentation](Controllers/ExampleApiController.md) - Documentation for example API endpoints
 - [PageController Documentation](Controllers/PageController.md) - Documentation for page rendering functionality
 
 ### Models
@@ -30,6 +31,10 @@ This folder contains comprehensive documentation for the Laravel application. Th
 - [Database Migrations with MariaDB](Development%20Environments/Database%20Migrations%20with%20MariaDB.md) - Guide for database migrations with MariaDB
 - [Services and Startup](Development%20Environments/Services%20and%20Startup.md) - Guide for services and startup procedures
 
+### Security
+- [Route Protection](Security/RouteProtection.md) - Documentation for protecting routes with middleware
+- [API Token Scopes](Security/ApiTokenScopes.md) - Documentation for API token scopes and abilities
+
 ### Styling
 - [Theme System](Styling/Themes.md) - Documentation for the CSS variable-based theme system
 
@@ -39,6 +44,7 @@ The application follows a standard Laravel structure:
 - `app/Http/Controllers` - Contains controller classes that handle HTTP requests
 - `resources/views` - Contains Blade templates for rendering views
 - `routes/web.php` - Defines web routes
+- `routes/api.php` - Defines API routes
 - `routes/console.php` - Defines custom Artisan console commands
 
 ## Authentication System
@@ -72,6 +78,12 @@ The application includes the following pages:
 - Email verification page (`/email/verify`)
 - Forgot password page (`/forgot-password`)
 - Reset password page (`/reset-password/{token}`)
+
+## API Endpoints
+The application includes the following API endpoints:
+
+- User information (`/api/user`) - Requires Sanctum authentication
+- Example data retrieval (`/api/example/data` - GET) - Requires Sanctum authentication and is accessible from the API URL configured in `config('app.api_url')`
 
 ## How to Use This Documentation
 - Start with the [Routes Documentation](Routes.md) for an overview of all available routes

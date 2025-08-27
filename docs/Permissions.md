@@ -141,7 +141,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
-    
+
     // ...
 }
 ```
@@ -225,6 +225,30 @@ php artisan permission:create-role "writer"
 # Show all roles and permissions
 php artisan permission:show
 ```
+
+## API Token Scopes vs. Permissions
+
+This application uses two separate systems for authorization:
+
+1. **Spatie Laravel Permission**: Used for user roles and permissions within the web application.
+2. **Laravel Sanctum Token Abilities**: Used for API token scopes.
+
+### Key Differences
+
+| Feature | Spatie Permissions | Sanctum Token Abilities |
+|---------|-------------------|------------------------|
+| Purpose | Control access within the web application | Control access for API tokens |
+| Storage | Database tables | Encoded in the token |
+| Assignment | Assigned to users or roles | Assigned to individual tokens |
+| Configuration | Managed via code or admin UI | Defined in `config/api-scopes.php` |
+| Middleware | `permission:`, `role:` | `abilities:` |
+
+### When to Use Each
+
+- **Use Spatie Permissions** for controlling access to web routes, views, and features for logged-in users.
+- **Use Sanctum Token Abilities** for controlling what API tokens can do when accessing API endpoints.
+
+For more information about API token scopes, see the [API Token Scopes Documentation](Security/ApiTokenScopes.md).
 
 ## Troubleshooting
 

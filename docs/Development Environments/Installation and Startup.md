@@ -150,6 +150,14 @@ MailHog UI:
 http://<your-server-ip>:8025
 ```
 
+API Endpoints:
+
+```
+http://api.<your-server-ip>:8000
+```
+
+Note: For the API endpoints to work correctly, you need to configure your hosts file or DNS settings to point the api. subdomain to your server IP.
+
 ---
 
 ## Mail

@@ -6,6 +6,23 @@ This document provides a comprehensive overview of all routes defined in the app
 ## Web Routes
 All web routes are defined in `routes/web.php`.
 
+## API Routes
+All API routes are defined in `routes/api.php`.
+
+### Default API Routes
+These routes are accessible from any domain with proper authentication.
+
+| URL | Method | Controller Action | Name | Middleware | Description |
+|-----|--------|------------------|------|------------|-------------|
+| `/user` | GET | Closure | None | `auth:sanctum` | Returns the authenticated user's information |
+
+### API URL Routes
+These routes are only accessible from the API URL configured in `config('app.api_url')` and require Sanctum authentication.
+
+| URL | Method | Controller Action | Name | Middleware | Description |
+|-----|--------|------------------|------|------------|-------------|
+| `/example/data` | GET | `ExampleApiController@getData` | None | `auth:sanctum` | Returns example data for the authenticated user |
+
 ### Page Routes
 These routes handle the rendering of basic pages in the application.
 
