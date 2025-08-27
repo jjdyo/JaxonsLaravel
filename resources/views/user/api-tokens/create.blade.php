@@ -4,67 +4,6 @@
 
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/admin/users/api-keys.css') }}">
-    <style>
-        .api-tokens-container {
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .form-group input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .form-group select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .form-text {
-            font-size: 0.85em;
-            color: var(--color-text);
-            opacity: 0.8;
-            margin-top: 5px;
-        }
-        .error {
-            color: #ff6b6b;
-            margin-top: 5px;
-        }
-        .btn-group {
-            margin-top: 30px;
-        }
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        .btn-primary {
-            background-color: var(--color-link);
-            color: var(--color-primary);
-        }
-        .btn-primary:hover {
-            background-color: var(--color-link-hover);
-        }
-        .btn-secondary {
-            background-color: var(--color-button);
-            color: var(--color-text);
-        }
-        .btn-secondary:hover {
-            background-color: var(--color-button-hover);
-        }
-    </style>
 @endsection
 
 @section('content')
@@ -100,12 +39,12 @@
 
         <div class="form-group">
             <label>Token Scopes</label>
-            <div class="checkbox-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
+            <div class="checkbox-group">
                 @foreach(config('api-scopes.scopes') as $scope => $description)
-                    <div style="display: flex; align-items: center;">
+                    <div class="checkbox-item">
                         <input type="checkbox" id="scope_{{ $scope }}" name="scopes[]" value="{{ $scope }}"
                             {{ in_array($scope, old('scopes', [])) ? 'checked' : '' }}>
-                        <label for="scope_{{ $scope }}" style="margin-left: 8px; font-weight: normal;">
+                        <label for="scope_{{ $scope }}">
                             {{ $description }}
                         </label>
                     </div>

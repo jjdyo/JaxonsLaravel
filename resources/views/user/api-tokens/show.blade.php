@@ -4,76 +4,6 @@
 
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/admin/users/api-keys.css') }}">
-    <style>
-        .api-tokens-container {
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .token-details {
-            background-color: var(--color-bg-main);
-            border-radius: 5px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        .token-detail-row {
-            display: flex;
-            margin-bottom: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 15px;
-        }
-        .token-detail-row:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-        .token-detail-label {
-            font-weight: bold;
-            width: 150px;
-        }
-        .token-detail-value {
-            flex: 1;
-        }
-        .token-actions {
-            margin-top: 30px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .btn-primary {
-            background-color: var(--color-link);
-            color: var(--color-primary);
-        }
-        .btn-primary:hover {
-            background-color: var(--color-link-hover);
-        }
-        .btn-danger {
-            background-color: #e74c3c;
-            color: white;
-        }
-        .btn-danger:hover {
-            background-color: #c0392b;
-        }
-        .api-key-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 0.85em;
-        }
-        .api-key-active {
-            background-color: #2ecc71;
-            color: white;
-        }
-        .api-key-expired {
-            background-color: #e74c3c;
-            color: white;
-        }
-    </style>
 @endsection
 
 @section('content')
@@ -130,9 +60,9 @@
                 @if(empty($token->abilities) || (count($token->abilities) === 1 && $token->abilities[0] === '*'))
                     <span class="api-key-badge">All Permissions</span>
                 @else
-                    <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                    <div class="scope-badges-container">
                         @foreach($token->abilities as $scope)
-                            <span class="api-key-badge" style="background-color: #3498db; color: white;">
+                            <span class="api-key-badge scope-badge">
                                 {{ config('api-scopes.scopes.' . $scope, $scope) }}
                             </span>
                         @endforeach

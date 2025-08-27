@@ -165,6 +165,96 @@
     font-size: 0.875rem;
 }
 
+/* API Tokens Container */
+.api-tokens-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.checkbox-group label {
+    margin-left: 8px;
+    font-weight: normal;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+}
+
+.api-token-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.no-tokens-message {
+    text-align: center;
+    padding: 30px;
+    background-color: var(--color-bg-main);
+    border-radius: 5px;
+    margin: 20px 0;
+}
+
+.inline-form {
+    display: inline;
+}
+
+/* Token Detail Styles */
+.token-details {
+    background-color: var(--color-bg-main);
+    border-radius: 5px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.token-detail-row {
+    display: flex;
+    margin-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 15px;
+}
+
+.token-detail-row:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.token-detail-label {
+    font-weight: bold;
+    width: 150px;
+}
+
+.token-detail-value {
+    flex: 1;
+}
+
+.token-actions {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.scope-badges-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.scope-badge {
+    background-color: #3498db;
+    color: white;
+}
+
 /* User Detail Styles */
 .user-detail-card {
     background-color: var(--color-bg-main);
