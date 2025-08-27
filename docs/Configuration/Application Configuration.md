@@ -44,10 +44,10 @@ This pattern provides:
 #### Application URL
 ```php
 'url' => env('APP_URL', 'http://laravel.jaxonville.com'),
-'api_url' => env('APP_API_URL', 'http://api.laravel.jaxonville.com'),
+'api_url' => env('APP_API_URL', 'http://api-laravel.jaxonville.com'),
 ```
 - `url` is used for generating URLs in the main application
-- `api_url` is used for API routes and is typically set to a subdomain like `api.example.com`
+- `api_url` is used for API routes and is typically set to a domain like `api-example.com` (using a hyphen instead of a nested subdomain)
 - Set via `APP_URL` and `APP_API_URL` in your `.env` file
 
 #### Encryption Key
