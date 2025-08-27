@@ -127,7 +127,7 @@ Creates and stores a new API key for the authenticated user.
 - `$request` - The HTTP request containing form data (name, expiration, and scopes)
 
 **Validation:**
-- `name` - Required, string, max 100 characters
+- `name` - Required, string, alphanumeric only, max 100 characters
 - `expiration` - Required, must be one of: week, month, year
 - `scopes` - Required, array with at least one scope
 - Each scope must be a valid scope defined in the `config/api-scopes.php` file

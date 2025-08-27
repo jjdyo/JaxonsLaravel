@@ -64,7 +64,8 @@
 .api-key-value {
     font-family: monospace;
     padding: 0.5rem;
-    background-color: #f8f9fa;
+    background-color: #000000;
+    color: #FFFFFF;
     border-radius: 0.25rem;
     word-break: break-all;
     margin: 0.5rem 0;

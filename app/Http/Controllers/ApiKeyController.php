@@ -44,9 +44,11 @@ class ApiKeyController extends Controller
     public function store(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|alpha_num|max:255',
             'abilities' => 'nullable|array',
             'expires_at' => 'nullable|date|after:now',
+        ], [
+            'name.alpha_num' => 'The token name may only contain letters and numbers.',
         ]);
 
         $abilities = $validated['abilities'] ?? ['*'];
@@ -111,11 +113,12 @@ class ApiKeyController extends Controller
         $availableScopes = array_keys(config('api-scopes.scopes', []));
 
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
+            'name' => 'required|string|alpha_num|max:100',
             'expiration' => 'required|in:week,month,year',
             'scopes' => 'required|array|min:1',
             'scopes.*' => 'required|string|in:' . implode(',', $availableScopes),
         ], [
+            'name.alpha_num' => 'The token name may only contain letters and numbers.',
             'scopes.required' => 'At least one scope must be selected.',
             'scopes.min' => 'At least one scope must be selected.',
             'scopes.*.in' => 'One or more selected scopes are invalid.',

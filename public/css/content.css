@@ -53,3 +53,24 @@ a {
 a:hover {
     color: var(--color-link-hover);
 }
+
+/* Global table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+/* Make all tables responsive by default, except those in .table-responsive containers or .docs-content */
+table:not(.table-non-responsive):not(.table-responsive > table):not(.docs-content table) {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Class to disable responsive behavior */
+.table-non-responsive, .table-responsive > table, .docs-content table {
+    display: table;
+    overflow-x: visible;
+}
