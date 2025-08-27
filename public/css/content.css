@@ -61,8 +61,8 @@ table {
     margin-bottom: 1rem;
 }
 
-/* Make all tables responsive by default, except those in .table-responsive containers or .docs-content */
-table:not(.table-non-responsive):not(.table-responsive > table):not(.docs-content table) {
+/* Make all tables responsive by default, except those with .table-non-responsive class or in .docs-content */
+table:not(.table-non-responsive):not(.docs-content table) {
     display: block;
     overflow-x: auto;
     max-width: 100%;
@@ -70,7 +70,13 @@ table:not(.table-non-responsive):not(.table-responsive > table):not(.docs-conten
 }
 
 /* Class to disable responsive behavior */
-.table-non-responsive, .table-responsive > table, .docs-content table {
+.table-non-responsive, .docs-content table {
     display: table;
     overflow-x: visible;
+}
+
+/* Ensure .table-responsive works properly */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
