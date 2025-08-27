@@ -112,7 +112,8 @@ Documentation views handle the display of markdown documentation files.
 The documentation index page view, used by `DocsController@index`. It includes:
 - Collapsible hierarchical navigation sidebar with directories and files
   - Initially collapsed with +/- indicators for expandable items
-  - Expands one layer at a time when clicked
+  - Multiple directories can be expanded at once
+  - All directories collapse when switching pages
 - Rendered HTML content of the README.md file
 - Links to all documentation pages
 
@@ -120,8 +121,9 @@ The documentation index page view, used by `DocsController@index`. It includes:
 The documentation page view, used by `DocsController@show`. It includes:
 - Collapsible hierarchical navigation sidebar with directories and files
   - Initially collapsed with +/- indicators for expandable items
-  - Expands one layer at a time when clicked
+  - Multiple directories can be expanded at once
   - Auto-expands to show the current page
+  - All directories collapse when switching pages except for the one containing the current page
 - Rendered HTML content of the selected markdown file
 - Title derived from the filename
 - Back to index link

@@ -42,19 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Toggle visibility
                 const isCollapsed = this.classList.contains('collapsed');
 
-                // First, collapse all other open directories
-                directoryTitles.forEach(otherTitle => {
-                    if (otherTitle !== this && !otherTitle.classList.contains('collapsed')) {
-                        const otherSubdirectory = otherTitle.nextElementSibling;
-                        if (otherSubdirectory && otherSubdirectory.classList.contains('docs-nav-subdirectory')) {
-                            otherSubdirectory.style.display = 'none';
-                            otherTitle.classList.add('collapsed');
-                            updateExpandIndicator(otherTitle, false);
-                        }
-                    }
-                });
-
-                // Then toggle this directory
+                // Toggle this directory
                 if (isCollapsed) {
                     // Expand this directory
                     subdirectory.style.display = 'block';
@@ -69,6 +57,40 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Add click event listeners to all links in the sidebar
+    const sidebarLinks = document.querySelectorAll('.docs-nav-item a');
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Don't prevent default navigation
+
+            // Collapse all directories except the one containing the active item
+            // This will take effect when the new page loads
+            localStorage.setItem('collapseAllOnNextLoad', 'true');
+        });
+    });
+
+    // Check if we need to collapse all directories (after page load from navigation)
+    if (localStorage.getItem('collapseAllOnNextLoad') === 'true') {
+        // Reset the flag
+        localStorage.removeItem('collapseAllOnNextLoad');
+
+        // Collapse all directories except the one containing the active item
+        directoryTitles.forEach(title => {
+            const subdirectory = title.nextElementSibling;
+            if (subdirectory && subdirectory.classList.contains('docs-nav-subdirectory')) {
+                // Check if this directory contains the active item
+                const hasActiveItem = subdirectory.querySelector('.docs-nav-item.active');
+
+                if (!hasActiveItem) {
+                    // Collapse this directory
+                    subdirectory.style.display = 'none';
+                    title.classList.add('collapsed');
+                    updateExpandIndicator(title, false);
+                }
+            }
+        });
+    }
 
     // Function to update the expand/collapse indicator
     function updateExpandIndicator(element, isExpanded) {
