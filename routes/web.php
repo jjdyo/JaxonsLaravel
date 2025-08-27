@@ -91,6 +91,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
         Route::get('/profile/edit', [AuthController::class, 'editProfile'])->name('profile.edit');
         Route::put('/profile/edit', [AuthController::class, 'updateProfile'])->name('profile.update');
+
+        // API token management routes
+        Route::prefix('api-tokens')->name('api-tokens.')->group(function () {
+            Route::get('/', [ApiKeyController::class, 'userIndex'])->name('index');
+            Route::get('/create', [ApiKeyController::class, 'userCreate'])->name('create');
+            Route::post('/', [ApiKeyController::class, 'userStore'])->name('store');
+            Route::get('/{token}', [ApiKeyController::class, 'userShow'])->name('show');
+            Route::delete('/{token}', [ApiKeyController::class, 'userDestroy'])->name('destroy');
+        });
     });
 
     // Permission-protected routes
@@ -134,5 +143,3 @@ Route::middleware(['auth', 'verified', 'role:admin'])
             //Route::delete('/{token}', [ApiKeyController::class, 'destroy'])->name('destroy');
         });
     });
-
-

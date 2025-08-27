@@ -43,6 +43,11 @@ These routes require authentication and a verified email address.
 | `/profile` | GET | `AuthController@profile` | `profile` | `auth`, `verified` | Displays the user profile page |
 | `/profile/edit` | GET | `AuthController@editProfile` | `profile.edit` | `auth`, `verified` | Displays the profile edit form |
 | `/profile/edit` | PUT | `AuthController@updateProfile` | `profile.update` | `auth`, `verified` | Processes the profile update form submission |
+| `/api-tokens` | GET | `ApiKeyController@userIndex` | `api-tokens.index` | `auth`, `verified` | Displays the user's API tokens |
+| `/api-tokens/create` | GET | `ApiKeyController@userCreate` | `api-tokens.create` | `auth`, `verified` | Displays the form to create a new API token |
+| `/api-tokens` | POST | `ApiKeyController@userStore` | `api-tokens.store` | `auth`, `verified` | Creates a new API token |
+| `/api-tokens/{token}` | GET | `ApiKeyController@userShow` | `api-tokens.show` | `auth`, `verified` | Displays details for a specific API token |
+| `/api-tokens/{token}` | DELETE | `ApiKeyController@userDestroy` | `api-tokens.destroy` | `auth`, `verified` | Deletes a specific API token |
 
 ### Password Reset Routes
 These routes handle the password reset process for users who have forgotten their passwords.
@@ -110,6 +115,11 @@ Routes that require user authentication:
 Routes that require authentication and verified email:
 - `/profile` - User profile
 - `/profile/edit` (GET and PUT) - Edit profile
+- `/api-tokens` - List user's API tokens
+- `/api-tokens/create` - Create new API token form
+- `/api-tokens` (POST) - Store new API token
+- `/api-tokens/{token}` - View API token details
+- `/api-tokens/{token}` (DELETE) - Delete API token
 
 ### Permission-Protected Routes
 Routes that require specific permissions:
@@ -178,3 +188,4 @@ $url = route('profile');
 - [PageController Documentation](Controllers/PageController.md) - Documentation for the PageController
 - [AuthController Documentation](Controllers/AuthController.md) - Documentation for the AuthController
 - [DocsController Documentation](Controllers/DocsController.md) - Documentation for the DocsController
+- [ApiKeyController Documentation](Controllers/ApiKeyController.md) - Documentation for the ApiKeyController

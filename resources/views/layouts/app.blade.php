@@ -41,6 +41,9 @@
                         <button class="dropbtn">{{ Auth::user()->email }} ▼</button>
                         <div class="dropdown-content">
                             <a href="{{ route('profile') }}">Profile</a>
+                            @if(auth()->user()->hasVerifiedEmail())
+                            <a href="{{ route('api-tokens.index') }}">API</a>
+                            @endif
                             @role('admin')
                             <a href="{{ route('admin.users.index') }}">User Management</a>
                             @endrole
