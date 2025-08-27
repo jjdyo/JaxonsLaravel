@@ -34,6 +34,7 @@ This folder contains comprehensive documentation for the Laravel application. Th
 ### Security
 - [Route Protection](Security/RouteProtection.md) - Documentation for protecting routes with middleware
 - [API Token Scopes](Security/ApiTokenScopes.md) - Documentation for API token scopes and abilities
+- [Cloudflare Zero Trust Access](Security/CloudflareZeroTrust.md) - Documentation for accessing the API through Cloudflare Zero Trust
 
 ### Styling
 - [Theme System](Styling/Themes.md) - Documentation for the CSS variable-based theme system

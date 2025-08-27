@@ -9,6 +9,8 @@ All web routes are defined in `routes/web.php`.
 ## API Routes
 All API routes are defined in `routes/api.php`.
 
+> **Note:** All API routes are protected by Cloudflare Zero Trust and require additional authentication headers. See [Cloudflare Zero Trust Access](Security/CloudflareZeroTrust.md) for details on how to access the API.
+
 ### Default API Routes
 These routes are accessible from any domain with proper authentication.
 
@@ -17,11 +19,18 @@ These routes are accessible from any domain with proper authentication.
 | `/user` | GET | Closure | None | `auth:sanctum` | Returns the authenticated user's information |
 
 ### API URL Routes
-These routes are only accessible from the API URL configured in `config('app.api_url')` and require Sanctum authentication.
+These routes are only accessible from the API URL configured in `config('app.api_url')` (api-laravel.jaxonville.com) and require Sanctum authentication.
 
 | URL | Method | Controller Action | Name | Middleware | Description |
 |-----|--------|------------------|------|------------|-------------|
 | `/example/data` | GET | `ExampleApiController@getData` | None | `auth:sanctum` | Returns example data for the authenticated user |
+
+### API Authentication Requirements
+To access any API route, you need:
+
+1. **Cloudflare Access Credentials** - Include `CF-Access-Client-Id` and `CF-Access-Client-Secret` headers
+2. **API Token** - Include the `Authorization: Bearer YOUR_API_TOKEN` header
+3. **Rate Limiting** - All API requests are limited to 60 requests per minute
 
 ### Page Routes
 These routes handle the rendering of basic pages in the application.
