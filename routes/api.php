@@ -2,8 +2,17 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\ExampleApiController;
 
-Route::get('/user', function (Request $request) {
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
-})->middleware('auth:sanctum');
+});
 
+// Example API routes - protected by Sanctum and using the api_url configuration
+$host = parse_url(config('app.api_url'), PHP_URL_HOST);
+Route::domain($host)->middleware('auth:sanctum')->group(function () {
+    Route::get('/example/data', [ExampleApiController::class, 'getData']);
+
+    Route::get('/example/data', [ExampleApiController::class, 'getData'])
+        ->middleware('abilities:write-data');
+});

@@ -37,7 +37,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->group('api', [
             'throttle:api', // or the class without :api and configure RateLimiter
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            // optionally: 'auth:sanctum' if all API routes require tokens
         ]);
 
         // Aliases
