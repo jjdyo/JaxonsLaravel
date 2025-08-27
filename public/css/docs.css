@@ -76,6 +76,16 @@
     border-radius: 4px;
     margin-bottom: 5px;
     color: var(--color-text);
+    cursor: pointer;
+    position: relative;
+}
+
+.docs-nav-directory-title .expand-indicator {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: bold;
 }
 
 .docs-nav-subdirectory {

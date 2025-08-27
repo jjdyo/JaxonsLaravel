@@ -73,6 +73,10 @@
 
 </div>
 
+<!-- Scripts -->
+<script src="{{ asset('js/starry-background.js') }}"></script>
+@yield('scripts') <!-- This will load JavaScript files from specific views -->
+
 </body>
 
 </html>

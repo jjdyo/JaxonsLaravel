@@ -6,6 +6,10 @@
 <link rel="stylesheet" href="{{ asset('css/docs.css') }}">
 @endsection
 
+@section('scripts')
+<script src="{{ asset('js/docs-sidebar.js') }}"></script>
+@endsection
+
 @section('content')
     <div class="docs-container">
         <div class="docs-layout">

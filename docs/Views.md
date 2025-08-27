@@ -110,13 +110,18 @@ Documentation views handle the display of markdown documentation files.
 
 #### `docs/index.blade.php`
 The documentation index page view, used by `DocsController@index`. It includes:
-- Hierarchical navigation sidebar with directories and files
+- Collapsible hierarchical navigation sidebar with directories and files
+  - Initially collapsed with +/- indicators for expandable items
+  - Expands one layer at a time when clicked
 - Rendered HTML content of the README.md file
 - Links to all documentation pages
 
 #### `docs/show.blade.php`
 The documentation page view, used by `DocsController@show`. It includes:
-- Hierarchical navigation sidebar with directories and files
+- Collapsible hierarchical navigation sidebar with directories and files
+  - Initially collapsed with +/- indicators for expandable items
+  - Expands one layer at a time when clicked
+  - Auto-expands to show the current page
 - Rendered HTML content of the selected markdown file
 - Title derived from the filename
 - Back to index link
@@ -187,4 +192,4 @@ The application includes custom password reset messages in `resources/lang/en/pa
 - [PageController Documentation](Controllers/PageController.md) - Documentation for page rendering functionality
 - [AuthController Documentation](Controllers/AuthController.md) - Documentation for authentication functionality
 - [DocsController Documentation](Controllers/DocsController.md) - Documentation for the documentation system
-- [Email Settings](Configuration/Email Notifications.md) - Guide for configuring email settings and fixing common issues
+- [Email Settings](Configuration/Email%20Notifications.md) - Guide for configuring email settings and fixing common issues
