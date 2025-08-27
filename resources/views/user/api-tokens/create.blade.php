@@ -18,7 +18,6 @@
         <div class="form-group">
             <label for="name">Token Name</label>
             <input type="text" id="name" name="name" class="form-control" value="{{ old('name') }}" required>
-            <small class="form-text">Give this token a name to help you identify what it's used for.</small>
             @error('name')
                 <div class="error">{{ $message }}</div>
             @enderror
@@ -31,7 +30,6 @@
                 <option value="month" {{ old('expiration') == 'month' ? 'selected' : '' }}>1 Month</option>
                 <option value="year" {{ old('expiration') == 'year' ? 'selected' : '' }}>1 Year</option>
             </select>
-            <small class="form-text">Select when this token should expire.</small>
             @error('expiration')
                 <div class="error">{{ $message }}</div>
             @enderror
