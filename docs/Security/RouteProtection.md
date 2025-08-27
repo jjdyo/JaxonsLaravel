@@ -204,9 +204,9 @@ Route::middleware(['throttle:60,1|120,1'])->group(function () {
     // 60 requests per minute for guests, 120 for authenticated users
 });
 
-// Named rate limiters (defined in App\Providers\RouteServiceProvider)
+// Named rate limiters (defined in App\Providers\AppServiceProvider)
 Route::middleware(['throttle:api'])->group(function () {
-    // Uses the 'api' rate limiter configuration
+    // Uses the 'api' rate limiter configuration (60 requests per minute)
 });
 ```
 
