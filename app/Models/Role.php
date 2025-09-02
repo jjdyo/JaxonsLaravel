@@ -17,7 +17,7 @@ class Role extends SpatieRole
     /**
      * Define the many-to-many relationship with users.
      *
-     * @return BelongsToMany<\App\Models\User, \App\Models\Role, \Illuminate\Database\Eloquent\Relations\Pivot, 'pivot'>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\App\Models\User, $this>
      */
     public function users(): BelongsToMany
     {

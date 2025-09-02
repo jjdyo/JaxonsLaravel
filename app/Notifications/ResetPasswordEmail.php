@@ -82,10 +82,22 @@ class ResetPasswordEmail extends Notification
             return call_user_func(static::$createUrlCallback, $notifiable, $this->token);
         }
 
-        // @phpstan-ignore-next-line
+        // Ensure $notifiable has the required method
+        if (!method_exists($notifiable, 'getEmailForPasswordReset')) {
+            throw new \InvalidArgumentException('Notifiable must implement getEmailForPasswordReset() method');
+        }
+
+        // Get the email for password reset
+        $email = $notifiable->getEmailForPasswordReset();
+
+        // Ensure email is a string
+        if (!is_string($email)) {
+            $email = '';
+        }
+
         return url(route('password.reset', [
             'token' => $this->token,
-            'email' => $notifiable->getEmailForPasswordReset(),
+            'email' => $email,
         ], false));
     }
 
@@ -97,11 +109,41 @@ class ResetPasswordEmail extends Notification
      */
     protected function buildMailMessage(string $url): MailMessage
     {
+        // Get localized strings and ensure they are strings
+        /** @var string|array<string> $subject */
+        $subject = Lang::get('Reset Password Notification');
+        $subjectStr = $this->ensureString($subject, 'Reset Password Notification');
+
+        /** @var string|array<string> $line */
+        $line = Lang::get('You are receiving this email because we received a password reset request for your account.');
+        $lineStr = $this->ensureString($line, 'You are receiving this email because we received a password reset request for your account.');
+
+        /** @var string|array<string> $action */
+        $action = Lang::get('Reset Password');
+        $actionStr = $this->ensureString($action, 'Reset Password');
+
         return (new MailMessage)
-            ->subject((string)Lang::get('Reset Password Notification'))
-            ->line((string)Lang::get('You are receiving this email because we received a password reset request for your account.'))
-            ->action((string)Lang::get('Reset Password'), $url)
+            ->subject($subjectStr)
+            ->line($lineStr)
+            ->action($actionStr, $url)
             ->view('emails.password-reset', ['url' => $url]); // Use custom blade template
+    }
+
+    /**
+     * Ensure a value is a string.
+     *
+     * @param string|array<string> $value
+     * @param string $default
+     * @return string
+     */
+    private function ensureString($value, string $default): string
+    {
+        if (is_string($value)) {
+            return $value;
+        }
+
+        // For arrays, join the elements
+        return implode(' ', $value);
     }
 
     /**

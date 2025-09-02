@@ -274,6 +274,11 @@ class AuthController extends Controller
             ? Password::PASSWORD_RESET
             : 'passwords.reset';
 
+        // Ensure $status is a string before using it with the __ function
+        if (!is_string($status)) {
+            $status = '';
+        }
+
         return $status === $passwordReset
             ? redirect()->route('login')->with('status', __($status))
             : back()->withErrors(['email' => [__($status)]]);

@@ -16,51 +16,46 @@ class SiteInfoCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'site:info {--json : Output in JSON format}';
+    protected $signature = 'site:info';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Display comprehensive site information including database, memory usage, and system details';
+    protected $description = 'Display detailed system, app, database, cache, queue, and filesystem information';
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
-    public function handle()
+    public function handle(): int
     {
-        $info = $this->gatherSiteInfo();
+        $this->info('Gathering site information...' . PHP_EOL);
 
-        if ($this->option('json')) {
-            $json = json_encode($info, JSON_PRETTY_PRINT);
-            $this->line($json === false ? '{}' : $json);
-            return 0;
-        }
-
-        $this->displayFormattedInfo($info);
-        return 0;
-    }
-
-    /**
-     * Gather all site information
-     *
-     * @return array<string, mixed>
-     */
-    private function gatherSiteInfo(): array
-    {
-        return [
-            'application' => $this->getApplicationInfo(),
-            'environment' => $this->getEnvironmentInfo(),
-            'database' => $this->getDatabaseInfo(),
-            'cache' => $this->getCacheInfo(),
-            'memory' => $this->getMemoryInfo(),
-            'storage' => $this->getStorageInfo(),
-            'queue' => $this->getQueueInfo(),
-            'system' => $this->getSystemInfo(),
+        $info = [
+            'app'       => $this->getAppInfo(),
+            'system'    => $this->getSystemInfo(),
+            'database'  => $this->getDatabaseInfo(),
+            'cache'     => $this->getCacheInfo(),
+            'queue'     => $this->getQueueInfo(),
+            'filesystem'=> $this->getFilesystemInfo(),
+            'memory'    => $this->getMemoryInfo(),
         ];
+
+        // Output sections
+        $this->outputAppInfo($info['app']);
+        $this->outputSystemInfo($info['system']);
+        $this->outputDatabaseInfo($info['database']);
+        $this->outputCacheInfo($info['cache']);
+        $this->outputQueueInfo($info['queue']);
+        $this->outputFilesystemInfo($info['filesystem']);
+        $this->outputMemoryInfo($info['memory']);
+
+        // Optional JSON dump (comment in/out as desired)
+        // $json = json_encode($info, JSON_PRETTY_PRINT);
+        // $this->line(PHP_EOL . $json);
+
+        return self::SUCCESS;
     }
 
     /**
@@ -68,33 +63,17 @@ class SiteInfoCommand extends Command
      *
      * @return array<string, mixed>
      */
-    private function getApplicationInfo(): array
+    private function getAppInfo(): array
     {
         return [
-            'name' => config('app.name'),
-            'url' => config('app.url'),
-            'environment' => config('app.env'),
-            'debug' => config('app.debug'),
-            'timezone' => config('app.timezone'),
-            'locale' => config('app.locale'),
-            'laravel_version' => app()->version(),
-            'php_version' => phpversion(),
-        ];
-    }
-
-    /**
-     * Get environment information
-     *
-     * @return array<string, mixed>
-     */
-    private function getEnvironmentInfo(): array
-    {
-        return [
-            'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
-            'document_root' => $_SERVER['DOCUMENT_ROOT'] ?? 'Unknown',
-            'server_name' => $_SERVER['SERVER_NAME'] ?? 'Unknown',
-            'server_port' => $_SERVER['SERVER_PORT'] ?? 'Unknown',
-            'https' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
+            'name'           => config('app.name'),
+            'env'            => config('app.env'),
+            'debug'          => config('app.debug') ? 'true' : 'false',
+            'url'            => config('app.url'),
+            'locale'         => config('app.locale'),
+            'fallback_locale'=> config('app.fallback_locale'),
+            'timezone'       => config('app.timezone'),
+            'key_set'        => config('app.key') ? 'yes' : 'no',
         ];
     }
 
@@ -109,40 +88,36 @@ class SiteInfoCommand extends Command
             $connection = DB::connection();
             $pdo = $connection->getPdo();
 
+            $defaultConnection = config('database.default');
+            $defaultConnectionStr = is_string($defaultConnection) ? $defaultConnection : '';
+
+            $databaseConnections = config('database.connections');
+            $connections = is_array($databaseConnections) ? $databaseConnections : [];
+            $currentConnection = isset($connections[$defaultConnectionStr]) && is_array($connections[$defaultConnectionStr])
+                ? $connections[$defaultConnectionStr]
+                : [];
+
+            $driver = $currentConnection['driver'] ?? 'unknown';
+
             $info = [
-                'default_connection' => config('database.default'),
-                'driver' => $connection->getDriverName(),
-                'database_name' => $connection->getDatabaseName(),
-                'host' => config('database.connections.' . (string)(config('database.default') ?? '') . '.host'),
-                'port' => config('database.connections.' . (string)(config('database.default') ?? '') . '.port'),
-                'connected' => true,
+                'default_connection' => $defaultConnectionStr,
+                'driver'             => $driver,
+                'database'           => $currentConnection['database'] ?? null,
+                'host'               => $currentConnection['host'] ?? null,
+                'port'               => $currentConnection['port'] ?? null,
+                'prefix'             => $currentConnection['prefix'] ?? null,
+                'server_version'     => $pdo->getAttribute(\PDO::ATTR_SERVER_VERSION),
+                'client_version'     => $pdo->getAttribute(\PDO::ATTR_CLIENT_VERSION),
             ];
 
-            // Get database version
-            try {
-                $result = $pdo->query('SELECT VERSION()');
-                if ($result !== false) {
-                    $version = $result->fetchColumn();
-                    $info['version'] = $version;
-                } else {
-                    $info['version'] = 'Unknown';
-                }
-            } catch (\Exception $e) {
-                $info['version'] = 'Unknown';
-            }
+            // Simple connectivity check
+            $connection->getDatabaseName();
 
-            // Get database size (MySQL/MariaDB specific)
-            if (in_array($connection->getDriverName(), ['mysql', 'mariadb'])) {
-                try {
-                    $size = DB::select("SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS 'size_mb' FROM information_schema.tables WHERE table_schema = ?", [$connection->getDatabaseName()]);
-                    $info['size_mb'] = $size[0]->size_mb ?? 'Unknown';
-                } catch (\Exception $e) {
-                    $info['size_mb'] = 'Unknown';
-                }
-            }
+            $info['connected'] = true;
+            $info['error'] = null;
 
             return $info;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return [
                 'connected' => false,
                 'error' => $e->getMessage(),
@@ -158,18 +133,28 @@ class SiteInfoCommand extends Command
     private function getCacheInfo(): array
     {
         $info = [
-            'default_driver' => config('cache.default'),
-            'prefix' => config('cache.prefix'),
+            'default_store' => config('cache.default'),
+            'stores'        => [],
+            'working'       => false,
+            'error'         => null,
+            'redis'         => [
+                'configured' => false,
+                'available'  => false,
+                'server'     => [],
+                'memory'     => [],
+            ],
         ];
 
+        // Check default cache store
         try {
-            // Test cache functionality
-            $testKey = 'site_info_test_' . time();
-            Cache::put($testKey, 'test_value', 10);
-            $testValue = Cache::get($testKey);
+            $testKey = 'site_info_test_' . uniqid();
+            $testValue = 'test_value';
+
+            Cache::put($testKey, $testValue, 5);
+            $value = Cache::get($testKey);
             Cache::forget($testKey);
 
-            $info['working'] = $testValue === 'test_value';
+            $info['working'] = $testValue === $value;
         } catch (\Exception $e) {
             $info['working'] = false;
             $info['error'] = $e->getMessage();
@@ -183,19 +168,99 @@ class SiteInfoCommand extends Command
                 $memoryInfo = $redis->command('INFO', ['memory']);
 
                 // Ensure we're working with arrays
-                $serverInfoArray = is_array($serverInfo) ? $serverInfo : [];
-                $memoryInfoArray = is_array($memoryInfo) ? $memoryInfo : [];
+                $serverInfoArr = is_array($serverInfo) ? $serverInfo : [];
+                $memoryInfoArr = is_array($memoryInfo) ? $memoryInfo : [];
 
-                $info['redis_version'] = $serverInfoArray['redis_version'] ?? 'Unknown';
-                $info['redis_memory'] = $memoryInfoArray['used_memory_human'] ?? 'Unknown';
-                $info['redis_connected'] = true;
-            } catch (\Exception $e) {
-                $info['redis_connected'] = false;
-                $info['redis_error'] = $e->getMessage();
+                $info['redis'] = [
+                    'configured' => true,
+                    'available'  => true,
+                    'server'     => $serverInfoArr,
+                    'memory'     => $memoryInfoArr,
+                ];
+            } catch (\Throwable $e) {
+                $info['redis'] = [
+                    'configured' => true,
+                    'available'  => false,
+                    'error'      => $e->getMessage(),
+                ];
             }
-        } else {
-            $info['redis_configured'] = false;
-            $info['redis_note'] = 'Redis not configured or not available';
+        }
+
+        return $info;
+    }
+
+    /**
+     * Get filesystem information
+     *
+     * @return array<string, mixed>
+     */
+    private function getFilesystemInfo(): array
+    {
+        $info = [
+            'default' => config('filesystems.default'),
+            'disks' => [],
+        ];
+
+        $disksConfig = config('filesystems.disks');
+        $disks = is_array($disksConfig) ? $disksConfig : [];
+
+        foreach ($disks as $name => $config) {
+            try {
+                // Normalize config to array
+                if (!is_array($config)) {
+                    $config = [];
+                }
+
+                $diskInfo = [
+                    'driver' => $config['driver'] ?? 'unknown',
+                    'root'   => $config['root']   ?? 'N/A',
+                ];
+
+                $driver = $config['driver'] ?? null;
+
+                if ($driver === 's3') {
+                    // Report S3 config without instantiating the driver.
+                    $diskInfo['bucket'] = $config['bucket'] ?? null;
+                    $diskInfo['region'] = $config['region'] ?? null;
+
+                    // If the adapter class is installed, mark as "Adapter available", else warn.
+                    $adapterAvailable = class_exists(\League\Flysystem\AwsS3V3\AwsS3V3Adapter::class)
+                        || class_exists(\League\Flysystem\AwsS3V3\PortableVisibilityConverter::class);
+
+                    $diskInfo['status'] = $adapterAvailable
+                        ? 'Configured (adapter available)'
+                        : 'Configured (adapter missing: league/flysystem-aws-s3-v3)';
+
+                } else {
+                    // Other drivers
+                    $diskName = is_string($name) ? $name : '';
+                    if ($driver === 'local') {
+                        $path = $config['root'] ?? '';
+                        $pathString = is_string($path) ? $path : '';
+                        if ($pathString !== '' && is_dir($pathString)) {
+                            $freeSpace  = disk_free_space($pathString);
+                            $totalSpace = disk_total_space($pathString);
+                            $diskInfo['free_space']  = $freeSpace !== false ? (int)$freeSpace : 0;
+                            $diskInfo['total_space'] = $totalSpace !== false ? (int)$totalSpace : 0;
+                            $diskInfo['status'] = 'Available';
+                        } else {
+                            $diskInfo['status'] = 'Directory not found';
+                        }
+                    } else {
+                        // For non-local (e.g., ftp, sftp, custom), don't force-load the driver either.
+                        // Just mark as "Configured". If you want to test connectivity, guard with class_exists
+                        // for their adapters similarly to S3.
+                        $diskInfo['status'] = 'Configured';
+                    }
+                }
+
+                $info['disks'][$name] = $diskInfo;
+            } catch (\Exception $e) {
+                $info['disks'][$name] = [
+                    'error'  => $e->getMessage(),
+                    'driver' => (is_array($config) && array_key_exists('driver', $config)) ? $this->toStringSafe($config['driver']) : 'Unknown',
+                ];
+            }
         }
 
         return $info;
@@ -208,109 +273,35 @@ class SiteInfoCommand extends Command
      */
     private function getMemoryInfo(): array
     {
+        $memoryLimitStr   = $this->iniGetString('memory_limit', 'Unknown');
+        $memoryLimitBytes = $this->parseMemoryLimit($memoryLimitStr);
+
         return [
-            'current_usage' => $this->formatBytes(memory_get_usage(true)),
-            'peak_usage' => $this->formatBytes(memory_get_peak_usage(true)),
-            'memory_limit' => ini_get('memory_limit'),
-            'memory_limit_bytes' => $this->parseMemoryLimit(ini_get('memory_limit')),
-            'usage_percentage' => round((memory_get_usage(true) / $this->parseMemoryLimit(ini_get('memory_limit'))) * 100, 2) . '%',
+            'current_usage'      => $this->formatBytes(memory_get_usage(true)),
+            'peak_usage'         => $this->formatBytes(memory_get_peak_usage(true)),
+            'memory_limit'       => $memoryLimitStr,
+            'memory_limit_bytes' => $memoryLimitBytes,
         ];
     }
 
     /**
-     * Get storage information
-     *
-     * @return array<string, mixed>
+     * Parse memory limit shorthand (e.g. 128M, 1G)
      */
-    private function getStorageInfo(): array
+    private function parseMemoryLimit(string $val): int
     {
-        $info = [
-            'default_disk' => config('filesystems.default'),
-            'disks' => [],
-        ];
-
-        $disks = config('filesystems.disks');
-        if (!is_array($disks)) {
-            $disks = [];
+        $val = trim($val);
+        if ($val === '' || $val === '-1') {
+            return -1;
         }
-        foreach ($disks as $name => $config) {
-            try {
-                // Ensure $config is an array
-                if (!is_array($config)) {
-                    $config = [];
-                }
+        $last = strtolower(substr($val, -1));
+        $num  = (int) $val;
 
-                $diskInfo = [
-                    'driver' => $config['driver'] ?? 'unknown',
-                    'root' => $config['root'] ?? 'N/A',
-                ];
-
-                // Handle S3 disks separately
-                if (isset($config['driver']) && $config['driver'] === 's3') {
-                    if ($this->isS3Available()) {
-                        try {
-                            // Ensure $name is a string
-                            $diskName = is_string($name) ? $name : '';
-                            $disk = Storage::disk($diskName);
-                            // Test S3 connectivity with a simple operation
-                            $disk->exists('.test-connectivity-check');
-                            $diskInfo['status'] = 'Connected';
-                            $diskInfo['bucket'] = $config['bucket'] ?? 'Unknown';
-                            $diskInfo['region'] = $config['region'] ?? 'Unknown';
-                        } catch (\Exception $e) {
-                            $diskInfo['status'] = 'Connection Failed';
-                            $diskInfo['s3_error'] = $e->getMessage();
-                        }
-                    } else {
-                        $diskInfo['status'] = 'AWS SDK not available';
-                        $diskInfo['note'] = 'AWS SDK or S3 dependencies not installed';
-                    }
-                } else {
-                    // Handle other disk types
-                    $diskName = is_string($name) ? $name : '';
-                    $disk = Storage::disk($diskName);
-
-                    if (isset($config['driver']) && $config['driver'] === 'local') {
-                        $path = $config['root'] ?? '';
-                        $pathString = is_string($path) ? $path : '';
-                        if ($pathString !== '' && is_dir($pathString)) {
-                            $freeSpace = disk_free_space($pathString);
-                            $totalSpace = disk_total_space($pathString);
-                            $diskInfo['free_space'] = $this->formatBytes(is_float($freeSpace) ? (int)$freeSpace : 0);
-                            $diskInfo['total_space'] = $this->formatBytes(is_float($totalSpace) ? (int)$totalSpace : 0);
-                            $diskInfo['status'] = 'Available';
-                        } else {
-                            $diskInfo['status'] = 'Directory not found';
-                        }
-                    } else {
-                        $diskInfo['status'] = 'Configured';
-                    }
-                }
-
-                $info['disks'][$name] = $diskInfo;
-            } catch (\Exception $e) {
-                $info['disks'][$name] = [
-                    'error' => $e->getMessage(),
-                    'driver' => $config['driver'] ?? 'Unknown'
-                ];
-            }
+        switch ($last) {
+            case 'g': return $num * 1024 * 1024 * 1024;
+            case 'm': return $num * 1024 * 1024;
+            case 'k': return $num * 1024;
+            default:  return (int) $val;
         }
-
-        return $info;
-    }
-
-    /**
-     * Get queue information
-     *
-     * @return array<string, mixed>
-     */
-    private function getQueueInfo(): array
-    {
-        return [
-            'default_connection' => config('queue.default'),
-            'driver' => config('queue.connections.' . (string)(config('queue.default') ?? '') . '.driver'),
-            'failed_jobs_enabled' => config('queue.failed.driver') !== null,
-        ];
     }
 
     /**
@@ -320,181 +311,227 @@ class SiteInfoCommand extends Command
      */
     private function getSystemInfo(): array
     {
+        $maxExecutionTimeStr = $this->iniGetString('max_execution_time', '30');
+        $uploadMaxFilesize   = $this->iniGetString('upload_max_filesize', 'Unknown');
+        $postMaxSize         = $this->iniGetString('post_max_size', 'Unknown');
+        $opcacheEnableRaw    = ini_get('opcache.enable');
+        $opcacheEnabled      = $opcacheEnableRaw !== false ? $opcacheEnableRaw === '1' : false;
+
         return [
-            'operating_system' => php_uname('s'),
-            'php_sapi' => php_sapi_name(),
-            'max_execution_time' => ini_get('max_execution_time') . 's',
-            'upload_max_filesize' => ini_get('upload_max_filesize'),
-            'post_max_size' => ini_get('post_max_size'),
-            'loaded_extensions' => count(get_loaded_extensions()),
-            'opcache_enabled' => extension_loaded('opcache') && ini_get('opcache.enable'),
+            'operating_system'   => php_uname('s'),
+            'php_sapi'           => php_sapi_name(),
+            'max_execution_time' => $maxExecutionTimeStr . 's',
+            'upload_max_filesize'=> $uploadMaxFilesize,
+            'post_max_size'      => $postMaxSize,
+            'loaded_extensions'  => count(get_loaded_extensions()),
+            'opcache_enabled'    => $opcacheEnabled,
         ];
     }
 
     /**
-     * Check if Redis is configured
+     * Get queue information
      *
-     * @return bool
+     * @return array<string, mixed>
      */
-    private function isRedisConfigured(): bool
+    private function getQueueInfo(): array
     {
-        return config('cache.default') === 'redis' ||
-            config('database.redis.default') !== null ||
-            config('queue.default') === 'redis';
-    }
+        $info = [
+            'default'  => config('queue.default'),
+            'failed'   => 0,
+            'driver'   => null,
+            'conn'     => null,
+            'working'  => null,
+            'error'    => null,
+        ];
 
-    /**
-     * Check if Redis is available
-     *
-     * @return bool
-     */
-    private function isRedisAvailable(): bool
-    {
         try {
-            return class_exists('Redis') ||
-                class_exists('Predis\Client') ||
-                extension_loaded('redis');
-        } catch (\Exception $e) {
-            return false;
+            $defaultRaw = config('queue.default');
+            $default = is_string($defaultRaw) ? $defaultRaw : 'sync';
+            $info['driver'] = config('queue.connections.' . $default . '.driver');
+            $info['conn']   = config('queue.connections.' . $default);
+
+            // Quick sanity check: enqueue a closure job if sync or just ensure config exists
+            $info['working'] = $info['driver'] ? true : false;
+        } catch (\Throwable $e) {
+            $info['working'] = false;
+            $info['error']   = $e->getMessage();
         }
+
+        return $info;
     }
 
     /**
-     * Check if AWS S3 is available
+     * Output helpers
+     * @param array<string, mixed> $appInfo
      *
-     * @return bool
      */
-    private function isS3Available(): bool
+    private function outputAppInfo(array $appInfo): void
     {
-        try {
-            return class_exists('Aws\S3\S3Client') &&
-                class_exists('League\Flysystem\AwsS3V3\AwsS3V3Adapter');
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
-
-    /**
-     * Display formatted information
-     *
-     * @param array<string, mixed> $info The site information to display
-     * @return void
-     */
-    private function displayFormattedInfo(array $info): void
-    {
-        $this->info('=== Site Information ===');
-        $this->newLine();
-
-        // Application Info
-        $this->comment('Application:');
-        $this->table(['Property', 'Value'], [
-            ['Name', $info['application']['name'] ?? 'Unknown'],
-            ['URL', $info['application']['url'] ?? 'Unknown'],
-            ['Environment', $info['application']['environment'] ?? 'Unknown'],
-            ['Debug Mode', isset($info['application']['debug']) && $info['application']['debug'] ? 'Enabled' : 'Disabled'],
-            ['Timezone', $info['application']['timezone'] ?? 'Unknown'],
-            ['Locale', $info['application']['locale'] ?? 'Unknown'],
-            ['Laravel Version', $info['application']['laravel_version'] ?? 'Unknown'],
-            ['PHP Version', $info['application']['php_version'] ?? 'Unknown'],
+        $this->section('Application');
+        $this->table(['Key', 'Value'], [
+            ['Name', $appInfo['name']],
+            ['Environment', $appInfo['env']],
+            ['Debug', $appInfo['debug']],
+            ['URL', $appInfo['url']],
+            ['Locale', $appInfo['locale']],
+            ['Fallback Locale', $appInfo['fallback_locale']],
+            ['Timezone', $appInfo['timezone']],
+            ['App Key Set', $appInfo['key_set']],
         ]);
-
-        // Database Info
-        $this->comment('Database:');
-        if (isset($info['database']['connected']) && $info['database']['connected']) {
-            $dbTable = [
-                ['Connection', $info['database']['default_connection'] ?? 'Unknown'],
-                ['Driver', $info['database']['driver'] ?? 'Unknown'],
-                ['Database', $info['database']['database_name'] ?? 'Unknown'],
-                ['Host', $info['database']['host'] ?? 'Unknown'],
-                ['Port', $info['database']['port'] ?? 'Unknown'],
-                ['Version', $info['database']['version'] ?? 'Unknown'],
-                ['Status', 'Connected'],
-            ];
-
-            if (isset($info['database']['size_mb'])) {
-                $dbTable[] = ['Size', (string)($info['database']['size_mb'] ?? 'Unknown') . ' MB'];
-            }
-
-            $this->table(['Property', 'Value'], $dbTable);
+    }
+    /**
+     * @param array<string, mixed> $sysInfo
+     */
+    private function outputSystemInfo(array $sysInfo): void
+    {
+        $this->section('System');
+        $this->table(['Key', 'Value'], [
+            ['Operating System', $sysInfo['operating_system'] ?? 'Unknown'],
+            ['SAPI', $sysInfo['php_sapi'] ?? 'Unknown'],
+            ['Max Execution Time', $sysInfo['max_execution_time'] ?? 'Unknown'],
+            ['Upload Max Filesize', $sysInfo['upload_max_filesize'] ?? 'Unknown'],
+            ['Post Max Size', $sysInfo['post_max_size'] ?? 'Unknown'],
+            ['Loaded Extensions', $sysInfo['loaded_extensions'] ?? 'Unknown'],
+            ['OPcache', isset($sysInfo['opcache_enabled']) && $sysInfo['opcache_enabled'] ? 'Enabled' : 'Disabled'],
+        ]);
+    }
+    /**
+     * @param array<string, mixed> $dbInfo
+     */
+    private function outputDatabaseInfo(array $dbInfo): void
+    {
+        $this->section('Database');
+        if (($dbInfo['connected'] ?? false) === true) {
+            $this->table(['Key', 'Value'], [
+                ['Default Connection', $dbInfo['default_connection'] ?? 'Unknown'],
+                ['Driver', $dbInfo['driver'] ?? 'Unknown'],
+                ['Database', $dbInfo['database'] ?? 'Unknown'],
+                ['Host', $dbInfo['host'] ?? 'Unknown'],
+                ['Port', $dbInfo['port'] ?? 'Unknown'],
+                ['Prefix', $dbInfo['prefix'] ?? ''],
+                ['Server Version', $dbInfo['server_version'] ?? 'Unknown'],
+                ['Client Version', $dbInfo['client_version'] ?? 'Unknown'],
+            ]);
         } else {
-            $this->error('Database connection failed: ' . ($info['database']['error'] ?? 'Unknown error'));
+            $this->error('Database connection failed: ' . $this->toStringSafe($dbInfo['error'] ?? 'Unknown'));
         }
-
-        // Memory Info
-        $this->comment('Memory Usage:');
-        $this->table(['Property', 'Value'], [
-            ['Current Usage', $info['memory']['current_usage'] ?? 'Unknown'],
-            ['Peak Usage', $info['memory']['peak_usage'] ?? 'Unknown'],
-            ['Memory Limit', $info['memory']['memory_limit'] ?? 'Unknown'],
-            ['Usage Percentage', $info['memory']['usage_percentage'] ?? 'Unknown'],
+    }
+    /**
+     * @param array<string, mixed> $cacheInfo
+     */
+    private function outputCacheInfo(array $cacheInfo): void
+    {
+        $this->section('Cache');
+        $this->table(['Key', 'Value'], [
+            ['Default Store', $cacheInfo['default_store'] ?? 'Unknown'],
+            ['Working', ($cacheInfo['working'] ?? false) ? 'Yes' : 'No'],
+            ['Error', $cacheInfo['error'] ?? 'None'],
         ]);
+        $redis = $cacheInfo['redis'] ?? null;
+        if (is_array($redis) && (($redis['configured'] ?? false) || ($redis['available'] ?? false))) {
+            $this->line('Redis:');
+            $this->table(['Key', 'Value'], [
+                ['Configured', ($redis['configured'] ?? false) ? 'Yes' : 'No'],
+                ['Available', ($redis['available'] ?? false) ? 'Yes' : 'No'],
+            ]);
+        }
+    }
+    /**
+     * @param array<string, mixed> $queueInfo
+     */
+    private function outputQueueInfo(array $queueInfo): void
+    {
+        $this->section('Queue');
+        $this->table(['Key', 'Value'], [
+            ['Default', $queueInfo['default'] ?? 'Unknown'],
+            ['Driver', $queueInfo['driver'] ?? 'Unknown'],
+            ['Working', ($queueInfo['working'] ?? false) ? 'Yes' : 'No'],
+            ['Error', $queueInfo['error'] ?? 'None'],
+        ]);
+    }
+    /**
+     * @param array<string, mixed> $fsInfo
+     */
+    private function outputFilesystemInfo(array $fsInfo): void
+    {
+        $this->section('Filesystem');
 
-        // Cache Info
-        $this->comment('Cache:');
-        $cacheTable = [
-            ['Driver', $info['cache']['default_driver'] ?? 'Unknown'],
-            ['Prefix', $info['cache']['prefix'] ?? 'Unknown'],
-            ['Status', isset($info['cache']['working']) && $info['cache']['working'] ? 'Working' : 'Failed'],
+        $rows = [
+            ['Default', $fsInfo['default'] ?? 'Unknown'],
         ];
 
-        if (isset($info['cache']['redis_connected'])) {
-            if ($info['cache']['redis_connected']) {
-                $cacheTable[] = ['Redis Version', $info['cache']['redis_version'] ?? 'Unknown'];
-                $cacheTable[] = ['Redis Memory', $info['cache']['redis_memory'] ?? 'Unknown'];
-            } else {
-                $cacheTable[] = ['Redis Status', 'Connection Failed'];
-            }
-        } elseif (isset($info['cache']['redis_configured'])) {
-            $cacheTable[] = ['Redis Status', 'Not Configured'];
-        }
+        $this->table(['Key', 'Value'], $rows);
 
-        $this->table(['Property', 'Value'], $cacheTable);
-
-        // Storage Info
-        $this->comment('Storage:');
-        $this->line('Default Disk: ' . ($info['storage']['default_disk'] ?? 'Unknown'));
-        if (isset($info['storage']['disks']) && is_array($info['storage']['disks'])) {
-            foreach ($info['storage']['disks'] as $name => $disk) {
-                if (isset($disk['error'])) {
-                    $this->error("Disk '" . (is_string($name) ? $name : 'Unknown') . "' (" . ($disk['driver'] ?? 'Unknown') . "): " . ($disk['error'] ?? 'Unknown error'));
-                } else {
-                    $status = $disk['status'] ?? 'Unknown';
-                    $extra = '';
+        if (isset($fsInfo['disks']) && is_array($fsInfo['disks'])) {
+            foreach ($fsInfo['disks'] as $name => $disk) {
+                $this->line(PHP_EOL . "Disk: " . (is_string($name) ? $name : (string)$name));
+                if (is_array($disk) && isset($disk['error'])) {
+                    $diskError  = $disk['error'];
+                    $diskDriver = $disk['driver'] ?? 'Unknown';
+                    $this->error("Disk '" . $name . "' (" . $this->toStringSafe($diskDriver) . '): ' . $this->toStringSafe($diskError));
+                } elseif (is_array($disk)) {
+                    $status    = $disk['status'] ?? 'Unknown';
+                    $statusStr = is_string($status) ? $status : $this->toStringSafe($status);
+                    $extra     = '';
 
                     if (isset($disk['driver'])) {
-                        if ($disk['driver'] === 's3') {
-                            $extra = isset($disk['bucket']) ? " (Bucket: " . (string)$disk['bucket'] . ")" : '';
-                        } elseif ($disk['driver'] === 'local') {
-                            $extra = isset($disk['free_space']) ? " (Free: " . (string)$disk['free_space'] . ")" : '';
-                        }
+                        $driver    = $disk['driver'];
+                        $driverStr = is_string($driver) ? $driver : $this->toStringSafe($driver);
 
-                        $this->line("Disk '" . (is_string($name) ? $name : 'Unknown') . "' (" . $disk['driver'] . "): " . (string)$status . $extra);
-                    } else {
-                        $this->line("Disk '" . (is_string($name) ? $name : 'Unknown') . "': " . (string)$status . $extra);
+                        if ($driverStr === 's3') {
+                            $bucket    = $disk['bucket'] ?? '';
+                            $bucketStr = is_string($bucket) ? $bucket : $this->toStringSafe($bucket);
+                            $extra     = isset($disk['bucket']) ? " (Bucket: " . $bucketStr . ")" : '';
+                        } elseif ($driverStr === 'local') {
+                            if (isset($disk['free_space'], $disk['total_space']) && is_int($disk['free_space']) && is_int($disk['total_space'])) {
+                                $extra = " (Free: " . $this->formatBytes($disk['free_space']) . " / Total: " . $this->formatBytes($disk['total_space']) . ")";
+                            }
+                        }
                     }
+
+                    $this->info("Status: " . $statusStr . $extra);
+                } else {
+                    $this->warn('Unknown disk configuration format');
                 }
             }
         }
-
-        // Queue Info
-        $this->comment('Queue:');
-        $this->table(['Property', 'Value'], [
-            ['Default Connection', $info['queue']['default_connection'] ?? 'Unknown'],
-            ['Driver', $info['queue']['driver'] ?? 'Unknown'],
-            ['Failed Jobs', isset($info['queue']['failed_jobs_enabled']) && $info['queue']['failed_jobs_enabled'] ? 'Enabled' : 'Disabled'],
+    }
+    /**
+     * @param array<string, mixed> $memInfo
+     */
+    private function outputMemoryInfo(array $memInfo): void
+    {
+        $this->section('Memory');
+        $this->table(['Key', 'Value'], [
+            ['Current Usage', $memInfo['current_usage'] ?? 'Unknown'],
+            ['Peak Usage', $memInfo['peak_usage'] ?? 'Unknown'],
+            ['Memory Limit', $memInfo['memory_limit'] ?? 'Unknown'],
+            ['Memory Limit (bytes)', $memInfo['memory_limit_bytes'] ?? 'Unknown'],
         ]);
+    }
 
-        // System Info
-        $this->comment('System:');
-        $this->table(['Property', 'Value'], [
-            ['Operating System', $info['system']['operating_system'] ?? 'Unknown'],
-            ['PHP SAPI', $info['system']['php_sapi'] ?? 'Unknown'],
-            ['Max Execution Time', $info['system']['max_execution_time'] ?? 'Unknown'],
-            ['Upload Max Filesize', $info['system']['upload_max_filesize'] ?? 'Unknown'],
-            ['Post Max Size', $info['system']['post_max_size'] ?? 'Unknown'],
-            ['Loaded Extensions', $info['system']['loaded_extensions'] ?? 'Unknown'],
-            ['OPcache', isset($info['system']['opcache_enabled']) && $info['system']['opcache_enabled'] ? 'Enabled' : 'Disabled'],
-        ]);
+    /**
+     * Helpers
+     */
+    private function section(string $title): void
+    {
+        $this->line(PHP_EOL . '=== ' . $title . ' ===');
+    }
+
+    private function isRedisConfigured(): bool
+    {
+        $default = config('database.redis.client');
+        return is_string($default) && $default !== '';
+    }
+
+    private function isRedisAvailable(): bool
+    {
+        try {
+            Redis::connection()->ping();
+            return true;
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     /**
@@ -507,38 +544,43 @@ class SiteInfoCommand extends Command
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
 
-        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
-            $bytes /= 1024;
+        if ($bytes < 1) {
+            return '0 B';
         }
 
-        return round($bytes, 2) . ' ' . $units[$i];
+        $power = (int) floor(log($bytes, 1024));
+        $power = min($power, count($units) - 1);
+        $bytes /=
+            (1024 ** $power);
+
+        return number_format($bytes, 2) . ' ' . $units[$power];
     }
 
     /**
-     * Parse memory limit string to bytes
-     *
-     * @param string $limit
-     * @return int
+     * Return an INI value as a string with a fallback (avoids string|false).
      */
-    private function parseMemoryLimit(string $limit): int
+    private function iniGetString(string $key, string $fallback = 'Unknown'): string
     {
-        if ($limit === '-1') {
-            return PHP_INT_MAX;
+        $val = ini_get($key);
+        return $val !== false ? $val : $fallback;
+    }
+
+    /**
+     * Safely stringify “mixed” for logging/output.
+     * @param mixed $v
+     */
+    private function toStringSafe($v): string
+    {
+        if (is_string($v)) {
+            return $v;
         }
-
-        $limit = trim($limit);
-        $unit = strtolower($limit[strlen($limit) - 1]);
-        $value = (int) $limit;
-
-        switch ($unit) {
-            case 'g':
-                $value *= 1024;
-            case 'm':
-                $value *= 1024;
-            case 'k':
-                $value *= 1024;
+        if (is_scalar($v)) {
+            return (string) $v;
         }
-
-        return $value;
+        if (is_object($v) && method_exists($v, '__toString')) {
+            return (string) $v;
+        }
+        $json = json_encode($v, JSON_UNESCAPED_SLASHES);
+        return $json !== false ? $json : gettype($v);
     }
 }

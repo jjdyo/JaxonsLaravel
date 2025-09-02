@@ -33,10 +33,40 @@ class VerifyEmailNotification extends VerifyEmail
      */
     protected function buildMailMessage($url)
     {
+        // Get localized strings and ensure they are strings
+        /** @var string|array<string> $subject */
+        $subject = Lang::get('Verify Email Address');
+        $subjectStr = $this->ensureString($subject, 'Verify Email Address');
+
+        /** @var string|array<string> $line */
+        $line = Lang::get('Please click the button below to verify your email address.');
+        $lineStr = $this->ensureString($line, 'Please click the button below to verify your email address.');
+
+        /** @var string|array<string> $action */
+        $action = Lang::get('Verify Email Address');
+        $actionStr = $this->ensureString($action, 'Verify Email Address');
+
         return (new MailMessage)
-            ->subject((string)Lang::get('Verify Email Address'))
-            ->line((string)Lang::get('Please click the button below to verify your email address.'))
-            ->action((string)Lang::get('Verify Email Address'), $url)
+            ->subject($subjectStr)
+            ->line($lineStr)
+            ->action($actionStr, $url)
             ->view('emails.verify-email', ['url' => $url]); // Use custom blade template
+    }
+
+    /**
+     * Ensure a value is a string.
+     *
+     * @param string|array<string> $value
+     * @param string $default
+     * @return string
+     */
+    private function ensureString($value, string $default): string
+    {
+        if (is_string($value)) {
+            return $value;
+        }
+
+        // For arrays, join the elements
+        return implode(' ', $value);
     }
 }
