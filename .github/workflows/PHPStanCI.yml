@@ -72,8 +72,19 @@ jobs:
           php artisan ide-helper:meta || true
 
       - name: PHPStan
-        # bump memory to avoid worker OOM during analysis
-        run: php -d memory_limit=1G vendor/bin/phpstan analyse --ansi
+        run: |
+          vendor/bin/phpstan analyse --no-progress --error-format=table -d memory_limit=1G \
+            | tee phpstan-report.txt
+
+      - name: Add report to summary
+        run: |
+          {
+            echo "## PHPStan Report"
+            echo
+            echo '```text'
+            cat phpstan-report.txt
+            echo '```'
+          } >> $GITHUB_STEP_SUMMARY
 
       - name: Tests
         run: php artisan test --ansi
