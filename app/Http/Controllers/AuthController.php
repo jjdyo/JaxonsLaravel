@@ -71,7 +71,13 @@ class AuthController extends Controller
             'email.unique' => 'The email address is already taken by another user.',
         ]);
 
+        /** @var \App\Models\User|null $user */
         $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route('login')
+                ->with('error', 'You must be logged in to update your profile.');
+        }
 
         // Sanitize the name: trim whitespace and normalize spaces
         $sanitizedName = trim(preg_replace('/\s+/', ' ', $request->name));
@@ -105,7 +111,8 @@ class AuthController extends Controller
      */
     public function processLogin(Request $request): \Illuminate\Http\RedirectResponse
     {
-        $email = $request->input('email');
+        /** @var string|null $email */
+        $email = $request->input('email', '');
 
         if (RateLimiter::tooManyAttempts('login:'.$email, 5)) {
             return back()->withErrors(['email' => 'Too many login attempts. Try again later.']);
@@ -118,7 +125,9 @@ class AuthController extends Controller
 
         // Attempt to log the user in securely
         if (Auth::attempt($credentials)) {
-            $request->session()->regenerate(); // Prevent session fixation attacks
+            /** @var \Illuminate\Session\Store $session */
+            $session = $request->session();
+            $session->regenerate(); // Prevent session fixation attacks
             return redirect()->intended('/'); // Redirect after login
         }
 
@@ -135,8 +144,11 @@ class AuthController extends Controller
     public function logout(Request $request): \Illuminate\Http\RedirectResponse
     {
         auth()->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+
+        /** @var \Illuminate\Session\Store $session */
+        $session = $request->session();
+        $session->invalidate();
+        $session->regenerateToken();
 
         return redirect()->route('home');
     }
@@ -196,13 +208,19 @@ class AuthController extends Controller
             'email' => 'required|email',
         ]);
 
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        /** @var array<string, string> $emailData */
+        $emailData = $request->only('email');
 
-        return $status === Password::RESET_LINK_SENT
-            ? back()->with(['status' => __($status)])
-            : back()->withErrors(['email' => __($status)]);
+        $status = Password::sendResetLink($emailData);
+
+        // Define the constant value if PHPStan can't find it
+        $resetLinkSent = defined('Illuminate\Support\Facades\Password::RESET_LINK_SENT')
+            ? Password::RESET_LINK_SENT
+            : 'passwords.sent';
+
+        return $status === $resetLinkSent
+            ? back()->with(['status' => __(is_string($status) ? $status : 'passwords.sent')])
+            : back()->withErrors(['email' => __(is_string($status) ? $status : 'passwords.user')]);
     }
 
     /**
@@ -230,8 +248,11 @@ class AuthController extends Controller
             'password' => 'required|min:8|confirmed',
         ]);
 
+        /** @var array<string, string> $credentials */
+        $credentials = $request->only('email', 'password', 'password_confirmation', 'token');
+
         $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
+            $credentials,
             function ($user, $password) {
                 $user->forceFill([
                     'password' => Hash::make($password)
@@ -243,8 +264,13 @@ class AuthController extends Controller
             }
         );
 
-        return $status === Password::PASSWORD_RESET
-            ? redirect()->route('login')->with('status', __($status))
-            : back()->withErrors(['email' => [__($status)]]);
+        // Define the constant value if PHPStan can't find it
+        $passwordReset = defined('Illuminate\Support\Facades\Password::PASSWORD_RESET')
+            ? Password::PASSWORD_RESET
+            : 'passwords.reset';
+
+        return $status === $passwordReset
+            ? redirect()->route('login')->with('status', __(is_string($status) ? $status : 'passwords.reset'))
+            : back()->withErrors(['email' => [__(is_string($status) ? $status : 'passwords.token')]]);
     }
 }

@@ -23,7 +23,7 @@ class DocsController extends Controller
         $readmePath = realpath($docsPath . '/README.md');
 
         // Ensure README.md exists and is within the docs directory
-        if (!$readmePath || strpos($readmePath, $realDocsPath) !== 0 || !File::exists($readmePath)) {
+        if (!$readmePath || !$realDocsPath || strpos($readmePath, $realDocsPath) !== 0 || !File::exists($readmePath)) {
             abort(404);
         }
 
@@ -67,7 +67,7 @@ class DocsController extends Controller
         $requestedPath = realpath($filePath);
 
         // Ensure the requested file exists and is within the docs directory
-        if (!$requestedPath || strpos($requestedPath, $realDocsPath) !== 0 || !File::exists($requestedPath)) {
+        if (!$requestedPath || !$realDocsPath || strpos($requestedPath, $realDocsPath) !== 0 || !File::exists($requestedPath)) {
             abort(404);
         }
 
@@ -88,11 +88,16 @@ class DocsController extends Controller
     /**
      * Parse markdown content to HTML
      *
-     * @param string $content The markdown content to parse
+     * @param string|null $content The markdown content to parse
      * @return string The parsed HTML content
      */
-    private function parseMarkdown($content): string
+    private function parseMarkdown(?string $content): string
     {
+        // If content is null, return empty string
+        if ($content === null) {
+            return '';
+        }
+
         // Fix internal links before parsing markdown
         $content = preg_replace_callback(
             '/\[([^\]]+)\]\(([^)]+\.md)\)/',
@@ -119,7 +124,7 @@ class DocsController extends Controller
     /**
      * Get documents organized in a hierarchical structure
      *
-     * @return array An array of documents organized by directories and files
+     * @return array<int, array<string, mixed>> An array of documents organized by directories and files
      */
     private function getDocumentsHierarchy(): array
     {

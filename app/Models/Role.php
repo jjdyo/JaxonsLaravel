@@ -16,6 +16,8 @@ class Role extends SpatieRole
 
     /**
      * Define the many-to-many relationship with users.
+     *
+     * @return BelongsToMany<User, Role>
      */
     public function users(): BelongsToMany
     {

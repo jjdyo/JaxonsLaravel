@@ -113,15 +113,20 @@ class SiteInfoCommand extends Command
                 'default_connection' => config('database.default'),
                 'driver' => $connection->getDriverName(),
                 'database_name' => $connection->getDatabaseName(),
-                'host' => config('database.connections.' . config('database.default') . '.host'),
-                'port' => config('database.connections.' . config('database.default') . '.port'),
+                'host' => config('database.connections.' . (string)config('database.default') . '.host'),
+                'port' => config('database.connections.' . (string)config('database.default') . '.port'),
                 'connected' => true,
             ];
 
             // Get database version
             try {
-                $version = $pdo->query('SELECT VERSION()')->fetchColumn();
-                $info['version'] = $version;
+                $result = $pdo->query('SELECT VERSION()');
+                if ($result !== false) {
+                    $version = $result->fetchColumn();
+                    $info['version'] = $version;
+                } else {
+                    $info['version'] = 'Unknown';
+                }
             } catch (\Exception $e) {
                 $info['version'] = 'Unknown';
             }
@@ -177,8 +182,12 @@ class SiteInfoCommand extends Command
                 $serverInfo = $redis->command('INFO', ['server']);
                 $memoryInfo = $redis->command('INFO', ['memory']);
 
-                $info['redis_version'] = $serverInfo['redis_version'] ?? 'Unknown';
-                $info['redis_memory'] = $memoryInfo['used_memory_human'] ?? 'Unknown';
+                // Ensure we're working with arrays
+                $serverInfoArray = is_array($serverInfo) ? $serverInfo : [];
+                $memoryInfoArray = is_array($memoryInfo) ? $memoryInfo : [];
+
+                $info['redis_version'] = $serverInfoArray['redis_version'] ?? 'Unknown';
+                $info['redis_memory'] = $memoryInfoArray['used_memory_human'] ?? 'Unknown';
                 $info['redis_connected'] = true;
             } catch (\Exception $e) {
                 $info['redis_connected'] = false;
@@ -220,18 +229,29 @@ class SiteInfoCommand extends Command
             'disks' => [],
         ];
 
-        foreach (config('filesystems.disks') as $name => $config) {
+        $disks = config('filesystems.disks');
+        if (!is_array($disks)) {
+            $disks = [];
+        }
+        foreach ($disks as $name => $config) {
             try {
+                // Ensure $config is an array
+                if (!is_array($config)) {
+                    $config = [];
+                }
+
                 $diskInfo = [
-                    'driver' => $config['driver'],
+                    'driver' => $config['driver'] ?? 'unknown',
                     'root' => $config['root'] ?? 'N/A',
                 ];
 
                 // Handle S3 disks separately
-                if ($config['driver'] === 's3') {
+                if (isset($config['driver']) && $config['driver'] === 's3') {
                     if ($this->isS3Available()) {
                         try {
-                            $disk = Storage::disk($name);
+                            // Ensure $name is a string
+                            $diskName = is_string($name) ? $name : '';
+                            $disk = Storage::disk($diskName);
                             // Test S3 connectivity with a simple operation
                             $disk->exists('.test-connectivity-check');
                             $diskInfo['status'] = 'Connected';
@@ -247,13 +267,17 @@ class SiteInfoCommand extends Command
                     }
                 } else {
                     // Handle other disk types
-                    $disk = Storage::disk($name);
+                    $diskName = is_string($name) ? $name : '';
+                    $disk = Storage::disk($diskName);
 
-                    if ($config['driver'] === 'local') {
-                        $path = $config['root'];
-                        if (is_dir($path)) {
-                            $diskInfo['free_space'] = $this->formatBytes(disk_free_space($path));
-                            $diskInfo['total_space'] = $this->formatBytes(disk_total_space($path));
+                    if (isset($config['driver']) && $config['driver'] === 'local') {
+                        $path = $config['root'] ?? '';
+                        $pathString = is_string($path) ? $path : '';
+                        if ($pathString !== '' && is_dir($pathString)) {
+                            $freeSpace = disk_free_space($pathString);
+                            $totalSpace = disk_total_space($pathString);
+                            $diskInfo['free_space'] = $this->formatBytes(is_float($freeSpace) ? (int)$freeSpace : 0);
+                            $diskInfo['total_space'] = $this->formatBytes(is_float($totalSpace) ? (int)$totalSpace : 0);
                             $diskInfo['status'] = 'Available';
                         } else {
                             $diskInfo['status'] = 'Directory not found';
@@ -284,7 +308,7 @@ class SiteInfoCommand extends Command
     {
         return [
             'default_connection' => config('queue.default'),
-            'driver' => config('queue.connections.' . config('queue.default') . '.driver'),
+            'driver' => config('queue.connections.' . (string)config('queue.default') . '.driver'),
             'failed_jobs_enabled' => config('queue.failed.driver') !== null,
         ];
     }
@@ -353,7 +377,8 @@ class SiteInfoCommand extends Command
     /**
      * Display formatted information
      *
-     * @return array<string, mixed> $info
+     * @param array<string, mixed> $info The site information to display
+     * @return void
      */
     private function displayFormattedInfo(array $info): void
     {

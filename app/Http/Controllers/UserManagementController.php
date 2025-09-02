@@ -41,7 +41,9 @@ class UserManagementController extends Controller
     public function editUser(User $user): View
     {
         $roles = Role::all();
-        return view('admin.users.edit', compact('user', 'roles'));
+        /** @var \Illuminate\View\View $view */
+        $view = view('admin.users.edit', compact('user', 'roles'));
+        return $view;
     }
 
     /**

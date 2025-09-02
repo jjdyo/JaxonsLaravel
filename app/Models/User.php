@@ -11,7 +11,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 /**
- * @method \Illuminate\Database\Eloquent\Relations\MorphMany tokens()
+ * @method \Illuminate\Database\Eloquent\Relations\MorphMany<\Laravel\Sanctum\PersonalAccessToken, User> tokens()
  * @mixin IdeHelperUser
  */
 class User extends Authenticatable implements MustVerifyEmail

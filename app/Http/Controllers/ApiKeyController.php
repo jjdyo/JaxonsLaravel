@@ -86,7 +86,13 @@ class ApiKeyController extends Controller
      */
     public function userIndex(): View
     {
+        /** @var User|null $user */
         $user = auth()->user();
+
+        if (!$user) {
+            abort(401, 'Unauthenticated');
+        }
+
         $apiKeys = $user->tokens()->orderBy('created_at', 'desc')->get();
 
         return view('user.api-tokens.index', compact('apiKeys'));
@@ -110,7 +116,8 @@ class ApiKeyController extends Controller
      */
     public function userStore(Request $request): RedirectResponse
     {
-        $availableScopes = array_keys(config('api-scopes.scopes', []));
+        $scopes = config('api-scopes.scopes', []);
+        $availableScopes = is_array($scopes) ? array_keys($scopes) : [];
 
         $validated = $request->validate([
             'name' => 'required|string|alpha_num|max:100',
@@ -124,7 +131,13 @@ class ApiKeyController extends Controller
             'scopes.*.in' => 'One or more selected scopes are invalid.',
         ]);
 
+        /** @var User|null $user */
         $user = auth()->user();
+
+        if (!$user) {
+            abort(401, 'Unauthenticated');
+        }
+
         $expiresAt = null;
 
         // Set expiration date based on selection
