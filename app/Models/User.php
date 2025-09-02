@@ -11,8 +11,9 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 /**
-* @method \Illuminate\Database\Eloquent\Relations\MorphMany tokens()
-*/
+ * @method \Illuminate\Database\Eloquent\Relations\MorphMany tokens()
+ * @mixin IdeHelperUser
+ */
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */

@@ -1,0 +1,79 @@
+# .github/workflows/PHPStanCI.yml
+name: PHPStanCI
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  phpstan_and_tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3, pdo_mysql, bcmath, curl
+          coverage: none
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: App key
+        run: php artisan key:generate
+
+      # Switch to SQLite and ensure the file exists
+      - name: Prepare SQLite
+        shell: bash
+        run: |
+          # make sure the sqlite file exists
+          mkdir -p database
+          : > database/database.sqlite
+
+          # normalize and replace DB settings in .env
+          php -r "
+            \$p = file_get_contents('.env');
+            if (!preg_match('/^DB_CONNECTION=/m', \$p)) { \$p .= PHP_EOL.'DB_CONNECTION=mariadb'.PHP_EOL; }
+            if (!preg_match('/^DB_DATABASE=/m', \$p))   { \$p .= 'DB_DATABASE=laravelsite'.PHP_EOL; }
+            \$p = preg_replace('/^DB_CONNECTION=.*/m','DB_CONNECTION=sqlite', \$p);
+            \$p = preg_replace('/^DB_DATABASE=.*/m','DB_DATABASE=database/database.sqlite', \$p);
+            file_put_contents('.env', \$p);
+          "
+
+      - name: Run migrations
+        run: php artisan migrate --force
+
+      - name: Generate IDE helpers (not committed)
+        run: |
+          php artisan ide-helper:generate
+          php artisan ide-helper:models --write-mixin
+          php artisan ide-helper:meta || true
+
+      - name: PHPStan
+        # bump memory to avoid worker OOM during analysis
+        run: php -d memory_limit=1G vendor/bin/phpstan analyse --ansi
+
+      - name: Tests
+        run: php artisan test --ansi
