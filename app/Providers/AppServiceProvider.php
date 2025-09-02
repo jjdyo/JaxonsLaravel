@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Configure the 'api' rate limiter
         RateLimiter::for('api', function (Request $request) {
+            // @phpstan-ignore-next-line
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
     }

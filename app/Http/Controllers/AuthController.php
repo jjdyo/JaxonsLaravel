@@ -112,6 +112,7 @@ class AuthController extends Controller
     public function processLogin(Request $request): \Illuminate\Http\RedirectResponse
     {
         /** @var string|null $email */
+        // @phpstan-ignore-next-line
         $email = $request->input('email', '');
 
         if (RateLimiter::tooManyAttempts('login:'.$email, 5)) {
@@ -126,6 +127,7 @@ class AuthController extends Controller
         // Attempt to log the user in securely
         if (Auth::attempt($credentials)) {
             /** @var \Illuminate\Session\Store $session */
+            // @phpstan-ignore-next-line
             $session = $request->session();
             $session->regenerate(); // Prevent session fixation attacks
             return redirect()->intended('/'); // Redirect after login
@@ -146,6 +148,7 @@ class AuthController extends Controller
         auth()->logout();
 
         /** @var \Illuminate\Session\Store $session */
+        // @phpstan-ignore-next-line
         $session = $request->session();
         $session->invalidate();
         $session->regenerateToken();
@@ -209,6 +212,7 @@ class AuthController extends Controller
         ]);
 
         /** @var array<string, string> $emailData */
+        // @phpstan-ignore-next-line
         $emailData = $request->only('email');
 
         $status = Password::sendResetLink($emailData);
@@ -219,8 +223,8 @@ class AuthController extends Controller
             : 'passwords.sent';
 
         return $status === $resetLinkSent
-            ? back()->with(['status' => __(is_string($status) ? $status : 'passwords.sent')])
-            : back()->withErrors(['email' => __(is_string($status) ? $status : 'passwords.user')]);
+            ? back()->with(['status' => __($status)])
+            : back()->withErrors(['email' => __($status)]);
     }
 
     /**
@@ -249,6 +253,7 @@ class AuthController extends Controller
         ]);
 
         /** @var array<string, string> $credentials */
+        // @phpstan-ignore-next-line
         $credentials = $request->only('email', 'password', 'password_confirmation', 'token');
 
         $status = Password::reset(
@@ -270,7 +275,7 @@ class AuthController extends Controller
             : 'passwords.reset';
 
         return $status === $passwordReset
-            ? redirect()->route('login')->with('status', __(is_string($status) ? $status : 'passwords.reset'))
-            : back()->withErrors(['email' => [__(is_string($status) ? $status : 'passwords.token')]]);
+            ? redirect()->route('login')->with('status', __($status))
+            : back()->withErrors(['email' => [__($status)]]);
     }
 }

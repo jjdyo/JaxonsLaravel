@@ -118,7 +118,8 @@ class DocsController extends Controller
         );
 
         // Using Laravel's built-in Str::markdown method
-        return Str::markdown($content);
+        // Ensure content is a string for PHPStan
+        return Str::markdown((string)$content);
     }
 
     /**

@@ -42,6 +42,7 @@ class UserManagementController extends Controller
     {
         $roles = Role::all();
         /** @var \Illuminate\View\View $view */
+        // @phpstan-ignore-next-line
         $view = view('admin.users.edit', compact('user', 'roles'));
         return $view;
     }

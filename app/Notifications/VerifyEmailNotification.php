@@ -34,9 +34,9 @@ class VerifyEmailNotification extends VerifyEmail
     protected function buildMailMessage($url)
     {
         return (new MailMessage)
-            ->subject(Lang::get('Verify Email Address'))
-            ->line(Lang::get('Please click the button below to verify your email address.'))
-            ->action(Lang::get('Verify Email Address'), $url)
+            ->subject((string)Lang::get('Verify Email Address'))
+            ->line((string)Lang::get('Please click the button below to verify your email address.'))
+            ->action((string)Lang::get('Verify Email Address'), $url)
             ->view('emails.verify-email', ['url' => $url]); // Use custom blade template
     }
 }

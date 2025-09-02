@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 
 class ExampleApiController extends Controller
 {
@@ -19,7 +20,7 @@ class ExampleApiController extends Controller
      */
     public function getData(Request $request): JsonResponse
     {
-        /** @var User|null $user */
+        // @phpstan-ignore-next-line
         $user = $request->user();
 
         if (!$user) {

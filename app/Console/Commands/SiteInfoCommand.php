@@ -113,8 +113,8 @@ class SiteInfoCommand extends Command
                 'default_connection' => config('database.default'),
                 'driver' => $connection->getDriverName(),
                 'database_name' => $connection->getDatabaseName(),
-                'host' => config('database.connections.' . (string)config('database.default') . '.host'),
-                'port' => config('database.connections.' . (string)config('database.default') . '.port'),
+                'host' => config('database.connections.' . (string)(config('database.default') ?? '') . '.host'),
+                'port' => config('database.connections.' . (string)(config('database.default') ?? '') . '.port'),
                 'connected' => true,
             ];
 
@@ -308,7 +308,7 @@ class SiteInfoCommand extends Command
     {
         return [
             'default_connection' => config('queue.default'),
-            'driver' => config('queue.connections.' . (string)config('queue.default') . '.driver'),
+            'driver' => config('queue.connections.' . (string)(config('queue.default') ?? '') . '.driver'),
             'failed_jobs_enabled' => config('queue.failed.driver') !== null,
         ];
     }
@@ -388,59 +388,59 @@ class SiteInfoCommand extends Command
         // Application Info
         $this->comment('Application:');
         $this->table(['Property', 'Value'], [
-            ['Name', $info['application']['name']],
-            ['URL', $info['application']['url']],
-            ['Environment', $info['application']['environment']],
-            ['Debug Mode', $info['application']['debug'] ? 'Enabled' : 'Disabled'],
-            ['Timezone', $info['application']['timezone']],
-            ['Locale', $info['application']['locale']],
-            ['Laravel Version', $info['application']['laravel_version']],
-            ['PHP Version', $info['application']['php_version']],
+            ['Name', $info['application']['name'] ?? 'Unknown'],
+            ['URL', $info['application']['url'] ?? 'Unknown'],
+            ['Environment', $info['application']['environment'] ?? 'Unknown'],
+            ['Debug Mode', isset($info['application']['debug']) && $info['application']['debug'] ? 'Enabled' : 'Disabled'],
+            ['Timezone', $info['application']['timezone'] ?? 'Unknown'],
+            ['Locale', $info['application']['locale'] ?? 'Unknown'],
+            ['Laravel Version', $info['application']['laravel_version'] ?? 'Unknown'],
+            ['PHP Version', $info['application']['php_version'] ?? 'Unknown'],
         ]);
 
         // Database Info
         $this->comment('Database:');
-        if ($info['database']['connected']) {
+        if (isset($info['database']['connected']) && $info['database']['connected']) {
             $dbTable = [
-                ['Connection', $info['database']['default_connection']],
-                ['Driver', $info['database']['driver']],
-                ['Database', $info['database']['database_name']],
-                ['Host', $info['database']['host']],
-                ['Port', $info['database']['port']],
+                ['Connection', $info['database']['default_connection'] ?? 'Unknown'],
+                ['Driver', $info['database']['driver'] ?? 'Unknown'],
+                ['Database', $info['database']['database_name'] ?? 'Unknown'],
+                ['Host', $info['database']['host'] ?? 'Unknown'],
+                ['Port', $info['database']['port'] ?? 'Unknown'],
                 ['Version', $info['database']['version'] ?? 'Unknown'],
                 ['Status', 'Connected'],
             ];
 
             if (isset($info['database']['size_mb'])) {
-                $dbTable[] = ['Size', $info['database']['size_mb'] . ' MB'];
+                $dbTable[] = ['Size', (string)($info['database']['size_mb'] ?? 'Unknown') . ' MB'];
             }
 
             $this->table(['Property', 'Value'], $dbTable);
         } else {
-            $this->error('Database connection failed: ' . $info['database']['error']);
+            $this->error('Database connection failed: ' . ($info['database']['error'] ?? 'Unknown error'));
         }
 
         // Memory Info
         $this->comment('Memory Usage:');
         $this->table(['Property', 'Value'], [
-            ['Current Usage', $info['memory']['current_usage']],
-            ['Peak Usage', $info['memory']['peak_usage']],
-            ['Memory Limit', $info['memory']['memory_limit']],
-            ['Usage Percentage', $info['memory']['usage_percentage']],
+            ['Current Usage', $info['memory']['current_usage'] ?? 'Unknown'],
+            ['Peak Usage', $info['memory']['peak_usage'] ?? 'Unknown'],
+            ['Memory Limit', $info['memory']['memory_limit'] ?? 'Unknown'],
+            ['Usage Percentage', $info['memory']['usage_percentage'] ?? 'Unknown'],
         ]);
 
         // Cache Info
         $this->comment('Cache:');
         $cacheTable = [
-            ['Driver', $info['cache']['default_driver']],
-            ['Prefix', $info['cache']['prefix']],
-            ['Status', $info['cache']['working'] ? 'Working' : 'Failed'],
+            ['Driver', $info['cache']['default_driver'] ?? 'Unknown'],
+            ['Prefix', $info['cache']['prefix'] ?? 'Unknown'],
+            ['Status', isset($info['cache']['working']) && $info['cache']['working'] ? 'Working' : 'Failed'],
         ];
 
         if (isset($info['cache']['redis_connected'])) {
             if ($info['cache']['redis_connected']) {
-                $cacheTable[] = ['Redis Version', $info['cache']['redis_version']];
-                $cacheTable[] = ['Redis Memory', $info['cache']['redis_memory']];
+                $cacheTable[] = ['Redis Version', $info['cache']['redis_version'] ?? 'Unknown'];
+                $cacheTable[] = ['Redis Memory', $info['cache']['redis_memory'] ?? 'Unknown'];
             } else {
                 $cacheTable[] = ['Redis Status', 'Connection Failed'];
             }
@@ -452,42 +452,48 @@ class SiteInfoCommand extends Command
 
         // Storage Info
         $this->comment('Storage:');
-        $this->line('Default Disk: ' . $info['storage']['default_disk']);
-        foreach ($info['storage']['disks'] as $name => $disk) {
-            if (isset($disk['error'])) {
-                $this->error("Disk '{$name}' ({$disk['driver']}): " . $disk['error']);
-            } else {
-                $status = $disk['status'] ?? 'Unknown';
-                $extra = '';
+        $this->line('Default Disk: ' . ($info['storage']['default_disk'] ?? 'Unknown'));
+        if (isset($info['storage']['disks']) && is_array($info['storage']['disks'])) {
+            foreach ($info['storage']['disks'] as $name => $disk) {
+                if (isset($disk['error'])) {
+                    $this->error("Disk '" . (is_string($name) ? $name : 'Unknown') . "' (" . ($disk['driver'] ?? 'Unknown') . "): " . ($disk['error'] ?? 'Unknown error'));
+                } else {
+                    $status = $disk['status'] ?? 'Unknown';
+                    $extra = '';
 
-                if ($disk['driver'] === 's3') {
-                    $extra = isset($disk['bucket']) ? " (Bucket: {$disk['bucket']})" : '';
-                } elseif ($disk['driver'] === 'local') {
-                    $extra = isset($disk['free_space']) ? " (Free: {$disk['free_space']})" : '';
+                    if (isset($disk['driver'])) {
+                        if ($disk['driver'] === 's3') {
+                            $extra = isset($disk['bucket']) ? " (Bucket: " . (string)$disk['bucket'] . ")" : '';
+                        } elseif ($disk['driver'] === 'local') {
+                            $extra = isset($disk['free_space']) ? " (Free: " . (string)$disk['free_space'] . ")" : '';
+                        }
+
+                        $this->line("Disk '" . (is_string($name) ? $name : 'Unknown') . "' (" . $disk['driver'] . "): " . (string)$status . $extra);
+                    } else {
+                        $this->line("Disk '" . (is_string($name) ? $name : 'Unknown') . "': " . (string)$status . $extra);
+                    }
                 }
-
-                $this->line("Disk '{$name}' ({$disk['driver']}): {$status}{$extra}");
             }
         }
 
         // Queue Info
         $this->comment('Queue:');
         $this->table(['Property', 'Value'], [
-            ['Default Connection', $info['queue']['default_connection']],
-            ['Driver', $info['queue']['driver']],
-            ['Failed Jobs', $info['queue']['failed_jobs_enabled'] ? 'Enabled' : 'Disabled'],
+            ['Default Connection', $info['queue']['default_connection'] ?? 'Unknown'],
+            ['Driver', $info['queue']['driver'] ?? 'Unknown'],
+            ['Failed Jobs', isset($info['queue']['failed_jobs_enabled']) && $info['queue']['failed_jobs_enabled'] ? 'Enabled' : 'Disabled'],
         ]);
 
         // System Info
         $this->comment('System:');
         $this->table(['Property', 'Value'], [
-            ['Operating System', $info['system']['operating_system']],
-            ['PHP SAPI', $info['system']['php_sapi']],
-            ['Max Execution Time', $info['system']['max_execution_time']],
-            ['Upload Max Filesize', $info['system']['upload_max_filesize']],
-            ['Post Max Size', $info['system']['post_max_size']],
-            ['Loaded Extensions', $info['system']['loaded_extensions']],
-            ['OPcache', $info['system']['opcache_enabled'] ? 'Enabled' : 'Disabled'],
+            ['Operating System', $info['system']['operating_system'] ?? 'Unknown'],
+            ['PHP SAPI', $info['system']['php_sapi'] ?? 'Unknown'],
+            ['Max Execution Time', $info['system']['max_execution_time'] ?? 'Unknown'],
+            ['Upload Max Filesize', $info['system']['upload_max_filesize'] ?? 'Unknown'],
+            ['Post Max Size', $info['system']['post_max_size'] ?? 'Unknown'],
+            ['Loaded Extensions', $info['system']['loaded_extensions'] ?? 'Unknown'],
+            ['OPcache', isset($info['system']['opcache_enabled']) && $info['system']['opcache_enabled'] ? 'Enabled' : 'Disabled'],
         ]);
     }
 
