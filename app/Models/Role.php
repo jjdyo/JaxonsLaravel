@@ -12,16 +12,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Role extends SpatieRole
 {
 
-    /**
-     * This will compile but PHPStan will complain about wrong return type
-     *
-     * @return string
-     */
-    public function testMethod(): int
-    {
-        return 123; // PHPStan expects string but we return int
-    }
-
     protected $fillable = ['name', 'guard_name'];
 
     /**
