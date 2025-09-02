@@ -24,3 +24,4 @@ class Role extends SpatieRole
         return $this->belongsToMany(User::class, 'role_user');
     }
 }
+$undefined->method(); // Test failure for PHPStan Github CI Workflow
