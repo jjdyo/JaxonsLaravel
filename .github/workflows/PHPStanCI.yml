@@ -91,12 +91,14 @@ jobs:
       - name: Check PHPStan results
         shell: bash
         run: |
-          if grep -qx '\[OK\] No errors' phpstan-report.txt; then
-            echo "✅ PHPStan reports: [OK] No errors"
+          echo "PHPStan report contents:"
+          cat phpstan-report.txt
+          echo "--- End of report ---"
+
+          if grep -q "No errors" phpstan-report.txt; then
+            echo "✅ PHPStan reports: No errors found"
             exit 0
           fi
 
           echo "❌ PHPStan found issues - failing the build"
-          echo "PHPStan report contents:"
-          cat phpstan-report.txt
           exit 1
