@@ -35,7 +35,8 @@ class SiteInfoCommand extends Command
         $info = $this->gatherSiteInfo();
 
         if ($this->option('json')) {
-            $this->line(json_encode($info, JSON_PRETTY_PRINT));
+            $json = json_encode($info, JSON_PRETTY_PRINT);
+            $this->line($json === false ? '{}' : $json);
             return 0;
         }
 
@@ -46,7 +47,7 @@ class SiteInfoCommand extends Command
     /**
      * Gather all site information
      *
-     * @return array
+     * @return array<string, mixed>
      */
     private function gatherSiteInfo(): array
     {
@@ -65,7 +66,7 @@ class SiteInfoCommand extends Command
     /**
      * Get application information
      *
-     * @return array
+     * @return array<string, mixed>
      */
     private function getApplicationInfo(): array
     {
@@ -84,7 +85,7 @@ class SiteInfoCommand extends Command
     /**
      * Get environment information
      *
-     * @return array
+     * @return array<string, mixed>
      */
     private function getEnvironmentInfo(): array
     {
@@ -100,7 +101,7 @@ class SiteInfoCommand extends Command
     /**
      * Get database information
      *
-     * @return array
+     * @return array<string, mixed>
      */
     private function getDatabaseInfo(): array
     {
@@ -147,7 +148,7 @@ class SiteInfoCommand extends Command
     /**
      * Get cache information
      *
-     * @return array
+     * @return array<string, mixed>
      */
     private function getCacheInfo(): array
     {
@@ -194,7 +195,7 @@ class SiteInfoCommand extends Command
     /**
      * Get memory information
      *
-     * @return array
+     * @return array<string, mixed>
      */
     private function getMemoryInfo(): array
     {
@@ -210,7 +211,7 @@ class SiteInfoCommand extends Command
     /**
      * Get storage information
      *
-     * @return array
+     * @return array<string, mixed>
      */
     private function getStorageInfo(): array
     {
@@ -277,7 +278,7 @@ class SiteInfoCommand extends Command
     /**
      * Get queue information
      *
-     * @return array
+     * @return array<string, mixed>
      */
     private function getQueueInfo(): array
     {
@@ -291,7 +292,7 @@ class SiteInfoCommand extends Command
     /**
      * Get system information
      *
-     * @return array
+     * @return array<string, mixed>
      */
     private function getSystemInfo(): array
     {
@@ -352,7 +353,7 @@ class SiteInfoCommand extends Command
     /**
      * Display formatted information
      *
-     * @param array $info
+     * @return array<string, mixed> $info
      */
     private function displayFormattedInfo(array $info): void
     {

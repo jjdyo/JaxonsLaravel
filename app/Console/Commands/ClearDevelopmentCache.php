@@ -23,7 +23,7 @@ class ClearDevelopmentCache extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $this->info('🧹 Clearing development caches...');
 
@@ -56,5 +56,6 @@ class ClearDevelopmentCache extends Command
 
         $this->newLine();
         $this->comment('Perfect for after adding new email notifications, views, or config changes!');
+        return Command::SUCCESS;
     }
 }
