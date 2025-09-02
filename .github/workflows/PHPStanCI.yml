@@ -87,13 +87,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: phpstan-report
+
       - name: Check PHPStan results
+        shell: bash
         run: |
-          if [ -s phpstan-report.txt ]; then
-            echo "❌ PHPStan found issues - failing the build"
-            echo "PHPStan report contents:"
-            cat phpstan-report.txt
-            exit 1
-          else
-            echo "✅ PHPStan found no issues"
+          if grep -qx '\[OK\] No errors' phpstan-report.txt; then
+            echo "✅ PHPStan reports: [OK] No errors"
+            exit 0
           fi
+
+          echo "❌ PHPStan found issues - failing the build"
+          echo "PHPStan report contents:"
+          cat phpstan-report.txt
+          exit 1
