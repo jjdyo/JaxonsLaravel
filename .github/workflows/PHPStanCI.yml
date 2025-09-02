@@ -86,5 +86,14 @@ jobs:
             echo '```'
           } >> $GITHUB_STEP_SUMMARY
 
+      - name: Check PHPStan results
+        run: |
+          if [ -s phpstan-report.txt ]; then
+            echo "❌ PHPStan found issues - failing the build"
+            exit 1
+          else
+            echo "✅ PHPStan found no issues"
+          fi
+
       - name: Tests
         run: php artisan test --ansi
