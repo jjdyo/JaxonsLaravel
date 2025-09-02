@@ -73,7 +73,7 @@ jobs:
 
       - name: PHPStan
         run: |
-          vendor/bin/phpstan analyse --no-progress --error-format=table -d memory_limit=1G \
+          vendor/bin/phpstan analyse --no-progress --error-format=table --memory-limit=1G \
             | tee phpstan-report.txt
 
       - name: Add report to summary
