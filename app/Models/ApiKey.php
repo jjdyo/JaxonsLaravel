@@ -13,6 +13,12 @@ use Laravel\Sanctum\NewAccessToken;
 class ApiKey extends PersonalAccessToken
 {
     /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'personal_access_tokens';
+    /**
      * Get all API keys for a user, ordered by creation date.
      *
      * @param  User  $user
