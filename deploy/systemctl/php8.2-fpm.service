@@ -1,0 +1,31 @@
+[Unit]
+Description=The PHP 8.2 FastCGI Process Manager
+Documentation=man:php-fpm8.2(8)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Creates /run/php for sockets and pid files
+RuntimeDirectory=php
+RuntimeDirectoryMode=0755
+
+# Adjust path if php-fpm8.2  elsewhere
+ExecStart=/usr/sbin/php-fpm8.2 -F
+# Graceful reload: send USR2 to master
+ExecReload=/bin/kill -USR2 $MAINPID
+
+# Hardening (optional but nice)
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+NoNewPrivileges=true
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+

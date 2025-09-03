@@ -1,0 +1,18 @@
+[Unit]
+Description=Laravel Production Stack (MariaDB, PHP-FPM, Nginx, Cloudflared)
+Wants=network-online.target
+After=network-online.target
+
+# Bring these up together
+Requires=mariadb.service php8.2-fpm.service nginx.service cloudflared.service
+After=mariadb.service php8.2-fpm.service nginx.service cloudflared.service
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+
+
+
+

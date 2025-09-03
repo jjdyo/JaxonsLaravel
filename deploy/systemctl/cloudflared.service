@@ -1,0 +1,20 @@
+[Unit]
+Description=cloudflared
+After=network-online.target
+Wants=network-online.target
+
+#You will neeed to configure/install required Cloudflare ZAccess rules/services via the web portal. This is just the standard layout.
+[Service]
+TimeoutStartSec=0
+Type=notify
+ExecStart=/usr/bin/cloudflared --no-autoupdate tunnel run --token {{YOUR_TOKEN}}
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+
+
