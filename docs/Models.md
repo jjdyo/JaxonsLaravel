@@ -3,118 +3,23 @@
 ## Overview
 This document provides information about the data models used in the application. Models represent database tables and define the structure and relationships of the application's data.
 
-## User Model
-The User model represents users in the application and is used for authentication and authorization.
+## Available Models
+The application includes the following models:
 
-### Location
-`app\Models\User.php`
+### User Model
+The User model represents users in the application and is used for authentication, authorization, and user management. It implements email verification and integrates with Laravel Sanctum for API token management and Spatie's permission package for role-based access control.
 
-### Namespace
-`App\Models`
+[Detailed User Model Documentation](Models/User.md)
 
-### Extends
-`Illuminate\Foundation\Auth\User as Authenticatable`
+### Role Model
+The Role model extends Spatie's Role model to provide role-based access control in the application. It defines the structure and relationships for user roles, which are used for authorization and permission management.
 
-### Implements
-`Illuminate\Contracts\Auth\MustVerifyEmail` - Enables email verification functionality
+[Detailed Role Model Documentation](Models/Role.md)
 
-### Traits
-- `HasFactory` - Provides factory functionality for testing
-- `Notifiable` - Allows the model to receive notifications
-- `HasRoles` - Provides role-based permissions (from Spatie's permission package)
+### ApiKey Model
+The ApiKey model extends Laravel Sanctum's PersonalAccessToken model to provide enhanced functionality for API key management. It follows the "Fat Models, Skinny Controllers" pattern by encapsulating database operations and business logic related to API keys.
 
-### Properties
-The User model has the following properties defined using PHPDoc annotations to prevent PHP 8.2 dynamic property deprecation warnings:
-```php
-/**
- * @property int $id
- * @property string $name
- * @property string $email
- * @property string $password
- * @property string|null $remember_token
- * @property \Illuminate\Support\Carbon|null $email_verified_at
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- */
-```
-
-### Fillable Attributes
-These attributes can be mass-assigned:
-```php
-protected $fillable = [
-    'name',
-    'email',
-    'password',
-    'email_verified_at',
-];
-```
-
-### Hidden Attributes
-These attributes are hidden when the model is converted to an array or JSON:
-```php
-protected $hidden = [
-    'password',
-    'remember_token',
-];
-```
-
-### Cast Attributes
-These attributes are automatically cast to specific types:
-```php
-protected function casts(): array
-{
-    return [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
-}
-```
-
-### Relationships
-- Has many roles through the `HasRoles` trait
-
-### Usage
-The User model is used for:
-- Authentication (login/logout)
-- User registration
-- Email verification
-- Role-based access control
-- User profile management
-
-#### Email Verification
-The User model implements the `MustVerifyEmail` interface, which enables Laravel's email verification functionality. When a user registers, they receive an email with a verification link. Certain routes are protected with the `verified` middleware to ensure only users with verified email addresses can access them.
-
-## Role Model
-The Role model represents user roles in the application and is used for role-based access control.
-
-### Location
-`app\Models\Role.php`
-
-### Namespace
-`App\Models`
-
-### Extends
-`Spatie\Permission\Models\Role`
-
-### Fillable Attributes
-These attributes can be mass-assigned:
-```php
-protected $fillable = ['name', 'guard_name'];
-```
-
-### Relationships
-```php
-public function users(): BelongsToMany
-{
-    return $this->belongsToMany(User::class, 'role_user');
-}
-```
-
-### Usage
-The Role model is used for:
-- Defining user roles (e.g., admin, user)
-- Assigning roles to users
-- Role-based access control
+[Detailed ApiKey Model Documentation](Models/ApiKey.md)
 
 ## Permission System
 The application uses Spatie's Laravel-permission package for role and permission management. This provides:
