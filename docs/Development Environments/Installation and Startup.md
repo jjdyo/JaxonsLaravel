@@ -164,7 +164,29 @@ cd /var/www/JaxonsLaravel
 
 ---
 
-## 🐘 Step 2: Install MariaDB
+## 📦 Step 2: Install and Configure Composer
+
+### Using Composer in Your Laravel Project
+
+Once Composer is installed, you can use it to install Laravel dependencies:
+
+```bash
+# Install dependencies defined in composer.json
+composer install
+
+# Update dependencies to their latest versions
+composer update
+
+# Add a new package
+composer require package/name
+
+# Add a development-only package
+composer require --dev package/name
+```
+
+---
+
+## 🐘 Step 3: Install MariaDB
 
 ```bash
 sudo apt update
@@ -181,7 +203,7 @@ sudo mysql_secure_installation
 
 ---
 
-## 🌐 Step 3: Install and Configure Nginx and PHP-FPM 8.2
+## 🌐 Step 2: Install and Configure Nginx and PHP-FPM 8.2
 
 For production environments, it's recommended to use Nginx with PHP-FPM instead of Laravel's built-in development server.
 
@@ -414,5 +436,35 @@ MAIL_ENCRYPTION=null
 MAIL_FROM_ADDRESS="hello@example.com"
 MAIL_FROM_NAME="${APP_NAME}"
 ```
+
+---
+
+## Environment Configuration (.env File)
+
+Setting up your `.env` file is a crucial step in configuring your Laravel application. The `.env` file contains environment-specific variables such as database credentials, API keys, and application settings.
+
+### Creating and Configuring Your .env File
+
+1. Copy the example file to create your own .env file:
+
+```bash
+copy .env.example .env
+```
+
+2. Generate an application key:
+
+```bash
+php artisan key:generate
+```
+
+3. Configure your environment variables according to your setup:
+   - Application settings (APP_NAME, APP_ENV, APP_URL, etc.)
+   - Database connection details
+   - Mail configuration
+   - Other service credentials
+
+For detailed instructions on setting up your `.env` file, including common configurations and troubleshooting tips, please refer to our dedicated guide:
+
+[Setting up .env File Guide](../Development%20Environments/Setting%20up%20.env.md)
 
 ---
