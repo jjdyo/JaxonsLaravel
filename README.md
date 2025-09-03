@@ -8,6 +8,10 @@
 
 JaxonsLaravel is a robust Laravel-based web application that provides a comprehensive platform with advanced features for user management, content presentation, and system administration. Built on the Laravel framework, it follows standard MVC architecture while incorporating custom enhancements for security, styling, and user experience.
 
+## Routing
+![Routing Schema](/public/media/diagrams/Routing.jpg)
+
+
 ## Key Features
 
 ### Authentication System
