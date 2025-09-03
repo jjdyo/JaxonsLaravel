@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
@@ -179,6 +180,11 @@ class AuthController extends Controller
         ]);
 
         $user->assignRole('user');
+
+        Log::channel('slack')->info('New user registered', [
+            'name' => $user->name,
+            'email' => $user->email
+        ]);
 
         // Log the user in automatically after registering
         Auth::login($user);
