@@ -70,6 +70,7 @@ class SiteInfoCommand extends Command
             'env'            => config('app.env'),
             'debug'          => config('app.debug') ? 'true' : 'false',
             'url'            => config('app.url'),
+            'api_url'            => config('app.api_url'),
             'locale'         => config('app.locale'),
             'fallback_locale'=> config('app.fallback_locale'),
             'timezone'       => config('app.timezone'),
@@ -110,7 +111,6 @@ class SiteInfoCommand extends Command
                 'client_version'     => $pdo->getAttribute(\PDO::ATTR_CLIENT_VERSION),
             ];
 
-            // Simple connectivity check
             $connection->getDatabaseName();
 
             $info['connected'] = true;
@@ -145,7 +145,6 @@ class SiteInfoCommand extends Command
             ],
         ];
 
-        // Check default cache store
         try {
             $testKey = 'site_info_test_' . uniqid();
             $testValue = 'test_value';
@@ -167,7 +166,6 @@ class SiteInfoCommand extends Command
                 $serverInfo = $redis->command('INFO', ['server']);
                 $memoryInfo = $redis->command('INFO', ['memory']);
 
-                // Ensure we're working with arrays
                 $serverInfoArr = is_array($serverInfo) ? $serverInfo : [];
                 $memoryInfoArr = is_array($memoryInfo) ? $memoryInfo : [];
 
@@ -206,7 +204,6 @@ class SiteInfoCommand extends Command
 
         foreach ($disks as $name => $config) {
             try {
-                // Normalize config to array
                 if (!is_array($config)) {
                     $config = [];
                 }
@@ -219,11 +216,9 @@ class SiteInfoCommand extends Command
                 $driver = $config['driver'] ?? null;
 
                 if ($driver === 's3') {
-                    // Report S3 config without instantiating the driver.
                     $diskInfo['bucket'] = $config['bucket'] ?? null;
                     $diskInfo['region'] = $config['region'] ?? null;
 
-                    // If the adapter class is installed, mark as "Adapter available", else warn.
                     $adapterAvailable = class_exists(\League\Flysystem\AwsS3V3\AwsS3V3Adapter::class)
                         || class_exists(\League\Flysystem\AwsS3V3\PortableVisibilityConverter::class);
 
@@ -247,9 +242,6 @@ class SiteInfoCommand extends Command
                             $diskInfo['status'] = 'Directory not found';
                         }
                     } else {
-                        // For non-local (e.g., ftp, sftp, custom), don't force-load the driver either.
-                        // Just mark as "Configured". If you want to test connectivity, guard with class_exists
-                        // for their adapters similarly to S3.
                         $diskInfo['status'] = 'Configured';
                     }
                 }
@@ -350,7 +342,6 @@ class SiteInfoCommand extends Command
             $info['driver'] = config('queue.connections.' . $default . '.driver');
             $info['conn']   = config('queue.connections.' . $default);
 
-            // Quick sanity check: enqueue a closure job if sync or just ensure config exists
             $info['working'] = $info['driver'] ? true : false;
         } catch (\Throwable $e) {
             $info['working'] = false;
@@ -373,6 +364,7 @@ class SiteInfoCommand extends Command
             ['Environment', $appInfo['env']],
             ['Debug', $appInfo['debug']],
             ['URL', $appInfo['url']],
+            ['API URL', $appInfo['api_url']],
             ['Locale', $appInfo['locale']],
             ['Fallback Locale', $appInfo['fallback_locale']],
             ['Timezone', $appInfo['timezone']],

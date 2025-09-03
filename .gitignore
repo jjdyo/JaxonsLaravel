@@ -21,8 +21,6 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-npm-debug.log
-yarn-error.log
 # Laravel 4 specific
 bootstrap/compiled.php
 app/storage/
@@ -31,7 +29,6 @@ public_html/storage
 public_html/hot
 storage/*.key
 /.vagrant
-.phpunit.result.cache
 auth.json
 /_ide_helper.php
 /_ide_helper_models.php
