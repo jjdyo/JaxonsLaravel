@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ApiKey;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use Laravel\Sanctum\PersonalAccessToken;
 
 class ApiKeyController extends Controller
 {
@@ -18,7 +18,7 @@ class ApiKeyController extends Controller
      */
     public function index(User $user): View
     {
-        $apiKeys = $user->tokens()->orderBy('created_at', 'desc')->get();
+        $apiKeys = ApiKey::getAllForUser($user);
 
         return view('admin.users.api-keys.index', compact('user', 'apiKeys'));
     }
@@ -52,11 +52,13 @@ class ApiKeyController extends Controller
         ]);
 
         $abilities = $validated['abilities'] ?? ['*'];
+        $expiresAt = $validated['expires_at'] ?? null;
 
-        $token = $user->createToken(
+        $token = ApiKey::createForUser(
+            $user,
             $validated['name'],
             $abilities,
-            $validated['expires_at'] ?? null
+            $expiresAt
         );
 
         return redirect()->route('admin.users.api-keys.index', $user)
@@ -68,10 +70,10 @@ class ApiKeyController extends Controller
      * Remove the specified API key from storage (admin view).
      *
      * @param User $user The user who owns the API key
-     * @param PersonalAccessToken $token The token to delete
+     * @param ApiKey $token The token to delete
      * @return RedirectResponse Redirect to the API keys index
      */
-    public function destroy(User $user, PersonalAccessToken $token): RedirectResponse
+    public function destroy(User $user, ApiKey $token): RedirectResponse
     {
         $token->delete();
 
@@ -93,7 +95,7 @@ class ApiKeyController extends Controller
             abort(401, 'Unauthenticated');
         }
 
-        $apiKeys = $user->tokens()->orderBy('created_at', 'desc')->get();
+        $apiKeys = ApiKey::getAllForUser($user);
 
         return view('user.api-tokens.index', compact('apiKeys'));
     }
@@ -138,25 +140,11 @@ class ApiKeyController extends Controller
             abort(401, 'Unauthenticated');
         }
 
-        $expiresAt = null;
-
-        // Set expiration date based on selection
-        switch ($validated['expiration']) {
-            case 'week':
-                $expiresAt = now()->addWeek();
-                break;
-            case 'month':
-                $expiresAt = now()->addMonth();
-                break;
-            case 'year':
-                $expiresAt = now()->addYear();
-                break;
-        }
-
-        $token = $user->createToken(
+        $token = ApiKey::createWithExpiration(
+            $user,
             $validated['name'],
-            $validated['scopes'], // Use selected scopes
-            $expiresAt
+            $validated['scopes'],
+            $validated['expiration']
         );
 
         return redirect()->route('api-tokens.index')
@@ -167,10 +155,10 @@ class ApiKeyController extends Controller
     /**
      * Display the specified API token.
      *
-     * @param PersonalAccessToken $token The token to show
+     * @param ApiKey $token The token to show
      * @return View The token details view
      */
-    public function userShow(PersonalAccessToken $token): View
+    public function userShow(ApiKey $token): View
     {
         $this->authorizeToken($token);
 
@@ -180,10 +168,10 @@ class ApiKeyController extends Controller
     /**
      * Remove the specified API token from storage.
      *
-     * @param PersonalAccessToken $token The token to delete
+     * @param ApiKey $token The token to delete
      * @return RedirectResponse Redirect to the API tokens index
      */
-    public function userDestroy(PersonalAccessToken $token): RedirectResponse
+    public function userDestroy(ApiKey $token): RedirectResponse
     {
         $this->authorizeToken($token);
 
@@ -196,12 +184,15 @@ class ApiKeyController extends Controller
     /**
      * Authorize that the token belongs to the authenticated user.
      *
-     * @param PersonalAccessToken $token The token to authorize
+     * @param ApiKey $token The token to authorize
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    private function authorizeToken(PersonalAccessToken $token): void
+    private function authorizeToken(ApiKey $token): void
     {
-        if ($token->tokenable_id !== auth()->id() || $token->tokenable_type !== User::class) {
+        /** @var User|null $user */
+        $user = auth()->user();
+
+        if (!$user || !$token->belongsToUser($user)) {
             abort(403, 'Unauthorized action.');
         }
     }

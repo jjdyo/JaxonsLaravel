@@ -13,11 +13,11 @@ The controller supports token scoping, allowing users to select specific permiss
 
 ## Dependencies
 The controller relies on the following imports:
+- `App\Models\ApiKey` - For API key model operations
 - `App\Models\User` - For user model interactions
 - `Illuminate\Http\Request` - For handling HTTP requests
 - `Illuminate\Http\RedirectResponse` - For redirecting after actions
 - `Illuminate\View\View` - For returning views
-- `Laravel\Sanctum\PersonalAccessToken` - For working with Sanctum tokens
 
 The controller also uses the `config/api-scopes.php` configuration file to define available token scopes.
 
@@ -74,7 +74,7 @@ Creates and stores a new API key for a specific user (admin view).
 Route::post('/admin/users/{user}/api-keys', [ApiKeyController::class, 'store'])->name('admin.users.api-keys.store');
 ```
 
-#### `destroy(User $user, PersonalAccessToken $token)`
+#### `destroy(User $user, ApiKey $token)`
 Deletes a specific API key for a user (admin view).
 
 **Parameters:** 
@@ -141,7 +141,7 @@ Creates and stores a new API key for the authenticated user.
 Route::post('/api-tokens', [ApiKeyController::class, 'userStore'])->name('api-tokens.store');
 ```
 
-#### `userShow(PersonalAccessToken $token)`
+#### `userShow(ApiKey $token)`
 Displays details for a specific API token.
 
 **Parameters:** 
@@ -156,7 +156,7 @@ Displays details for a specific API token.
 Route::get('/api-tokens/{token}', [ApiKeyController::class, 'userShow'])->name('api-tokens.show');
 ```
 
-#### `userDestroy(PersonalAccessToken $token)`
+#### `userDestroy(ApiKey $token)`
 Deletes a specific API token.
 
 **Parameters:** 
@@ -171,7 +171,7 @@ Deletes a specific API token.
 Route::delete('/api-tokens/{token}', [ApiKeyController::class, 'userDestroy'])->name('api-tokens.destroy');
 ```
 
-#### `authorizeToken(PersonalAccessToken $token)`
+#### `authorizeToken(ApiKey $token)`
 Helper method to ensure a token belongs to the authenticated user.
 
 **Parameters:** 
@@ -186,6 +186,62 @@ Helper method to ensure a token belongs to the authenticated user.
 - `user.api-tokens.index` - User view for listing their API tokens
 - `user.api-tokens.create` - User view for creating a new API token
 - `user.api-tokens.show` - User view for showing API token details
+
+## ApiKey Model
+
+The controller uses the `ApiKey` model, which extends Laravel Sanctum's `PersonalAccessToken` model. This model encapsulates the logic for API key operations, following the "Fat Models, Skinny Controllers" pattern.
+
+### Model Location
+`app\Models\ApiKey.php`
+
+### Model Methods
+
+#### `getAllForUser(User $user)`
+Gets all API keys for a user, ordered by creation date.
+
+**Parameters:**
+- `$user` - The user whose API keys to retrieve
+
+**Returns:** Collection of API keys
+
+#### `createForUser(User $user, string $name, array $abilities = ['*'], ?\DateTime $expiresAt = null)`
+Creates a new API key for a user.
+
+**Parameters:**
+- `$user` - The user to create the API key for
+- `$name` - The name of the API key
+- `$abilities` - The abilities of the API key (default: ['*'])
+- `$expiresAt` - The expiration date of the API key (default: null)
+
+**Returns:** NewAccessToken containing the plain text token
+
+#### `createWithExpiration(User $user, string $name, array $scopes, string $expiration)`
+Creates a new API key with expiration based on a time period.
+
+**Parameters:**
+- `$user` - The user to create the API key for
+- `$name` - The name of the API key
+- `$scopes` - The scopes of the API key
+- `$expiration` - The expiration period ('week', 'month', 'year')
+
+**Returns:** NewAccessToken containing the plain text token
+
+#### `belongsToUser(User $user)`
+Checks if the token belongs to the given user.
+
+**Parameters:**
+- `$user` - The user to check
+
+**Returns:** Boolean indicating whether the token belongs to the user
+
+#### `scopeForUser(Builder $query, User $user)`
+Scope a query to only include tokens for a specific user.
+
+**Parameters:**
+- `$query` - The query builder
+- `$user` - The user to filter by
+
+**Returns:** Modified query builder
 
 ## Token Scopes Configuration
 

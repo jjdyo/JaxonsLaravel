@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\ApiKey;
 use App\Policies\ApiKeyPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -14,7 +15,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        PersonalAccessToken::class => ApiKeyPolicy::class,
+        ApiKey::class => ApiKeyPolicy::class,
     ];
 
     /**
