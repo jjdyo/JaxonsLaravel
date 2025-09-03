@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use App\Http\Controllers\PageController;
@@ -143,3 +144,28 @@ Route::middleware(['auth', 'verified', 'role:admin'])
             //Route::delete('/{token}', [ApiKeyController::class, 'destroy'])->name('destroy');
         });
     });
+
+/*
+|--------------------------------------------------------------------------
+| Test Routes
+|--------------------------------------------------------------------------
+|
+| Routes for testing functionality (should be removed in production)
+|
+*/
+
+// Test route for logging channels
+Route::get('/test-logging', function () {
+    // Log to web channel
+    Log::channel('web')->info('Test log message to web channel');
+
+    // Log to API channel
+    Log::channel('api')->info('Test log message to API channel');
+
+    // Log to Slack channel (only if webhook URL is configured)
+    if (config('logging.channels.slack.url')) {
+        Log::channel('slack')->critical('Test critical message to Slack channel');
+    }
+
+    return 'Logging test completed. Check the log files in storage/logs/';
+});

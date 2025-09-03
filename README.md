@@ -41,6 +41,13 @@ JaxonsLaravel is a robust Laravel-based web application that provides a comprehe
 - RESTful API endpoints
 - Custom Artisan console commands
 
+### Logging System
+- Multiple specialized logging channels (web, api, slack)
+- Channel-specific log files for better organization
+- Slack integration for critical error notifications
+- Configurable log levels for different environments
+- Comprehensive logging documentation
+
 ## Pages and Functionality
 - Home page with dynamic content
 - About page with application information
