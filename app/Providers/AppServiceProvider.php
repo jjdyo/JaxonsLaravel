@@ -39,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
             if (!$user) {
                 return false;
             }
-            if (method_exists($user, 'hasRole') || method_exists($user, 'hasAnyRole')) {
+            if ($user -> hasRole('admin')) {
                 return $user->hasRole('admin');
 
             }
