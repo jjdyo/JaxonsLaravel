@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 class SystemLogsController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $base = storage_path('logs');
 
@@ -16,7 +17,12 @@ class SystemLogsController extends Controller
         $availableLogs = [];           // ['web' => ['2025-09-03','2025-09-04'], 'api' => [...]]
         $latestDates   = [];           // ['web' => '2025-09-04', 'api' => '2025-09-03']
 
-        foreach (glob($base . '/*-*.log') as $path) {
+        $globResult = glob($base . '/*-*.log');
+        if ($globResult === false) {
+            $globResult = [];
+        }
+
+        foreach ($globResult as $path) {
             $file = basename($path);   // e.g. web-2025-09-03.log
             if (!preg_match('/^(.*)-(\d{4}-\d{2}-\d{2})\.log$/', $file, $m)) {
                 continue;
@@ -29,14 +35,18 @@ class SystemLogsController extends Controller
         foreach ($availableLogs as $ch => $dates) {
             sort($dates);
             $availableLogs[$ch] = array_values(array_unique($dates));
-            $latestDates[$ch]   = end($availableLogs[$ch]) ?: null;
+            // Since we know the array is non-empty at this point, we can directly get the last element
+            $latestDates[$ch] = end($availableLogs[$ch]);
         }
 
         $channels = array_keys($availableLogs);
         sort($channels);
 
-        $selectedChannel = trim((string) $request->query('channel', ''));
-        $selectedDate    = trim((string) $request->query('date', ''));
+        $channelParam = $request->get('channel');
+        $dateParam = $request->get('date');
+
+        $selectedChannel = is_string($channelParam) ? trim($channelParam) : '';
+        $selectedDate = is_string($dateParam) ? trim($dateParam) : '';
 
         if ($selectedChannel === '' || !in_array($selectedChannel, $channels, true)) {
             return view('admin.system-logs.index', [
@@ -64,7 +74,7 @@ class SystemLogsController extends Controller
         if ($targetDate) {
             $path = sprintf('%s/%s-%s.log', $base, $selectedChannel, $targetDate);
             if (is_file($path) && is_readable($path)) {
-                $content = File::get($path) ?? '';
+                $content = File::get($path) ?: '';
             }
         }
 
