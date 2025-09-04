@@ -24,9 +24,9 @@
         </div>
 
         <div class="card">
-            <h2>System Status</h2>
-            <p>View system status and logs</p>
-            <a href="#" class="btn">View Status</a>
+            <h2>System Logs</h2>
+            <p>View application logs</p>
+            <a href="{{ route('admin.system-logs.index') }}" class="btn">View Logs</a>
         </div>
 
         <div class="card">

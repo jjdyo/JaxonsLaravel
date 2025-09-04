@@ -9,6 +9,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DocsController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\ApiKeyController;
+use App\Http\Controllers\SystemLogsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -126,6 +127,10 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('/', function () {
             return view('admin.dashboard');
         })->name('dashboard');
+
+        // System Logs routes
+        Route::get('/system-logs', [SystemLogsController::class, 'index'])->name('system-logs.index');
+        Route::get('/system-logs/fetch', [SystemLogsController::class, 'fetchLogs'])->name('system-logs.fetch');
 
         // User management routes
         Route::get('/users', [UserManagementController::class, 'listUsers'])->name('users.index');
