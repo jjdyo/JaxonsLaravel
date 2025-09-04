@@ -39,14 +39,8 @@ class AppServiceProvider extends ServiceProvider
             if (!$user) {
                 return false;
             }
-            if ($user -> hasRole('admin')) {
-                return $user->hasRole('admin');
-
-            }
-
-            // Fallback if HasRoles isn’t on the model (deny by default)
-            return false;
-        });
+            return $user->hasRole('admin');
+         });
 
     }
 }
