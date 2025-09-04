@@ -45,7 +45,7 @@ class SystemLogsController extends Controller
         }
 
         return view('admin.system-logs.index', [
-            'availableChannels' => $availableChannels,
+            'channels' => $availableChannels,
             'availableLogs' => $availableLogs
         ]);
     }

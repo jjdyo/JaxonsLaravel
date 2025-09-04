@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(buildUrl())
             .then((r) => r.json())
             .then((data) => {
-                const logs = Array.isArray(data.logs) ? data.logs : [];
+                const logs = Array.isArray(data.entries) ? data.entries : [];
                 if (logs.length === 0 && currentPage === 1) {
                     logsContainer.innerHTML = '<div class="no-logs-message">No logs found for this channel</div>';
                 } else {
