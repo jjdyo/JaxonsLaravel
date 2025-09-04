@@ -18,8 +18,35 @@ class SystemLogsController extends Controller
     {
         $availableChannels = ['web', 'api'];
 
+        // Scan the logs directory for available log files
+        $logFiles = File::files(storage_path('logs'));
+
+        // Group log files by channel and extract dates
+        $availableLogs = [];
+        foreach ($logFiles as $file) {
+            $filename = $file->getFilename();
+
+            // Match files with pattern: channel-YYYY-MM-DD.log
+            if (preg_match('/^(web|api)-(\d{4}-\d{2}-\d{2})\.log$/', $filename, $matches)) {
+                $channel = $matches[1];
+                $date = $matches[2];
+
+                if (!isset($availableLogs[$channel])) {
+                    $availableLogs[$channel] = [];
+                }
+
+                $availableLogs[$channel][] = $date;
+            }
+        }
+
+        // Sort dates for each channel
+        foreach ($availableLogs as $channel => $dates) {
+            sort($availableLogs[$channel]);
+        }
+
         return view('admin.system-logs.index', [
-            'availableChannels' => $availableChannels
+            'availableChannels' => $availableChannels,
+            'availableLogs' => $availableLogs
         ]);
     }
 
@@ -33,16 +60,18 @@ class SystemLogsController extends Controller
     {
         $request->validate([
             'channel' => 'required|string|in:web,api',
+            'date' => 'nullable|date_format:Y-m-d',
             'page' => 'required|integer|min:1',
             'limit' => 'required|integer|min:10|max:100',
         ]);
 
         $channel = $request->channel;
+        $date = $request->date;
         $page = $request->page;
         $limit = $request->limit;
 
-        // Determine the log file path based on the channel
-        $logPath = $this->getLogPath($channel);
+        // Determine the log file path based on the channel and date
+        $logPath = $this->getLogPath($channel, $date);
 
         if (!File::exists($logPath)) {
             return response()->json([
@@ -62,15 +91,34 @@ class SystemLogsController extends Controller
     }
 
     /**
-     * Get the path to the log file for a specific channel
+     * Get the path to the log file for a specific channel and date
      *
      * @param string $channel
+     * @param string|null $date Date in Y-m-d format
      * @return string
      */
-    private function getLogPath(string $channel): string
+    private function getLogPath(string $channel, ?string $date = null): string
     {
         // All logs are stored in the same directory with a standard naming convention
         $basePath = storage_path('logs');
+
+        // If date is provided, use the dated log file format
+        if ($date) {
+            return $basePath . "/{$channel}-{$date}.log";
+        }
+
+        // Check if there are any dated log files for this channel
+        $pattern = $basePath . "/{$channel}-*.log";
+        $datedLogFiles = glob($pattern);
+
+        // If dated log files exist, return the most recent one
+        if (!empty($datedLogFiles)) {
+            // Sort files by name (which includes the date) in descending order
+            rsort($datedLogFiles);
+            return $datedLogFiles[0];
+        }
+
+        // Fall back to the default log file if no dated logs exist
         return $basePath . "/{$channel}.log";
     }
 

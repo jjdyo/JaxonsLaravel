@@ -7,8 +7,9 @@ The System Logs feature provides administrators with a convenient way to view an
 The System Logs page allows administrators to:
 
 - View logs from different channels (web, api)
+- View logs from different dates for each channel
 - Dynamically load logs as they scroll down (infinite scrolling)
-- Filter logs by selecting different log channels
+- Filter logs by selecting different log channels and dates
 
 ## Access Control
 
@@ -21,8 +22,8 @@ The System Logs page allows administrators to:
 
 The `SystemLogsController` handles the following actions:
 
-- `index()`: Displays the System Logs page with a selector for available log channels
-- `fetchLogs()`: AJAX endpoint that retrieves logs with pagination
+- `index()`: Displays the System Logs page with selectors for available log channels and dates
+- `fetchLogs()`: AJAX endpoint that retrieves logs with pagination, supporting date filtering
 
 ### Routes
 
@@ -36,14 +37,18 @@ The following routes are defined for the System Logs feature:
 The System Logs view (`resources/views/admin/system-logs/index.blade.php`) includes:
 
 - A dropdown selector for choosing the log channel
+- A dropdown selector for choosing the log date
 - A log viewer with styled log entries
 - JavaScript for handling infinite scrolling and dynamic loading
+- JavaScript for dynamically updating available dates based on the selected channel
 
 ### Log Parsing
 
 Logs are parsed from the log files in `storage/logs/` directory. The implementation:
 
-- Uses standard log files (e.g., web.log, api.log) with predefined paths
+- Supports both standard log files (e.g., web.log, api.log) and dated log files (e.g., web-2025-09-03.log, api-2025-09-04.log)
+- Scans the logs directory to find available dated log files for each channel
+- Automatically selects the most recent dated log file if no specific date is selected
 - Extracts timestamp, log level, and message from each log entry
 - Formats logs for better readability with color-coding based on log level
 
@@ -52,7 +57,8 @@ Logs are parsed from the log files in `storage/logs/` directory. The implementat
 1. Navigate to the Admin Dashboard
 2. Click on "View Logs" in the System Logs card
 3. Select a log channel from the dropdown (web or api)
-4. Scroll down to load more logs as needed
+4. Select a specific date from the date dropdown (or leave as "Latest" to view the most recent logs)
+5. Scroll down to load more logs as needed
 
 ## Technical Notes
 
@@ -74,7 +80,8 @@ The feature includes comprehensive tests in `tests/Feature/Controllers/SystemLog
 Potential future enhancements for the System Logs feature:
 
 - Add search functionality to filter logs by content
-- Add date range filtering
+- Add date range filtering (currently supports single date selection)
 - Add log level filtering (info, error, warning, etc.)
 - Add export functionality to download logs
 - Add real-time log streaming for live monitoring
+- Add support for custom log file naming patterns

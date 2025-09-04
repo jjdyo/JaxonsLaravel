@@ -118,7 +118,18 @@
                 <option value="{{ $channel }}">{{ ucfirst($channel) }}</option>
             @endforeach
         </select>
+
+        <label for="date-selector" style="margin-left: 20px;">Select Date:</label>
+        <select id="date-selector">
+            <option value="">Latest</option>
+            <!-- Date options will be populated dynamically -->
+        </select>
     </div>
+
+    <script>
+        // Store available logs data from PHP
+        const availableLogs = @json($availableLogs ?? []);
+    </script>
 
     <div class="log-viewer" id="log-viewer">
         <div id="logs-container"></div>
@@ -135,13 +146,37 @@
         const logViewer = document.getElementById('log-viewer');
         const logsContainer = document.getElementById('logs-container');
         const channelSelector = document.getElementById('channel-selector');
+        const dateSelector = document.getElementById('date-selector');
         const loadingIndicator = document.getElementById('loading-indicator');
 
         let currentChannel = channelSelector.value;
+        let currentDate = dateSelector.value;
         let currentPage = 1;
         let hasMoreLogs = true;
         let isLoading = false;
         const logsPerPage = 20;
+
+        // Populate date selector based on selected channel
+        function updateDateSelector() {
+            // Clear existing options except the "Latest" option
+            while (dateSelector.options.length > 1) {
+                dateSelector.remove(1);
+            }
+
+            // Get dates for the current channel
+            const dates = availableLogs[currentChannel] || [];
+
+            // Add options for each date
+            dates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = date;
+                dateSelector.appendChild(option);
+            });
+        }
+
+        // Initial date selector population
+        updateDateSelector();
 
         // Initial load
         loadLogs();
@@ -149,6 +184,17 @@
         // Handle channel change
         channelSelector.addEventListener('change', function() {
             currentChannel = this.value;
+            updateDateSelector();
+            currentDate = dateSelector.value; // Reset to latest or first available date
+            currentPage = 1;
+            hasMoreLogs = true;
+            logsContainer.innerHTML = '';
+            loadLogs();
+        });
+
+        // Handle date change
+        dateSelector.addEventListener('change', function() {
+            currentDate = this.value;
             currentPage = 1;
             hasMoreLogs = true;
             logsContainer.innerHTML = '';
@@ -173,7 +219,15 @@
             isLoading = true;
             loadingIndicator.classList.add('visible');
 
-            fetch(`{{ route('admin.system-logs.fetch') }}?channel=${currentChannel}&page=${currentPage}&limit=${logsPerPage}`)
+            // Build the URL with query parameters
+            let url = `{{ route('admin.system-logs.fetch') }}?channel=${currentChannel}&page=${currentPage}&limit=${logsPerPage}`;
+
+            // Add date parameter if a specific date is selected
+            if (currentDate) {
+                url += `&date=${currentDate}`;
+            }
+
+            fetch(url)
                 .then(response => response.json())
                 .then(data => {
                     if (data.logs.length === 0 && currentPage === 1) {
