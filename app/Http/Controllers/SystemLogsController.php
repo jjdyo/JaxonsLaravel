@@ -4,70 +4,77 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class SystemLogsController extends Controller
 {
     public function index(Request $request)
     {
-        // 1) Define which channels you want to expose
-        //    (or discover them by scanning storage/logs)
-        $channels = ['web', 'api', 'etc'];
-
-        // 2) Build a map of available dates for each channel
-        //    Matches files like: storage/logs/web.log and web-YYYY-MM-DD.log
         $base = storage_path('logs');
-        $availableLogs = [];
-        foreach ($channels as $ch) {
-            $pattern = sprintf('%s/%s-*.log', $base, $ch);
-            $dates = collect(glob($pattern))
-                ->map(function ($path) use ($ch) {
-                    // Extract YYYY-MM-DD from "{channel}-YYYY-MM-DD.log"
-                    $file = basename($path);
-                    $maybe = Str::after($file, $ch.'-');
-                    return Str::replaceLast('.log', '', $maybe);
-                })
-                ->filter(fn ($d) => preg_match('/^\d{4}-\d{2}-\d{2}$/', $d))
-                ->sort()               // oldest -> newest
-                ->values()
-                ->all();
 
-            $availableLogs[$ch] = $dates;
+        // Discover channels & dates from dated files only: {channel}-YYYY-MM-DD.log
+        $availableLogs = [];           // ['web' => ['2025-09-03','2025-09-04'], 'api' => [...]]
+        $latestDates   = [];           // ['web' => '2025-09-04', 'api' => '2025-09-03']
+
+        foreach (glob($base . '/*-*.log') as $path) {
+            $file = basename($path);   // e.g. web-2025-09-03.log
+            if (!preg_match('/^(.*)-(\d{4}-\d{2}-\d{2})\.log$/', $file, $m)) {
+                continue;
+            }
+            [$full, $channel, $date] = $m;
+            $availableLogs[$channel] = $availableLogs[$channel] ?? [];
+            $availableLogs[$channel][] = $date;
         }
 
-        // 3) Figure out what the user selected (or default)
-        $selectedChannel = $request->query('channel', $channels[0] ?? 'web');
-        if (!in_array($selectedChannel, $channels, true)) {
-            $selectedChannel = $channels[0] ?? 'web';
+        foreach ($availableLogs as $ch => $dates) {
+            sort($dates);
+            $availableLogs[$ch] = array_values(array_unique($dates));
+            $latestDates[$ch]   = end($availableLogs[$ch]) ?: null;
         }
 
-        $selectedDate = $request->query('date', ''); // '' means "Latest"
+        $channels = array_keys($availableLogs);
+        sort($channels);
 
-        // 4) Resolve the file path (latest vs dated)
-        $latestPath = sprintf('%s/%s.log', $base, $selectedChannel);
-        $datedPath  = $selectedDate
-            ? sprintf('%s/%s-%s.log', $base, $selectedChannel, $selectedDate)
-            : null;
+        $selectedChannel = trim((string) $request->query('channel', ''));
+        $selectedDate    = trim((string) $request->query('date', ''));
 
-        $path = $datedPath && is_file($datedPath) ? $datedPath : $latestPath;
+        if ($selectedChannel === '' || !in_array($selectedChannel, $channels, true)) {
+            return view('admin.system-logs.index', [
+                'channels'        => $channels,
+                'availableLogs'   => $availableLogs,
+                'latestDates'     => $latestDates,
+                'selectedChannel' => '',
+                'selectedDate'    => '',
+                'content'         => '',
+            ]);
+        }
 
-        // 5) Load the content (or a friendly error)
-        $content = '';
-        if (is_file($path) && is_readable($path)) {
-            $content = File::get($path) ?? '';
+        $datesForChannel = $availableLogs[$selectedChannel] ?? [];
+        $latestForChan   = $latestDates[$selectedChannel] ?? null;
+
+        if ($selectedDate === '') {
+            $targetDate = $latestForChan; // may be null
+        } elseif (in_array($selectedDate, $datesForChannel, true)) {
+            $targetDate = $selectedDate;
         } else {
-            $content = "Log not found or unreadable:\n{$path}";
+            $targetDate = null;
         }
 
-        // 6) Pass everything to the view
+        $content = '';
+        if ($targetDate) {
+            $path = sprintf('%s/%s-%s.log', $base, $selectedChannel, $targetDate);
+            if (is_file($path) && is_readable($path)) {
+                $content = File::get($path) ?? '';
+            }
+        }
+
         return view('admin.system-logs.index', [
             'channels'        => $channels,
-            'availableLogs'   => $availableLogs,  // ['web' => ['2025-09-03', ...], ...]
+            'availableLogs'   => $availableLogs,
+            'latestDates'     => $latestDates,
             'selectedChannel' => $selectedChannel,
-            'selectedDate'    => $selectedDate,
-            'content'         => $content,        // raw file text
+            'selectedDate'    => $selectedDate,  // '' means "Latest (...)"
+            'content'         => $content,
         ]);
     }
 }
