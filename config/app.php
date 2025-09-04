@@ -52,8 +52,8 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://laravel.jaxonville.com'),
-    'api_url' => env('APP_API_URL', 'http://api-laravel.jaxonville.com'),
+    'url' => env('APP_URL', 'https://example.com'),
+    'api_url' => env('APP_API_URL', 'https://example.com'),
 
     /*
     |--------------------------------------------------------------------------

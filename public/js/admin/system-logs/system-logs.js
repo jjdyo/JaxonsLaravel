@@ -14,10 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const FETCH_URL = root.dataset.fetchUrl;
     let availableLogs;
     try { availableLogs = JSON.parse(root.dataset.availableLogs || '{}'); } catch { availableLogs = {}; }
-    if (!FETCH_URL) {
-        console.error('System Logs: fetch URL not provided.');
-        return;
-    }
+    if (!FETCH_URL) { console.error('System Logs: fetch URL not provided.'); return; }
 
     let currentChannel = channelSelector.value;
     let currentDate = dateSelector.value;
@@ -35,35 +32,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function buildUrl() {
         const params = new URLSearchParams({ channel: currentChannel });
-        if (currentDate) params.set('date', currentDate); // empty => latest
+        if (currentDate) params.set('date', currentDate); // empty = latest
         return `${FETCH_URL}?${params.toString()}`;
     }
 
     function renderRaw(content) {
-        // Clear and render plain text as lines for consistent styling
         logsContainer.innerHTML = '';
-        const frag = document.createDocumentFragment();
-
-        // handle empty content
         if (!content) {
-            const empty = document.createElement('div');
-            empty.className = 'no-logs-message';
-            empty.textContent = 'No logs found for this selection.';
-            frag.appendChild(empty);
-            logsContainer.appendChild(frag);
+            logsContainer.innerHTML = '<div class="no-logs-message">No logs found for this selection.</div>';
             return;
         }
-
+        const frag = document.createDocumentFragment();
         content.split('\n').forEach((line) => {
             const row = document.createElement('div');
             row.className = 'log-entry';
-            // preserve spacing for monospaced look
             row.textContent = line;
             frag.appendChild(row);
         });
-
         logsContainer.appendChild(frag);
-        // Scroll to top on reload so users see newest/top first (optional)
         logViewer.scrollTop = 0;
     }
 
@@ -72,9 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(buildUrl(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then((r) => r.json())
             .then((data) => {
-                if (typeof data.content === 'string') {
-                    renderRaw(data.content);
-                } else {
+                if (typeof data.content === 'string') renderRaw(data.content);
+                else {
                     console.error('Unexpected response shape', data);
                     logsContainer.innerHTML = '<div class="log-entry">Error loading logs. Please try again.</div>';
                 }
@@ -86,22 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
             .finally(() => loadingIndicator.classList.remove('visible'));
     }
 
-    // init
     updateDateSelector();
     loadWholeLog();
-
-    // events
-    channelSelector.addEventListener('change', function () {
-        currentChannel = this.value;
-        updateDateSelector();
-        currentDate = dateSelector.value; // empty = Latest
-        loadWholeLog();
-    });
-
-    dateSelector.addEventListener('change', function () {
-        currentDate = this.value;        // '' or YYYY-MM-DD
-        loadWholeLog();
-    });
-
-    // infinite scroll removed while we load the full file
+    channelSelector.addEventListener('change', function () { currentChannel = this.value; updateDateSelector(); currentDate = dateSelector.value; loadWholeLog(); });
+    dateSelector.addEventListener('change',   function () { currentDate   = this.value; loadWholeLog(); });
 });
