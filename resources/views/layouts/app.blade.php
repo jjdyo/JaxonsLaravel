@@ -45,7 +45,7 @@
                             <a href="{{ route('api-tokens.index') }}">API</a>
                             @endif
                             @role('admin')
-                            <a href="{{ route('admin.users.index') }}">User Management</a>
+                            <a href="{{ route('admin.dashboard') }}">Admin</a>
                             @endrole
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
