@@ -6,20 +6,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const logViewer = document.getElementById('log-viewer');
     const loadingIndicator = document.getElementById('loading-indicator');
 
-    // Guard: required elements
     if (!root || !logsContainer || !channelSelector || !dateSelector || !logViewer || !loadingIndicator) {
         console.error('System Logs: missing required DOM elements.');
         return;
     }
 
-    // Pull config from data-attributes
     const FETCH_URL = root.dataset.fetchUrl;
     let availableLogs;
-    try {
-        availableLogs = JSON.parse(root.dataset.availableLogs || '{}');
-    } catch {
-        availableLogs = {};
-    }
+    try { availableLogs = JSON.parse(root.dataset.availableLogs || '{}'); } catch { availableLogs = {}; }
     if (!FETCH_URL) {
         console.error('System Logs: fetch URL not provided.');
         return;
@@ -27,14 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentChannel = channelSelector.value;
     let currentDate = dateSelector.value;
-    let currentPage = 1;
-    let hasMoreLogs = true;
-    let isLoading = false;
-    const logsPerPage = 20;
 
     function updateDateSelector() {
-        // keep the "Latest" option
-        while (dateSelector.options.length > 1) dateSelector.remove(1);
+        while (dateSelector.options.length > 1) dateSelector.remove(1); // keep "Latest"
         const dates = availableLogs[currentChannel] || [];
         dates.forEach((date) => {
             const opt = document.createElement('option');
@@ -45,101 +34,74 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function buildUrl() {
-        const params = new URLSearchParams({
-            channel: currentChannel,
-            page: String(currentPage),
-            limit: String(logsPerPage),
-        });
-        if (currentDate) params.set('date', currentDate);
+        const params = new URLSearchParams({ channel: currentChannel });
+        if (currentDate) params.set('date', currentDate); // empty => latest
         return `${FETCH_URL}?${params.toString()}`;
     }
 
-    function renderLogs(logs) {
+    function renderRaw(content) {
+        // Clear and render plain text as lines for consistent styling
+        logsContainer.innerHTML = '';
         const frag = document.createDocumentFragment();
-        logs.forEach((log) => {
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
 
-            if (log.raw) {
-                entry.textContent = log.raw;
-            } else {
-                const timestamp = document.createElement('span');
-                timestamp.className = 'log-timestamp';
-                timestamp.textContent = log.timestamp ?? '';
+        // handle empty content
+        if (!content) {
+            const empty = document.createElement('div');
+            empty.className = 'no-logs-message';
+            empty.textContent = 'No logs found for this selection.';
+            frag.appendChild(empty);
+            logsContainer.appendChild(frag);
+            return;
+        }
 
-                const levelText = (log.level ?? 'INFO');
-                const level = document.createElement('span');
-                level.className = `log-level log-level-${String(levelText).toLowerCase()}`;
-                level.textContent = levelText;
-
-                const message = document.createElement('span');
-                message.className = 'log-message';
-                message.textContent = log.message ?? '';
-
-                entry.appendChild(timestamp);
-                entry.appendChild(level);
-                entry.appendChild(message);
-            }
-
-            frag.appendChild(entry);
+        content.split('\n').forEach((line) => {
+            const row = document.createElement('div');
+            row.className = 'log-entry';
+            // preserve spacing for monospaced look
+            row.textContent = line;
+            frag.appendChild(row);
         });
+
         logsContainer.appendChild(frag);
+        // Scroll to top on reload so users see newest/top first (optional)
+        logViewer.scrollTop = 0;
     }
 
-    function loadLogs() {
-        if (isLoading || !hasMoreLogs) return;
-        isLoading = true;
+    function loadWholeLog() {
         loadingIndicator.classList.add('visible');
-
-        fetch(buildUrl())
+        fetch(buildUrl(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then((r) => r.json())
             .then((data) => {
-                const logs = Array.isArray(data.entries) ? data.entries : [];
-                if (logs.length === 0 && currentPage === 1) {
-                    logsContainer.innerHTML = '<div class="no-logs-message">No logs found for this channel</div>';
+                if (typeof data.content === 'string') {
+                    renderRaw(data.content);
                 } else {
-                    renderLogs(logs);
+                    console.error('Unexpected response shape', data);
+                    logsContainer.innerHTML = '<div class="log-entry">Error loading logs. Please try again.</div>';
                 }
-                hasMoreLogs = Boolean(data.hasMore);
-                currentPage++;
             })
             .catch((e) => {
                 console.error('Error fetching logs:', e);
-                logsContainer.insertAdjacentHTML('beforeend',
-                    '<div class="log-entry">Error loading logs. Please try again.</div>');
+                logsContainer.innerHTML = '<div class="log-entry">Error loading logs. Please try again.</div>';
             })
-            .finally(() => {
-                isLoading = false;
-                loadingIndicator.classList.remove('visible');
-            });
+            .finally(() => loadingIndicator.classList.remove('visible'));
     }
 
     // init
     updateDateSelector();
-    loadLogs();
+    loadWholeLog();
 
     // events
     channelSelector.addEventListener('change', function () {
         currentChannel = this.value;
         updateDateSelector();
         currentDate = dateSelector.value; // empty = Latest
-        currentPage = 1;
-        hasMoreLogs = true;
-        logsContainer.innerHTML = '';
-        loadLogs();
+        loadWholeLog();
     });
 
     dateSelector.addEventListener('change', function () {
-        currentDate = this.value;
-        currentPage = 1;
-        hasMoreLogs = true;
-        logsContainer.innerHTML = '';
-        loadLogs();
+        currentDate = this.value;        // '' or YYYY-MM-DD
+        loadWholeLog();
     });
 
-    logViewer.addEventListener('scroll', function () {
-        if (isLoading || !hasMoreLogs) return;
-        const remaining = logViewer.scrollHeight - logViewer.scrollTop - logViewer.clientHeight;
-        if (remaining < 200) loadLogs();
-    });
+    // infinite scroll removed while we load the full file
 });

@@ -19,7 +19,6 @@
 
             <select id="date-selector">
                 <option value="">Latest</option>
-                <!-- JS fills in dates -->
             </select>
         </div>
 

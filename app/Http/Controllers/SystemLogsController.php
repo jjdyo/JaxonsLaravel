@@ -58,35 +58,32 @@ class SystemLogsController extends Controller
      */
     public function fetchLogs(Request $request)
     {
-        $request->validate([
-            'channel' => 'required|string|in:web,api',
-            'date' => 'nullable|date_format:Y-m-d',
-            'page' => 'required|integer|min:1',
-            'limit' => 'required|integer|min:10|max:100',
-        ]);
+        $channel = $request->string('channel')->toString();   // e.g. 'web' | 'api'
+        $date    = $request->string('date')->toString();      // 'YYYY-MM-DD' or '' for latest
 
-        $channel = $request->channel;
-        $date = $request->date;
-        $page = $request->page;
-        $limit = $request->limit;
+        // Resolve the filename for the requested channel/date.
+        // Adjust these patterns to match your log naming:
+        //   - latest: storage/logs/{channel}.log
+        //   - dated:  storage/logs/{channel}-{YYYY-MM-DD}.log
+        $base = storage_path('logs');
+        $path = $date
+            ? "{$base}/{$channel}-{$date}.log"
+            : "{$base}/{$channel}.log";
 
-        // Determine the log file path based on the channel and date
-        $logPath = $this->getLogPath($channel, $date);
-
-        if (!File::exists($logPath)) {
+        if (!is_file($path) || !is_readable($path)) {
             return response()->json([
-                'logs' => [],
-                'hasMore' => false,
-                'error' => 'Log file not found'
-            ]);
+                'content' => null,
+                'error'   => "Log not found or unreadable: {$path}",
+            ], 404);
         }
 
-        // Read and parse the log file
-        $logs = $this->parseLogFile($logPath, $page, $limit);
+        // Read entire file. (If logs are huge, consider tail-ing or size limits later.)
+        $content = file_get_contents($path) ?: '';
 
         return response()->json([
-            'logs' => $logs['entries'],
-            'hasMore' => $logs['hasMore']
+            'content' => $content,
+            // keep these keys stable if you later reintroduce paging
+            'hasMore' => false,
         ]);
     }
 
