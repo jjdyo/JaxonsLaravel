@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,5 +34,19 @@ class AppServiceProvider extends ServiceProvider
 
         // Bind route model for API keys
         Route::model('token', ApiKey::class);
+
+        Gate::define('viewPulse', function (?User $user): bool {
+            if (!$user) {
+                return false;
+            }
+            if (method_exists($user, 'hasRole') || method_exists($user, 'hasAnyRole')) {
+                return $user->hasRole('admin')
+
+            }
+
+            // Fallback if HasRoles isn’t on the model (deny by default)
+            return false;
+        });
+
     }
 }
