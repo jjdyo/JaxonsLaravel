@@ -181,13 +181,19 @@ class AuthController extends Controller
 
         $user->assignRole('user');
 
-        Log::channel('slack')->info('New user registered', [
-            'name' => $user->name,
-            'email' => $user->email
-        ]);
+        // Only log to Slack if the webhook URL is configured
+        if (config('logging.channels.slack.url')) {
+            Log::channel('slack')->info('New user registered', [
+                'name' => $user->name,
+                'email' => $user->email
+            ]);
+        }
 
         // Log the user in automatically after registering
         Auth::login($user);
+
+        // Regenerate session to prevent session fixation attacks
+        $request->session()->regenerate();
 
         // Send email verification notification
         $user->sendEmailVerificationNotification();

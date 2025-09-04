@@ -122,6 +122,11 @@ Route::middleware(['auth', 'verified', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        // Admin dashboard
+        Route::get('/', function () {
+            return view('admin.dashboard');
+        })->name('dashboard');
+
         // User management routes
         Route::get('/users', [UserManagementController::class, 'listUsers'])->name('users.index');
         Route::get('/users/{user}', [UserManagementController::class, 'showUser'])->name('users.show');
