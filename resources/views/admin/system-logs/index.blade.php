@@ -32,5 +32,6 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/admin/system-logs/system-logs.js) }}"></script>
+    <script src="{{ asset('js/admin/system-logs/system-logs.js') }}" defer></script>
 @endsection
+
