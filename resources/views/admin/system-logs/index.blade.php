@@ -7,30 +7,33 @@
 @endsection
 
 @section('content')
-    <div id="system-logs-root"
-         data-fetch-url="{{ route('admin.system-logs.fetch') }}"
-         data-available-logs='@json($availableLogs ?? [])'>
-        <div class="log-selector">
-            <select id="channel-selector">
+    <div id="system-logs-root">
+        <form id="log-form" method="GET" action="{{ route('admin.system-logs.index') }}" class="log-selector">
+            <select id="channel-selector" name="channel" onchange="this.form.submit()">
                 @foreach ($channels as $ch)
-                    <option value="{{ $ch }}">{{ $ch }}</option>
+                    <option value="{{ $ch }}" @selected($selectedChannel === $ch)>{{ $ch }}</option>
                 @endforeach
             </select>
 
-            <select id="date-selector">
-                <option value="">Latest</option>
+            <select id="date-selector" name="date" onchange="this.form.submit()">
+                <option value="" @selected($selectedDate==='')>Latest</option>
+                @foreach (($availableLogs[$selectedChannel] ?? []) as $date)
+                    <option value="{{ $date }}" @selected($selectedDate === $date)>{{ $date }}</option>
+                @endforeach
             </select>
-        </div>
+        </form>
 
         <div id="log-viewer" class="log-viewer">
-            <div id="logs-container"></div>
-            <div id="loading-indicator" class="loading-indicator">Loading…</div>
+            <div id="logs-container" class="logs-container">
+                @if(empty($content))
+                    <div class="no-logs-message">No logs found for this selection.</div>
+                @else
+                    <pre class="log-pre">{{ $content }}</pre>
+                    {{-- If you prefer line-by-line divs instead of <pre>, we can switch. --}}
+                @endif
+            </div>
         </div>
     </div>
-
 @endsection
 
-@section('scripts')
-    <script src="{{ asset('js/admin/system-logs/system-logs.js') }}" defer></script>
-@endsection
 
