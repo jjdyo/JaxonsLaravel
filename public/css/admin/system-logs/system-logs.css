@@ -1,0 +1,99 @@
+.system-logs-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.log-selector {
+    margin-bottom: 20px;
+}
+
+.log-selector select {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    font-size: 16px;
+    min-width: 200px;
+}
+
+.log-viewer {
+    background-color: #1e1e1e;
+    color: #f8f8f8;
+    border-radius: 6px;
+    padding: 15px;
+    height: 70vh;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.log-entry {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #333;
+}
+
+.log-timestamp {
+    color: #6a9955;
+    font-weight: bold;
+}
+
+.log-level {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin: 0 8px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.log-level-info {
+    background-color: #3498db;
+    color: white;
+}
+
+.log-level-error {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.log-level-warning {
+    background-color: #f39c12;
+    color: white;
+}
+
+.log-level-debug {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.log-level-critical {
+    background-color: #c0392b;
+    color: white;
+}
+
+.log-message {
+    display: block;
+    margin-top: 5px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.loading-indicator {
+    text-align: center;
+    padding: 20px;
+    display: none;
+}
+
+.loading-indicator.visible {
+    display: block;
+}
+
+.no-logs-message {
+    text-align: center;
+    padding: 20px;
+    color: #999;
+    font-style: italic;
+}

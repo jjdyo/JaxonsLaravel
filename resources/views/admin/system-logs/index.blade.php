@@ -3,287 +3,34 @@
 @section('title', 'System Logs')
 
 @section('styles')
-<style>
-    .system-logs-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-
-    .log-selector {
-        margin-bottom: 20px;
-    }
-
-    .log-selector select {
-        padding: 8px 12px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-        background-color: #fff;
-        font-size: 16px;
-        min-width: 200px;
-    }
-
-    .log-viewer {
-        background-color: #1e1e1e;
-        color: #f8f8f8;
-        border-radius: 6px;
-        padding: 15px;
-        height: 70vh;
-        overflow-y: auto;
-        font-family: 'Courier New', monospace;
-        font-size: 14px;
-        line-height: 1.5;
-    }
-
-    .log-entry {
-        margin-bottom: 10px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #333;
-    }
-
-    .log-timestamp {
-        color: #6a9955;
-        font-weight: bold;
-    }
-
-    .log-level {
-        display: inline-block;
-        padding: 2px 6px;
-        border-radius: 3px;
-        margin: 0 8px;
-        font-size: 12px;
-        font-weight: bold;
-    }
-
-    .log-level-info {
-        background-color: #3498db;
-        color: white;
-    }
-
-    .log-level-error {
-        background-color: #e74c3c;
-        color: white;
-    }
-
-    .log-level-warning {
-        background-color: #f39c12;
-        color: white;
-    }
-
-    .log-level-debug {
-        background-color: #95a5a6;
-        color: white;
-    }
-
-    .log-level-critical {
-        background-color: #c0392b;
-        color: white;
-    }
-
-    .log-message {
-        display: block;
-        margin-top: 5px;
-        white-space: pre-wrap;
-        word-break: break-word;
-    }
-
-    .loading-indicator {
-        text-align: center;
-        padding: 20px;
-        display: none;
-    }
-
-    .loading-indicator.visible {
-        display: block;
-    }
-
-    .no-logs-message {
-        text-align: center;
-        padding: 20px;
-        color: #999;
-        font-style: italic;
-    }
-</style>
+    <link rel="stylesheet" href="{{ asset('css/admin/system-logs/system-logs.css') }}">
 @endsection
 
 @section('content')
-<div class="system-logs-container">
-    <h1>System Logs</h1>
-    <p>View application logs from different channels</p>
+    <div id="system-logs-root"
+         data-fetch-url="{{ route('admin.system-logs.fetch') }}"
+         data-available-logs='@json($availableLogs ?? [])'>
+        <div class="log-selector">
+            <select id="channel-selector">
+                @foreach ($channels as $ch)
+                    <option value="{{ $ch }}">{{ $ch }}</option>
+                @endforeach
+            </select>
 
-    <div class="log-selector">
-        <label for="channel-selector">Select Log Channel:</label>
-        <select id="channel-selector">
-            @foreach($availableChannels as $channel)
-                <option value="{{ $channel }}">{{ ucfirst($channel) }}</option>
-            @endforeach
-        </select>
+            <select id="date-selector">
+                <option value="">Latest</option>
+                <!-- JS fills in dates -->
+            </select>
+        </div>
 
-        <label for="date-selector" style="margin-left: 20px;">Select Date:</label>
-        <select id="date-selector">
-            <option value="">Latest</option>
-            <!-- Date options will be populated dynamically -->
-        </select>
-    </div>
-
-    <script>
-        // Store available logs data from PHP
-        const availableLogs = @json($availableLogs ?? []);
-    </script>
-
-    <div class="log-viewer" id="log-viewer">
-        <div id="logs-container"></div>
-        <div id="loading-indicator" class="loading-indicator">
-            Loading more logs...
+        <div id="log-viewer" class="log-viewer">
+            <div id="logs-container"></div>
+            <div id="loading-indicator" class="loading-indicator">Loading…</div>
         </div>
     </div>
-</div>
+
 @endsection
 
 @section('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const logViewer = document.getElementById('log-viewer');
-        const logsContainer = document.getElementById('logs-container');
-        const channelSelector = document.getElementById('channel-selector');
-        const dateSelector = document.getElementById('date-selector');
-        const loadingIndicator = document.getElementById('loading-indicator');
-
-        let currentChannel = channelSelector.value;
-        let currentDate = dateSelector.value;
-        let currentPage = 1;
-        let hasMoreLogs = true;
-        let isLoading = false;
-        const logsPerPage = 20;
-
-        // Populate date selector based on selected channel
-        function updateDateSelector() {
-            // Clear existing options except the "Latest" option
-            while (dateSelector.options.length > 1) {
-                dateSelector.remove(1);
-            }
-
-            // Get dates for the current channel
-            const dates = availableLogs[currentChannel] || [];
-
-            // Add options for each date
-            dates.forEach(date => {
-                const option = document.createElement('option');
-                option.value = date;
-                option.textContent = date;
-                dateSelector.appendChild(option);
-            });
-        }
-
-        // Initial date selector population
-        updateDateSelector();
-
-        // Initial load
-        loadLogs();
-
-        // Handle channel change
-        channelSelector.addEventListener('change', function() {
-            currentChannel = this.value;
-            updateDateSelector();
-            currentDate = dateSelector.value; // Reset to latest or first available date
-            currentPage = 1;
-            hasMoreLogs = true;
-            logsContainer.innerHTML = '';
-            loadLogs();
-        });
-
-        // Handle date change
-        dateSelector.addEventListener('change', function() {
-            currentDate = this.value;
-            currentPage = 1;
-            hasMoreLogs = true;
-            logsContainer.innerHTML = '';
-            loadLogs();
-        });
-
-        // Handle scroll for infinite loading
-        logViewer.addEventListener('scroll', function() {
-            if (isLoading || !hasMoreLogs) return;
-
-            // Check if we're near the bottom
-            const scrollPosition = logViewer.scrollHeight - logViewer.scrollTop - logViewer.clientHeight;
-            if (scrollPosition < 200) {
-                loadLogs();
-            }
-        });
-
-        // Function to load logs
-        function loadLogs() {
-            if (isLoading || !hasMoreLogs) return;
-
-            isLoading = true;
-            loadingIndicator.classList.add('visible');
-
-            // Build the URL with query parameters
-            let url = `{{ route('admin.system-logs.fetch') }}?channel=${currentChannel}&page=${currentPage}&limit=${logsPerPage}`;
-
-            // Add date parameter if a specific date is selected
-            if (currentDate) {
-                url += `&date=${currentDate}`;
-            }
-
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.logs.length === 0 && currentPage === 1) {
-                        logsContainer.innerHTML = '<div class="no-logs-message">No logs found for this channel</div>';
-                    } else {
-                        renderLogs(data.logs);
-                    }
-
-                    hasMoreLogs = data.hasMore;
-                    currentPage++;
-                })
-                .catch(error => {
-                    console.error('Error fetching logs:', error);
-                    logsContainer.innerHTML += '<div class="log-entry">Error loading logs. Please try again.</div>';
-                })
-                .finally(() => {
-                    isLoading = false;
-                    loadingIndicator.classList.remove('visible');
-                });
-        }
-
-        // Function to render logs
-        function renderLogs(logs) {
-            const fragment = document.createDocumentFragment();
-
-            logs.forEach(log => {
-                const logEntry = document.createElement('div');
-                logEntry.className = 'log-entry';
-
-                if (log.raw) {
-                    // Handle raw log format
-                    logEntry.textContent = log.raw;
-                } else {
-                    // Handle structured log format
-                    const timestamp = document.createElement('span');
-                    timestamp.className = 'log-timestamp';
-                    timestamp.textContent = log.timestamp;
-
-                    const level = document.createElement('span');
-                    level.className = `log-level log-level-${log.level.toLowerCase()}`;
-                    level.textContent = log.level;
-
-                    const message = document.createElement('span');
-                    message.className = 'log-message';
-                    message.textContent = log.message;
-
-                    logEntry.appendChild(timestamp);
-                    logEntry.appendChild(level);
-                    logEntry.appendChild(message);
-                }
-
-                fragment.appendChild(logEntry);
-            });
-
-            logsContainer.appendChild(fragment);
-        }
-    });
-</script>
+    <script src="{{ asset('js/admin/system-logs/system-logs.js) }}"></script>
 @endsection
