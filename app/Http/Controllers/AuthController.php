@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller
 {
@@ -193,7 +194,7 @@ class AuthController extends Controller
         Auth::login($user);
 
         // Regenerate session to prevent session fixation attacks
-        $request->session()->regenerate();
+        session()->regenerate();
 
         // Send email verification notification
         $user->sendEmailVerificationNotification();
