@@ -12,7 +12,7 @@
          data-available-logs='@json($availableLogs ?? [])'>
         <div class="log-selector">
             <select id="channel-selector">
-                @foreach ($channels as $ch)
+                @foreach ($availableLogs as $ch)
                     <option value="{{ $ch }}">{{ $ch }}</option>
                 @endforeach
             </select>
