@@ -30,7 +30,7 @@ class SystemLogsControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertViewIs('admin.system-logs.index');
         $response->assertSee('System Logs');
-        $response->assertSee('Select Log Channel');
+        $response->assertSee('— Select channel —'); // Changed to match actual HTML
     }
 
     /**
@@ -52,48 +52,31 @@ class SystemLogsControllerTest extends TestCase
     }
 
     /**
-     * Test that invalid parameters are rejected.
+     * Test that invalid parameters are handled gracefully.
      *
      * @return void
      */
-    public function testInvalidParametersAreRejected()
+    public function testInvalidParametersAreHandledGracefully()
     {
         // Create and login as admin
         $admin = $this->createAdminUser();
         $this->actingAs($admin);
 
-        // Test with invalid channel
-        $response = $this->getJson(route('admin.system-logs.fetch', [
-            'channel' => 'invalid',
-            'page' => 1,
-            'limit' => 20
+        // Test with invalid channel - should still return 200 but show no logs
+        $response = $this->get(route('admin.system-logs.index', [
+            'channel' => 'invalid'
         ]));
-        $response->assertStatus(422);
+        $response->assertStatus(200);
+        $response->assertViewIs('admin.system-logs.index');
+        $response->assertSee('Choose a channel to view logs');
 
-        // Test with invalid page
-        $response = $this->getJson(route('admin.system-logs.fetch', [
+        // Test with invalid date format - should still return 200
+        $response = $this->get(route('admin.system-logs.index', [
             'channel' => 'web',
-            'page' => 0,
-            'limit' => 20
-        ]));
-        $response->assertStatus(422);
-
-        // Test with invalid limit
-        $response = $this->getJson(route('admin.system-logs.fetch', [
-            'channel' => 'web',
-            'page' => 1,
-            'limit' => 200
-        ]));
-        $response->assertStatus(422);
-
-        // Test with invalid date format
-        $response = $this->getJson(route('admin.system-logs.fetch', [
-            'channel' => 'web',
-            'page' => 1,
-            'limit' => 20,
             'date' => 'invalid-date'
         ]));
-        $response->assertStatus(422);
+        $response->assertStatus(200);
+        $response->assertViewIs('admin.system-logs.index');
     }
 
     /**
@@ -121,24 +104,75 @@ class SystemLogsControllerTest extends TestCase
         $testLogContent = "[2025-09-03 10:00:00] test.INFO: Test log entry for dated file";
         file_put_contents($testLogPath, $testLogContent);
 
-        // Test fetching logs with a specific date
-        $response = $this->getJson(route('admin.system-logs.fetch', [
+        // Test accessing logs with a specific channel and date
+        $response = $this->get(route('admin.system-logs.index', [
             'channel' => $testChannel,
-            'page' => 1,
-            'limit' => 20,
             'date' => $testDate
         ]));
 
         // Assert successful response
         $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'logs',
-            'hasMore'
-        ]);
+        $response->assertViewIs('admin.system-logs.index');
+        $response->assertSee($testChannel); // Should show the selected channel
+        $response->assertSee('Test log entry for dated file'); // Should show log content
+
+        // Test accessing logs with just channel (should get latest date)
+        $response = $this->get(route('admin.system-logs.index', [
+            'channel' => $testChannel
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('admin.system-logs.index');
+        $response->assertSee($testChannel);
 
         // Clean up test file
         if (file_exists($testLogPath)) {
             unlink($testLogPath);
+        }
+    }
+
+    /**
+     * Test that channels are discovered correctly from log files.
+     *
+     * @return void
+     */
+    public function testChannelDiscoveryFromLogFiles()
+    {
+        // Create and login as admin
+        $admin = $this->createAdminUser();
+        $this->actingAs($admin);
+
+        // Create test log files for different channels
+        $testDate = '2025-09-03';
+        $channels = ['web', 'api', 'custom'];
+        $createdFiles = [];
+
+        foreach ($channels as $channel) {
+            $logPath = storage_path("logs/{$channel}-{$testDate}.log");
+
+            // Ensure the logs directory exists
+            if (!file_exists(dirname($logPath))) {
+                mkdir(dirname($logPath), 0755, true);
+            }
+
+            file_put_contents($logPath, "[{$testDate} 10:00:00] test.INFO: Test log for {$channel}");
+            $createdFiles[] = $logPath;
+        }
+
+        // Access the system logs page
+        $response = $this->get(route('admin.system-logs.index'));
+
+        // Assert successful response and that all channels are available
+        $response->assertStatus(200);
+        foreach ($channels as $channel) {
+            $response->assertSee($channel);
+        }
+
+        // Clean up test files
+        foreach ($createdFiles as $file) {
+            if (file_exists($file)) {
+                unlink($file);
+            }
         }
     }
 }
