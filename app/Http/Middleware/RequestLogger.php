@@ -6,43 +6,54 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Routing\Router;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class RequestLogger
 {
-    /**
-     * Handle an incoming request.
-     */
+    public function __construct(private Router $router) {}
+
     public function handle(Request $request, Closure $next): SymfonyResponse
     {
-        $start = microtime(true);
-
-        /** @var \Symfony\Component\HttpFoundation\Response $response */
+        $start    = microtime(true);
         $response = $next($request);
 
-        // Channel: api vs web
         $pathInfo = $request->getPathInfo();
-        $isApi = str_starts_with($pathInfo, '/api');
-        $channel = $isApi ? 'api' : 'web';
+        $isApi    = str_starts_with($pathInfo, '/api');
+        $channel  = $isApi ? 'api' : 'web';
 
-        // @phpstan-ignore-next-line
-        $routeName = Route::current()?->getName();
+        // Map HTTP verb -> emoji
+        $emoji = match ($request->getMethod()) {
+            'GET'    => '👀',
+            'POST'   => '📩',
+            'PUT', 'PATCH' => '✏️',
+            'DELETE' => '🗑️',
+            default  => '➡️',
+        };
 
-        $context = [
-            'method'      => $request->getMethod(),
-            'uri'         => '/' . ltrim($pathInfo, '/'),
-            'query'       => $request->getQueryString(),
-            'full_url'    => $request->getUri(),
-            'ip'          => $request->getClientIp(),
-            'user_id'     => Auth::id() ?? 'guest',
-            'status'      => $response->getStatusCode(),
-            'route'       => $routeName,
-            'ua'          => $request->headers->get('User-Agent'),
-            'duration_ms' => (int) round((microtime(true) - $start) * 1000),
-        ];
+        $routeName = $this->router->currentRouteName() ?? 'N/A';
 
-        Log::channel($channel)->info('http_request', $context);
+
+        $user = Auth::user();
+        $userLabel = $user
+            ? sprintf('%s (%s)', trim(($user->name ?? $user->full_name ?? $user->email ?? 'user')), $user->getAuthIdentifier())
+            : 'guest';
+
+        $durationMs = (int) round((microtime(true) - $start) * 1000);
+
+        // Pretty, multi-line log message (no IP)
+        $logMessage = implode("\n", [
+            sprintf('%s %s', $emoji, $request->getMethod()),
+            '  URI: '       . $pathInfo,
+            '  Full URL: '  . $request->getUri(),
+            '  Route: '     . $routeName,
+            '  Status: '    . $response->getStatusCode(),
+            '  User: '      . $userLabel,
+            '  Duration: '  . $durationMs . ' ms',
+            '  UA: '        . ($request->userAgent() ?? 'N/A'),
+        ]);
+
+        Log::channel($channel)->info($logMessage);
 
         return $response;
     }
