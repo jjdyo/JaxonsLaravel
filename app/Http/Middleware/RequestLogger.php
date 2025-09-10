@@ -15,46 +15,68 @@ class RequestLogger
 
     public function handle(Request $request, Closure $next): SymfonyResponse
     {
-        $start    = microtime(true);
+        $start = microtime(true);
+
+        /** @var \Symfony\Component\HttpFoundation\Response $response */
         $response = $next($request);
 
         $pathInfo = $request->getPathInfo();
-        $channel  = str_starts_with($pathInfo, '/api/') ? 'api' : 'web';
 
-        $emoji = match ($request->getMethod()) {
-            'GET'    => '👀',
-            'POST'   => '📩',
-            'PUT', 'PATCH' => '✏️',
-            'DELETE' => '🗑️',
-            default  => '➡️',
+        // Strict API routing: only paths that BEGIN with "/api/" go to the "api" channel
+        $isApiPath = str_starts_with($pathInfo, '/api/');
+        $channel   = $isApiPath ? 'api' : 'web';
+
+        // Verb -> emoji
+        $method = $request->getMethod();
+        $emoji  = match ($method) {
+            'GET'             => '👀',
+            'POST'            => '📩',
+            'PUT', 'PATCH'    => '✏️',
+            'DELETE'          => '🗑️',
+            default           => '➡️',
         };
 
-        // Route info (no type drama)
-        $route     = $this->router->current();
+        // Route name (nullable, PHPStan-friendly)
         $routeName = $this->router->currentRouteName() ?? 'N/A';
-        $routeUri  = $route?->uri() ?? ltrim($pathInfo, '/');
 
-        // Mask hash-ish path segments but keep structure
+        // Mask hash-like segments in the PATH (queries are dropped entirely)
         $sanitizedPath = $this->maskPathHashes($pathInfo);
 
-        // Already-resolved user (no extra queries)
+        // User label without extra DB calls; handle mixed getAuthIdentifier()
         $user = Auth::user();
-        $userLabel = $user
-            ? sprintf('%s (%s)', trim($user->name ?? $user->email ?? 'user'), $user->getAuthIdentifier())
-            : 'guest';
+        if ($user) {
+            /** @var string|null $maybeName */
+            $maybeName  = property_exists($user, 'name') ? $user->name : null;
+            /** @var string|null $maybeEmail */
+            $maybeEmail = property_exists($user, 'email') ? $user->email : null;
+
+            $displayName = $maybeName ?: ($maybeEmail ?: 'user');
+
+            /** @var mixed $rawId */
+            $rawId = $user->getAuthIdentifier();
+            $idLabel = is_scalar($rawId) ? (string) $rawId : 'unknown';
+
+
+            $userLabel = $displayName . ' (' . $idLabel . ')';
+        } else {
+            $userLabel = 'guest';
+        }
 
         $durationMs = (int) round((microtime(true) - $start) * 1000);
 
-        // No query string, no full URL, no IP
+        // User-Agent via headers (Symfony Request, known to PHPStan)
+        $ua = $request->headers->get('User-Agent');
+        $uaStr = is_string($ua) ? $ua : 'N/A';
+
+        // Pretty, multi-line message (no full URL, no query string, no IP)
         $lines = [
-            sprintf('%s %s', $emoji, $request->getMethod()),
-            '  URI: '       . $sanitizedPath,
-            '  Route: '     . $routeName,
-            '  Route URI: ' . $routeUri,   // template like email/verify/{id}/{hash} when available
-            '  Status: '    . $response->getStatusCode(),
-            '  User: '      . $userLabel,
-            '  Duration: '  . $durationMs . ' ms',
-            '  UA: '        . ($request->userAgent() ?? 'N/A'),
+            $emoji . ' ' . $method,
+            '  URI: '      . $sanitizedPath,
+            '  Route: '    . $routeName,
+            '  Status: '   . $response->getStatusCode(),
+            '  User: '     . $userLabel,
+            '  Duration: ' . $durationMs . ' ms',
+            '  UA: '       . $uaStr,
         ];
 
         Log::channel($channel)->info(implode("\n", $lines));
@@ -62,24 +84,30 @@ class RequestLogger
         return $response;
     }
 
-    /** Masks hash-like PATH segments: /x/abc123... -> /x/{{HASH:40}} */
+    /** Masks hash-like PATH segments: /x/abcdef... -> /x/{{HASH:40}} */
     private function maskPathHashes(string $path): string
     {
-        $segments = array_filter(explode('/', $path), static fn($s) => $s !== '');
-        $segments = array_map(function ($seg) {
+        $parts = array_filter(explode('/', $path), static fn($s) => $s !== '');
+        $parts = array_map(function ($seg) {
             return $this->looksLikeToken($seg) ? '{{HASH:' . strlen($seg) . '}}' : $seg;
-        }, $segments);
+        }, $parts);
 
-        return '/' . implode('/', $segments);
+        return '/' . implode('/', $parts);
     }
 
-    /** Heuristic for token-looking strings (hex or url-safe base64-ish, length ≥ 16). */
+    /** Heuristic for token-looking strings (hex or URL-safe base64-ish, length ≥ 16). */
     private function looksLikeToken(string $s): bool
     {
         $len = strlen($s);
-        if ($len < 16) return false;
-        if (preg_match('/^[A-Fa-f0-9]+$/', $s) === 1) return true;           // hex
-        if (preg_match('/^[A-Za-z0-9\-_]+$/', $s) === 1) return true;        // url-safe b64-ish
+        if ($len < 16) {
+            return false;
+        }
+        if (preg_match('/^[A-Fa-f0-9]+$/', $s) === 1) {
+            return true; // hex
+        }
+        if (preg_match('/^[A-Za-z0-9\-_]+$/', $s) === 1) {
+            return true; // url-safe base64-ish / random token
+        }
         return false;
     }
 }
