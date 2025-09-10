@@ -1,5 +1,6 @@
 includes:
-    - ./vendor/nunomaduro/larastan/extension.neon
+    - vendor/larastan/larastan/extension.neon
+
 parameters:
     level: 9
     paths:
@@ -8,3 +9,19 @@ parameters:
         - _ide_helper.php
         - _ide_helper_models.php
         - .phpstorm.meta.php
+    # Laravel specific configurations
+    bootstrapFiles:
+        - bootstrap/app.php
+
+    # Exclude problematic paths
+    excludePaths:
+        - bootstrap/cache
+        - storage
+        - node_modules (?)
+
+    reportUnmatchedIgnoredErrors: false
+
+    # Additional Laravel-specific settings
+    checkTooWideReturnTypesInProtectedAndPublicMethods: false
+    checkUninitializedProperties: false
+    checkDynamicProperties: false

@@ -13,7 +13,6 @@ class SystemLogsController extends Controller
     {
         $base = storage_path('logs');
 
-        // Discover channels & dates from dated files only: {channel}-YYYY-MM-DD.log
         $availableLogs = [];           // ['web' => ['2025-09-03','2025-09-04'], 'api' => [...]]
         $latestDates   = [];           // ['web' => '2025-09-04', 'api' => '2025-09-03']
 

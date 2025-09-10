@@ -120,7 +120,6 @@ class AuthController extends Controller
         if (RateLimiter::tooManyAttempts('login:'.$email, 5)) {
             return back()->withErrors(['email' => 'Too many login attempts. Try again later.']);
         }
-        // Validate user input
         $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required'
@@ -132,12 +131,12 @@ class AuthController extends Controller
             // @phpstan-ignore-next-line
             $session = $request->session();
             $session->regenerate(); // Prevent session fixation attacks
-            return redirect()->intended('/'); // Redirect after login
+            return redirect()->intended('/');
         }
 
         return back()->withErrors([
             'email' => 'Invalid email or password'
-        ])->onlyInput('email'); // Keep email input but clear password
+        ])->onlyInput('email');
     }
     /**
      * Log the user out of the application
