@@ -124,4 +124,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | API Throttle Toggle
+    |--------------------------------------------------------------------------
+    |
+    | Toggle API rate limits. This will apply to ALL users. Used for debugging/stress testing.
+    |
+    | True / False
+    |
+    */
+    'api_throttle' => env('API_THROTTLE', true),
+
+
 ];

@@ -26,21 +26,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Configure the 'api' rate limiter
         RateLimiter::for('api', function (Request $request) {
-            // @phpstan-ignore-next-line
-            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+            // If API_THROTTLE=false, disable rate limiting entirely
+            if (! config('app.api_throttle', true)) {
+                return Limit::none();
+            }
+
+            // Default: 60 requests/minute per user or IP
+            return Limit::perMinute(60)->by(
+                $request->user()?->id ?: $request->ip()
+            );
         });
 
-        // Bind route model for API keys
         Route::model('token', ApiKey::class);
 
         Gate::define('viewPulse', function (?User $user): bool {
-            if (!$user) {
-                return false;
-            }
-            return $user->hasRole('admin');
-         });
-
+            return $user && $user->hasRole('admin');
+        });
     }
-}
+
