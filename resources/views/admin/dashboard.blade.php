@@ -3,7 +3,6 @@
 @section('title', 'Admin Dashboard')
 
 @section('styles')
-    <link rel="stylesheet" href="{{ asset('css/admin/dashboard.css') }}">
 @endsection
 
 @section('content')
