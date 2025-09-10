@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('api', function (Request $request) {
             // If API_THROTTLE=false, disable rate limiting entirely
-            if (! config('app.api_throttle', true)) {
+            if (!config('app.api_throttle', true)) {
                 return Limit::none();
             }
 
@@ -44,4 +44,6 @@ class AppServiceProvider extends ServiceProvider
             return $user && $user->hasRole('admin');
         });
     }
+
+}
 
