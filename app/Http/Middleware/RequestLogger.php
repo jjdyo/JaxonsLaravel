@@ -22,7 +22,6 @@ class RequestLogger
 
         $pathInfo = $request->getPathInfo();
 
-        // Strict API routing: only paths that BEGIN with "/api/" go to the "api" channel
         $isApiPath = str_starts_with($pathInfo, '/api/');
         $channel   = $isApiPath ? 'api' : 'web';
 
@@ -36,13 +35,10 @@ class RequestLogger
             default           => '➡️',
         };
 
-        // Route name (nullable, PHPStan-friendly)
         $routeName = $this->router->currentRouteName() ?? 'N/A';
 
-        // Mask hash-like segments in the PATH (queries are dropped entirely)
         $sanitizedPath = $this->maskPathHashes($pathInfo);
 
-        // User label without extra DB calls; handle mixed getAuthIdentifier()
         $user = Auth::user();
         if ($user) {
             /** @var string|null $maybeName */
@@ -64,11 +60,9 @@ class RequestLogger
 
         $durationMs = (int) round((microtime(true) - $start) * 1000);
 
-        // User-Agent via headers (Symfony Request, known to PHPStan)
         $ua = $request->headers->get('User-Agent');
         $uaStr = is_string($ua) ? $ua : 'N/A';
 
-        // Pretty, multi-line message (no full URL, no query string, no IP)
         $lines = [
             $emoji . ' ' . $method,
             '  URI: '      . $sanitizedPath,
