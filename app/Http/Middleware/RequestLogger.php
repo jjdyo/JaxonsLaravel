@@ -19,7 +19,7 @@ class RequestLogger
         $response = $next($request);
 
         $pathInfo = $request->getPathInfo();
-        $channel  = str_starts_with($pathInfo, '/api') ? 'api' : 'web';
+        $channel  = str_starts_with($pathInfo, '/api/') ? 'api' : 'web';
 
         $emoji = match ($request->getMethod()) {
             'GET'    => '👀',
