@@ -32,10 +32,10 @@ class AppServiceProvider extends ServiceProvider
                 return Limit::none();
             }
 
-            // Default: 60 requests/minute per user or IP
-            return Limit::perMinute(60)->by(
-                $request->user()?->id ?: $request->ip()
-            );
+            // Default: 60 requests/minute per IP
+            $clientIp = $request->getClientIp();
+
+            return Limit::perMinute(60)->by($clientIp);
         });
 
         Route::model('token', ApiKey::class);
@@ -44,6 +44,4 @@ class AppServiceProvider extends ServiceProvider
             return $user && $user->hasRole('admin');
         });
     }
-
 }
-
