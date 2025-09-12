@@ -10,6 +10,7 @@ use Spatie\Permission\Models\Role;
 
 class UserManagementController extends Controller
 {
+    private const USERS_PER_PAGINATION = 15;
     /**
      * Display a listing of all users
      *
@@ -17,7 +18,7 @@ class UserManagementController extends Controller
      */
     public function listUsers(): View
     {
-        $users = User::paginate(15);
+        $users = User::paginate(self::USERS_PER_PAGINATION);
         return view('admin.users.index', compact('users'));
     }
 
@@ -38,12 +39,14 @@ class UserManagementController extends Controller
      * @param User $user The user to edit
      * @return View The user edit form view
      */
+    #@@TODO Add admin user edit feature
     public function editUser(User $user): View
     {
         $roles = Role::all();
         /** @var \Illuminate\View\View $view */
         // @phpstan-ignore-next-line
         $view = view('admin.users.edit', compact('user', 'roles'));
+
         return $view;
     }
 
@@ -65,6 +68,7 @@ class UserManagementController extends Controller
      * @param User $user The user to delete
      * @return RedirectResponse Redirect to the users index
      */
+    #@@TODO Add admin user delete feature
     public function deleteUser(User $user): RedirectResponse
     {
         return redirect()->route('admin.users.destroy', $user);

@@ -164,18 +164,20 @@ Route::middleware(['auth', 'verified', 'role:admin'])
 |
 */
 
-// Test route for logging channels
-Route::get('/test-logging', function () {
-    // Log to web channel
-    Log::channel('web')->info('Test log message to web channel');
+if (config('app.env') !== 'production') {
+    Route::middleware('auth:sanctum')->group(function () {
+        // Test route for logging channels
+        Route::get('/test-logging', function () {
+            // Log to web channel
+            Log::channel('web')->info('Test log message to web channel');
+            // Log to API channel
+            Log::channel('api')->info('Test log message to API channel');
+            // Log to Slack channel (only if webhook URL is configured)
+            if (config('logging.channels.slack.url')) {
+                Log::channel('slack')->critical('Test critical message to Slack channel');
+            }
+            return 'Logging test completed. Check the log files in storage/logs/';
+        });
+    });
 
-    // Log to API channel
-    Log::channel('api')->info('Test log message to API channel');
-
-    // Log to Slack channel (only if webhook URL is configured)
-    if (config('logging.channels.slack.url')) {
-        Log::channel('slack')->critical('Test critical message to Slack channel');
-    }
-
-    return 'Logging test completed. Check the log files in storage/logs/';
-});
+}
