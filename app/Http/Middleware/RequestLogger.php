@@ -55,7 +55,7 @@ class RequestLogger
                 : (is_string($maybeEmail) && $maybeEmail !== '' ? $maybeEmail : 'user');
 
             /** @var mixed $rawId */
-            $rawId = method_exists($user, 'getAuthIdentifier') ? $user->getAuthIdentifier() : null;
+            $rawId = $user->getAuthIdentifier();
             $idLabel = is_scalar($rawId) || (is_object($rawId) && method_exists($rawId, '__toString'))
                 ? (string) $rawId
                 : 'unknown';
