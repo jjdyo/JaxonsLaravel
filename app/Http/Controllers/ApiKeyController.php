@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Illuminate\Support\Carbon;
 
 class ApiKeyController extends Controller
 {
@@ -52,7 +53,7 @@ class ApiKeyController extends Controller
         ]);
 
         $abilities = $validated['abilities'] ?? ['*'];
-        $expiresAt = $validated['expires_at'] ?? null;
+        $expiresAt = isset($validated['expires_at']) ? Carbon::parse($validated['expires_at']) : null;
 
         $token = ApiKey::createForUser(
             $user,

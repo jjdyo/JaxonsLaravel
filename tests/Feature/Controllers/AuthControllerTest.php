@@ -3,11 +3,13 @@
 namespace Tests\Feature\Controllers;
 
 use App\Models\User;
+use App\Models\ApiKey;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Hash;
 use Tests\Feature\Traits\AuthTestHelpers;
+use Illuminate\Support\Str;
 
 class AuthControllerTest extends TestCase
 {
@@ -225,5 +227,152 @@ class AuthControllerTest extends TestCase
         // Assert the user's name was updated but email verification status remains
         $this->assertEquals($newName, $user->name);
         $this->assertNotNull($user->email_verified_at);
+    }
+
+    /**
+     * Verified users can view and create API tokens (user routes).
+     */
+    public function test_verified_user_can_access_api_token_pages_and_create_token(): void
+    {
+        $user = $this->createRegularUser();
+
+        // Index and create pages
+        $this->actingAs($user)
+            ->get(route('api-tokens.index'))
+            ->assertStatus(200)
+            ->assertViewIs('user.api-tokens.index');
+
+        $this->actingAs($user)
+            ->get(route('api-tokens.create'))
+            ->assertStatus(200)
+            ->assertViewIs('user.api-tokens.create');
+
+        // Create token
+        $scopes = array_keys(config('api-scopes.scopes', []));
+        $payload = [
+            'name' => 'MyToken01',
+            'expiration' => 'month',
+            'scopes' => [$scopes[0]],
+        ];
+
+        $response = $this->actingAs($user)
+            ->post(route('api-tokens.store'), $payload);
+
+        $response->assertRedirect(route('api-tokens.index'));
+        $response->assertSessionHas('success');
+        $response->assertSessionHas('plainTextApiKey');
+
+        $this->assertDatabaseHas('personal_access_tokens', [
+            'tokenable_id' => $user->id,
+            'tokenable_type' => User::class,
+            'name' => 'MyToken01',
+        ]);
+    }
+
+    /**
+     * Unverified users should be redirected away from API token routes.
+     */
+    public function test_unverified_user_cannot_access_api_token_routes(): void
+    {
+        $user = $this->createUnverifiedUser();
+
+        $this->actingAs($user)
+            ->get(route('api-tokens.index'))
+            ->assertRedirect(route('verification.notice'));
+
+        $this->actingAs($user)
+            ->get(route('api-tokens.create'))
+            ->assertRedirect(route('verification.notice'));
+
+        $this->actingAs($user)
+            ->post(route('api-tokens.store'), [
+                'name' => 'BlockedToken',
+                'expiration' => 'week',
+                'scopes' => [array_key_first(config('api-scopes.scopes'))],
+            ])
+            ->assertRedirect(route('verification.notice'));
+    }
+
+    /**
+     * Users can view and revoke their own token; cannot view others.
+     */
+    public function test_user_can_view_and_delete_own_api_token(): void
+    {
+        $user = $this->createRegularUser();
+        $token = $user->createToken('Viewable', ['read-data']);
+        $tokenModel = $token->accessToken; // instance of ApiKey (PersonalAccessToken)
+
+        // Show
+        $this->actingAs($user)
+            ->get(route('api-tokens.show', $tokenModel))
+            ->assertStatus(200)
+            ->assertViewIs('user.api-tokens.show');
+
+        // Delete
+        $this->actingAs($user)
+            ->delete(route('api-tokens.destroy', $tokenModel))
+            ->assertRedirect(route('api-tokens.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('personal_access_tokens', [
+            'id' => $tokenModel->id,
+        ]);
+    }
+
+    /**
+     * Admin can manage a user's API keys via admin routes; regular users cannot.
+     */
+    public function test_admin_can_manage_users_api_keys_and_regular_user_cannot(): void
+    {
+        $admin = $this->createAdminUser();
+        $target = $this->createRegularUser();
+
+        // Admin: index and create
+        $this->actingAs($admin)
+            ->get(route('admin.users.api-keys.index', $target))
+            ->assertStatus(200)
+            ->assertViewIs('admin.users.api-keys.index');
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.api-keys.create', $target))
+            ->assertStatus(200)
+            ->assertViewIs('admin.users.api-keys.create');
+
+        // Admin: create token
+        $response = $this->actingAs($admin)
+            ->post(route('admin.users.api-keys.store', $target), [
+                'name' => 'AdminToken1',
+                'abilities' => ['read-data'],
+                'expires_at' => now()->addDay()->toDateTimeString(),
+            ]);
+
+        $response->assertRedirect(route('admin.users.api-keys.index', $target));
+        $response->assertSessionHas('success');
+        $response->assertSessionHas('plainTextApiKey');
+
+        $this->assertDatabaseHas('personal_access_tokens', [
+            'tokenable_id' => $target->id,
+            'tokenable_type' => User::class,
+            'name' => 'AdminToken1',
+        ]);
+
+        // Admin: revoke token
+        $created = ApiKey::query()->where('tokenable_id', $target->id)->where('name', 'AdminToken1')->first();
+        $this->assertNotNull($created, 'Expected token not found');
+
+        $this->actingAs($admin)
+            ->delete(route('admin.users.api-keys.destroy', [$target, $created]))
+            ->assertRedirect(route('admin.users.api-keys.index', $target))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('personal_access_tokens', [
+            'id' => $created->id,
+        ]);
+
+        // Regular user cannot access admin routes
+        $regular = $this->createRegularUser();
+        $this->actingAs($regular)
+            ->get(route('admin.users.api-keys.index', $target))
+            ->assertStatus(403);
     }
 }
