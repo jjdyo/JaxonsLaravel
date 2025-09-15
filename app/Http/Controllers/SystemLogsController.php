@@ -126,8 +126,8 @@ class SystemLogsController extends Controller
             $available[$channel][$date] = true;
         }
 
-        $channel = trim((string) $request->query('channel', ''));
-        $date    = trim((string) $request->query('date', ''));
+        $channel = trim((string) $request->get('channel', ''));
+        $date    = trim((string) $request->get('date', ''));
 
         if ($channel === '' || !array_key_exists($channel, $available)) {
             return response()->json(['error' => 'Invalid or missing channel'], 422);
@@ -146,10 +146,10 @@ class SystemLogsController extends Controller
             return response()->json(['error' => 'Unable to determine file size'], 500);
         }
 
-        $offset = $request->query('offset');
-        $limit  = (int) $request->query('limit', 65536);
+        $offset = $request->get('offset');
+        $limit  = (int) $request->get('limit', 65536);
         $limit  = max(1, min(262144, $limit)); // clamp to [1, 256 KiB]
-        $tailLines = (int) $request->query('tail_lines', 0);
+        $tailLines = (int) $request->get('tail_lines', 0);
 
         $start = 0;
         $chunk = '';
