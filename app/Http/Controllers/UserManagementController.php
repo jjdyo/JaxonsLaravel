@@ -18,15 +18,48 @@ class UserManagementController extends Controller
      *
      * @return View The users index view with all users
      */
-    public function listUsers(): View
+    public function listUsers(Request $request): View
     {
-        // Select only the fields needed for the listing and eager-load roles (limited columns)
-        $users = User::query()
-            ->select(['id', 'name', 'email', 'email_verified_at', 'created_at'])
-            ->with(['roles:id,name'])
-            ->paginate(self::USERS_PER_PAGINATION);
+        $filterParam = $request->get('filter', 'new');
+        $filter = is_string($filterParam) ? $filterParam : 'new';
 
-        return view('admin.users.index', compact('users'));
+        $qParam = $request->get('q', '');
+        $q = is_string($qParam) ? $qParam : '';
+
+        $query = User::query()
+            ->selectSummary()
+            ->withRolesMinimal();
+
+        switch ($filter) {
+            case 'unverified':
+                $query->unverified()->newest();
+                break;
+            case 'az':
+                $query->orderByName('asc');
+                break;
+            case 'za':
+                $query->orderByName('desc');
+                break;
+            case 'search':
+                if (trim($q) !== '') {
+                    $query->search($q)->orderByName('asc');
+                } else {
+                    $query->newest();
+                }
+                break;
+            case 'new':
+            default:
+                $query->newest();
+                break;
+        }
+
+        $users = $query->paginate(self::USERS_PER_PAGINATION)->withQueryString();
+
+        return view('admin.users.index', [
+            'users' => $users,
+            'filter' => $filter,
+            'q' => $q,
+        ]);
     }
 
     /**

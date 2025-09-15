@@ -17,6 +17,22 @@
         </div>
     @endif
 
+    <form method="GET" action="{{ route('admin.users.index') }}" class="user-filter-form">
+        <label for="filter">View:</label>
+        <select id="filter" name="filter">
+            <option value="new" {{ (isset($filter) ? $filter : request('filter', 'new')) === 'new' ? 'selected' : '' }}>Newly Created</option>
+            <option value="unverified" {{ (isset($filter) ? $filter : request('filter')) === 'unverified' ? 'selected' : '' }}>Unverified</option>
+            <option value="az" {{ (isset($filter) ? $filter : request('filter')) === 'az' ? 'selected' : '' }}>A-Z</option>
+            <option value="za" {{ (isset($filter) ? $filter : request('filter')) === 'za' ? 'selected' : '' }}>Z-A</option>
+            <option value="search" {{ (isset($filter) ? $filter : request('filter')) === 'search' ? 'selected' : '' }}>Search</option>
+        </select>
+
+        <input type="text" name="q" id="search-input" class="search-input {{ ((isset($filter) ? $filter : request('filter')) === 'search') ? '' : 'hidden' }}" placeholder="Search name or email..." value="{{ isset($q) ? $q : request('q') }}" />
+        <noscript>
+            <button type="submit" class="btn">Apply</button>
+        </noscript>
+    </form>
+
     <div class="table-responsive">
         <table class="user-table">
             <thead>
@@ -64,4 +80,8 @@
     </div>
     {{ $users->links('admin.users.pagination') }}
 </div>
+
+@push('scripts')
+    <script src="{{ asset('js/admin/users/index.js') }}" defer></script>
+@endpush
 @endsection
