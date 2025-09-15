@@ -2,10 +2,10 @@
 
 @section('title', 'Edit User')
 
-@section('styles')
+@push('styles')
     <link rel="stylesheet" href="{{ asset('css/admin/users/useradministration.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/users/api-keys.css') }}">
-@endsection
+@endpush
 
 @section('content')
 <div class="user-management">

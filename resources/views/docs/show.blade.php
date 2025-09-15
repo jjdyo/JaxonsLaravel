@@ -2,13 +2,13 @@
 
 @section('title', $title . ' - Documentation')
 
-@section('styles')
+@push('styles')
 <link rel="stylesheet" href="{{ asset('css/docs.css') }}">
-@endsection
+@endpush
 
-@section('scripts')
+@push('scripts')
 <script src="{{ asset('js/docs-sidebar.js') }}"></script>
-@endsection
+@endpush
 
 @section('content')
     <div class="docs-container">

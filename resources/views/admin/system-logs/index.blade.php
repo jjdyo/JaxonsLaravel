@@ -2,9 +2,9 @@
 
 @section('title', 'System Logs')
 
-@section('styles')
+@push('styles')
     <link rel="stylesheet" href="{{ asset('css/admin/system-logs/system-logs.css') }}">
-@endsection
+@endpush
 
 @section('content')
     <div id="system-logs-root" class="system-logs-container"
@@ -59,8 +59,8 @@
     </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
     <script src="{{ asset('js/admin/system-logs.js') }}" defer></script>
-@endsection
+@endpush
 
 

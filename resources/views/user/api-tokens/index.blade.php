@@ -2,9 +2,9 @@
 
 @section('title', 'Your API Tokens')
 
-@section('styles')
+@push('styles')
     <link rel="stylesheet" href="{{ asset('css/admin/users/api-keys.css') }}">
-@endsection
+@endpush
 
 @section('content')
 <div class="api-tokens-container">

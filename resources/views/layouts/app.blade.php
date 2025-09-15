@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
     <link rel="stylesheet" href="{{ asset('css/content.css') }}">
     <link rel="stylesheet" href="{{ asset('css/starry-background.css') }}">
-    @yield('styles') <!-- This will load CSS files from specific views -->
+    @stack('styles') <!-- Styles stack: multiple views/partials can push CSS here -->
 </head>
 
 <body>
@@ -75,7 +75,7 @@
 
 <!-- Scripts -->
 <script src="{{ asset('js/starry-background.js') }}"></script>
-@yield('scripts') <!-- This will load JavaScript files from specific views -->
+@stack('scripts') <!-- Render scripts pushed onto the 'scripts' stack -->
 
 </body>
 

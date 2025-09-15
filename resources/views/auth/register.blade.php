@@ -2,9 +2,9 @@
 
 @section('title', 'Create an Account')
 
-@section('styles')
+@push('styles')
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
-@endsection
+@endpush
 
 @section('content')
     <div class="register-container">
