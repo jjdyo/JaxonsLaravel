@@ -241,3 +241,14 @@ The controller assigns the 'user' role to newly registered users via the `assign
 - Secure password reset functionality
 - Token-based password reset links
 - Password reset links expire after a certain time
+
+
+## Validation
+This controller now uses dedicated Form Request classes for validation:
+- App\\Http\\Requests\\LoginRequest
+- App\\Http\\Requests\\RegisterRequest
+- App\\Http\\Requests\\UpdateProfileRequest
+- App\\Http\\Requests\\ForgotPasswordRequest
+- App\\Http\\Requests\\ResetPasswordRequest
+
+These classes encapsulate the rules and messages, keeping the controller lean and enabling reuse.

@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Session;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Requests\ForgotPasswordRequest;
+use App\Http\Requests\ResetPasswordRequest;
 
 class AuthController extends Controller
 {
@@ -59,19 +64,11 @@ class AuthController extends Controller
     /**
      * Update the user's profile information
      *
-     * @param \Illuminate\Http\Request $request The HTTP request containing profile data
+     * @param \App\Http\Requests\UpdateProfileRequest $request The HTTP request containing profile data
      * @return \Illuminate\Http\RedirectResponse Redirect to profile or verification notice
      */
-    public function updateProfile(Request $request): \Illuminate\Http\RedirectResponse
+    public function updateProfile(UpdateProfileRequest $request): \Illuminate\Http\RedirectResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:20|regex:/^[\p{L}\s\'\-]+$/u',
-            'email' => 'required|string|email|max:255|unique:users,email,' . Auth::id(),
-        ], [
-            'name.regex' => 'The name may only contain letters, spaces, apostrophes, and hyphens.',
-            'name.max' => 'The name may not be greater than 20 characters.',
-            'email.unique' => 'The email address is already taken by another user.',
-        ]);
 
         /** @var \App\Models\User|null $user */
         $user = Auth::user();
@@ -108,10 +105,10 @@ class AuthController extends Controller
     /**
      * Process the login request
      *
-     * @param \Illuminate\Http\Request $request The HTTP request containing login credentials
+     * @param \App\Http\Requests\LoginRequest $request The HTTP request containing login credentials
      * @return \Illuminate\Http\RedirectResponse Redirect to intended page or back with errors
      */
-    public function processLogin(Request $request): \Illuminate\Http\RedirectResponse
+    public function processLogin(LoginRequest $request): \Illuminate\Http\RedirectResponse
     {
         /** @var string|null $email */
         // @phpstan-ignore-next-line
@@ -120,10 +117,7 @@ class AuthController extends Controller
         if (RateLimiter::tooManyAttempts('login:'.$email, 5)) {
             return back()->withErrors(['email' => 'Too many login attempts. Try again later.']);
         }
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
+        $credentials = $request->validated();
 
         // Attempt to log the user in securely
         if (Auth::attempt($credentials)) {
@@ -160,18 +154,11 @@ class AuthController extends Controller
     /**
      * Process the registration form submission
      *
-     * @param \Illuminate\Http\Request $request The HTTP request containing registration data
+     * @param \App\Http\Requests\RegisterRequest $request The HTTP request containing registration data
      * @return \Illuminate\Http\RedirectResponse Redirect to email verification notice
      */
-    public function processRegister(Request $request): \Illuminate\Http\RedirectResponse
+    public function processRegister(RegisterRequest $request): \Illuminate\Http\RedirectResponse
     {
-        // Validate user input
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users|max:255',
-            'password' => 'required|min:8|confirmed',
-        ]);
-
         // Create user in the database
         $user = User::create([
             'name' => $request->name,
@@ -214,15 +201,11 @@ class AuthController extends Controller
     /**
      * Send a password reset link to the given user
      *
-     * @param \Illuminate\Http\Request $request The HTTP request containing the user's email
+     * @param \App\Http\Requests\ForgotPasswordRequest $request The HTTP request containing the user's email
      * @return \Illuminate\Http\RedirectResponse Redirect back with status or errors
      */
-    public function sendResetLinkEmail(Request $request): \Illuminate\Http\RedirectResponse
+    public function sendResetLinkEmail(ForgotPasswordRequest $request): \Illuminate\Http\RedirectResponse
     {
-        $request->validate([
-            'email' => 'required|email',
-        ]);
-
         /** @var array<string, string> $emailData */
         // @phpstan-ignore-next-line
         $emailData = $request->only('email');
@@ -253,17 +236,11 @@ class AuthController extends Controller
     /**
      * Reset the user's password
      *
-     * @param \Illuminate\Http\Request $request The HTTP request containing reset credentials
+     * @param \App\Http\Requests\ResetPasswordRequest $request The HTTP request containing reset credentials
      * @return \Illuminate\Http\RedirectResponse Redirect to login page or back with errors
      */
-    public function resetPassword(Request $request): \Illuminate\Http\RedirectResponse
+    public function resetPassword(ResetPasswordRequest $request): \Illuminate\Http\RedirectResponse
     {
-        $request->validate([
-            'token' => 'required',
-            'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
-        ]);
-
         /** @var array<string, string> $credentials */
         // @phpstan-ignore-next-line
         $credentials = $request->only('email', 'password', 'password_confirmation', 'token');
