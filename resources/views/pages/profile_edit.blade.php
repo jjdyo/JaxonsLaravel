@@ -51,6 +51,9 @@
                                     <a href="{{ route('profile') }}" class="btn btn-secondary ml-2">
                                         Cancel
                                     </a>
+                                    <a href="{{ route('profile.password.edit') }}" class="btn btn-outline-warning ml-2">
+                                        Change Password
+                                    </a>
                                 </div>
                             </div>
                         </form>

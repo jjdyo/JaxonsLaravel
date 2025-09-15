@@ -10,6 +10,7 @@ use Tests\TestCase;
 use Illuminate\Support\Facades\Hash;
 use Tests\Feature\Traits\AuthTestHelpers;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Notification;
 
 class AuthControllerTest extends TestCase
 {
@@ -374,5 +375,64 @@ class AuthControllerTest extends TestCase
         $this->actingAs($regular)
             ->get(route('admin.users.api-keys.index', $target))
             ->assertStatus(403);
+    }
+    public function test_user_password_change_requires_email_confirmation_and_applies_on_verify(): void
+    {
+        Notification::fake();
+        $user = $this->createRegularUser([
+            'password' => Hash::make('old-password'),
+        ]);
+
+        $payload = [
+            'password' => 'new-secure-password',
+            'password_confirmation' => 'new-secure-password',
+        ];
+
+        $response = $this->actingAs($user)
+            ->post(route('profile.password.update'), $payload);
+
+        $response->assertRedirect(route('profile'));
+
+        $user->refresh();
+        // Password should NOT be changed yet
+        $this->assertTrue(Hash::check('old-password', $user->password));
+
+        // Pending record created and verification email sent
+        $pending = \App\Models\PendingPasswordChange::where('user_id', $user->id)->first();
+        $this->assertNotNull($pending);
+        Notification::assertSentTo($user, \App\Notifications\VerifyPasswordChangeNotification::class);
+
+        // Simulate clicking the link from the email
+        $url = \Illuminate\Support\Facades\URL::temporarySignedRoute('password-change.verify', now()->addMinutes(20), ['id' => $pending->id]);
+        $confirmResponse = $this->get($url);
+        $confirmResponse->assertRedirect(route('profile'));
+
+        $user->refresh();
+        $this->assertTrue(Hash::check('new-secure-password', $user->password));
+        $this->assertDatabaseMissing('pending_password_changes', ['id' => $pending->id]);
+    }
+
+    public function test_password_change_verification_link_expires_after_20_minutes(): void
+    {
+        Notification::fake();
+        $user = $this->createRegularUser([
+            'password' => Hash::make('old-password'),
+        ]);
+
+        $payload = [
+            'password' => 'new-secure-password',
+            'password_confirmation' => 'new-secure-password',
+        ];
+
+        $this->actingAs($user)->post(route('profile.password.update'), $payload)->assertRedirect(route('profile'));
+        $pending = \App\Models\PendingPasswordChange::where('user_id', $user->id)->firstOrFail();
+        $url = \Illuminate\Support\Facades\URL::temporarySignedRoute('password-change.verify', now()->addMinutes(20), ['id' => $pending->id]);
+
+        // Travel 21 minutes forward so the signed URL expires
+        $this->travel(21)->minutes();
+        $this->get($url)->assertStatus(403);
+
+        $user->refresh();
+        $this->assertTrue(Hash::check('old-password', $user->password));
     }
 }

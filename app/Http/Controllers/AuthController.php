@@ -17,6 +17,9 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
+use App\Http\Requests\ChangePasswordRequest;
+use App\Models\PendingPasswordChange;
+use App\Notifications\VerifyPasswordChangeNotification;
 
 class AuthController extends Controller
 {
@@ -62,6 +65,14 @@ class AuthController extends Controller
     }
 
     /**
+     * Show change password form
+     */
+    public function showChangePasswordForm(): \Illuminate\View\View
+    {
+        return view('pages.profile_password');
+    }
+
+    /**
      * Update the user's profile information
      *
      * @param \App\Http\Requests\UpdateProfileRequest $request The HTTP request containing profile data
@@ -86,21 +97,25 @@ class AuthController extends Controller
         // Check if email has changed
         $emailChanged = $request->email !== $user->email;
 
+        // Apply changes
         if ($emailChanged) {
-            // Update email and reset verification status
             $user->email = $request->email;
             $user->email_verified_at = null;
-            $user->save();
+        }
 
-            // Send verification email
+        $user->save();
+
+        // Send notifications after saving
+        if ($emailChanged) {
             $user->sendEmailVerificationNotification();
+        }
 
+        if ($emailChanged) {
             return redirect()->route('verification.notice')
                 ->with('success', 'Profile updated successfully! Please verify your new email address.');
-        } else {
-            $user->save();
-            return redirect()->route('profile')->with('success', 'Profile updated successfully!');
         }
+
+        return redirect()->route('profile')->with('success', 'Profile updated successfully!');
     }
     /**
      * Process the login request
@@ -271,5 +286,58 @@ class AuthController extends Controller
         return $status === $passwordReset
             ? redirect()->route('login')->with('status', __($status))
             : back()->withErrors(['email' => [__($status)]]);
+    }
+
+    /**
+     * Verify and apply a pending password change.
+     */
+    /**
+     * Handle the password change request (separate from profile update).
+     */
+    public function processChangePassword(ChangePasswordRequest $request): \Illuminate\Http\RedirectResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        // Hash new password and store as pending
+        $hashed = Hash::make($request->password);
+        PendingPasswordChange::where('user_id', $user->id)->delete();
+        $pending = PendingPasswordChange::create([
+            'user_id' => $user->id,
+            'new_password' => $hashed,
+        ]);
+
+        // Send verification email (20-minute signed link)
+        $user->notify(new VerifyPasswordChangeNotification($pending));
+
+        return redirect()->route('profile')->with('success', 'We have emailed you a link to confirm your password change. Please check your inbox.');
+    }
+
+    public function verifyPasswordChange(Request $request, int $id): \Illuminate\Http\RedirectResponse
+    {
+        $pending = PendingPasswordChange::query()->find($id);
+        if (!$pending) {
+            return redirect()->route('login')->with('error', 'This password change link is invalid or has already been used.');
+        }
+
+        if (now()->diffInMinutes($pending->created_at) > 20) {
+            $pending->delete();
+            abort(403, 'This password change link has expired.');
+        }
+
+        $user = User::find($pending->user_id);
+        if (!$user) {
+            $pending->delete();
+            return redirect()->route('login')->with('error', 'User account not found.');
+        }
+
+        $user->password = $pending->new_password; // already hashed
+        $user->setRememberToken(Str::random(60));
+        $user->save();
+
+        // Clean up all pending password changes for this user
+        PendingPasswordChange::where('user_id', $user->id)->delete();
+
+        return redirect()->route('profile')->with('success', 'Your password has been changed successfully.');
     }
 }

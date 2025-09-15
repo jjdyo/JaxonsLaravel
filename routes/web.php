@@ -93,6 +93,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
         Route::get('/profile/edit', [AuthController::class, 'editProfile'])->name('profile.edit');
         Route::put('/profile/edit', [AuthController::class, 'updateProfile'])->name('profile.update');
+        Route::get('/profile/password', [AuthController::class, 'showChangePasswordForm'])->name('profile.password.edit');
+        Route::post('/profile/password', [AuthController::class, 'processChangePassword'])->name('profile.password.update');
+
+        // Password change verification (email signed link)
+        Route::get('/password-change/verify/{id}', [AuthController::class, 'verifyPasswordChange'])
+            ->middleware('signed')
+            ->name('password-change.verify');
 
         // API token management routes
         Route::prefix('api-tokens')->name('api-tokens.')->group(function () {
