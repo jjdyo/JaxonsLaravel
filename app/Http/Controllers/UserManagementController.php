@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Spatie\Permission\Models\Role;
@@ -18,7 +20,12 @@ class UserManagementController extends Controller
      */
     public function listUsers(): View
     {
-        $users = User::paginate(self::USERS_PER_PAGINATION);
+        // Select only the fields needed for the listing and eager-load roles (limited columns)
+        $users = User::query()
+            ->select(['id', 'name', 'email', 'email_verified_at', 'created_at'])
+            ->with(['roles:id,name'])
+            ->paginate(self::USERS_PER_PAGINATION);
+
         return view('admin.users.index', compact('users'));
     }
 
@@ -30,6 +37,8 @@ class UserManagementController extends Controller
      */
     public function showUser(User $user): View
     {
+        // Ensure roles are loaded to avoid N+1 in the view
+        $user->loadMissing(['roles:id,name']);
         return view('admin.users.show', compact('user'));
     }
 
@@ -39,10 +48,10 @@ class UserManagementController extends Controller
      * @param User $user The user to edit
      * @return View The user edit form view
      */
-    #@@TODO Add admin user edit feature
     public function editUser(User $user): View
     {
-        $roles = Role::all();
+        $user->loadMissing(['roles:id,name']);
+        $roles = Role::query()->select(['id', 'name'])->orderBy('name')->get();
         /** @var \Illuminate\View\View $view */
         // @phpstan-ignore-next-line
         $view = view('admin.users.edit', compact('user', 'roles'));
@@ -59,7 +68,37 @@ class UserManagementController extends Controller
      */
     public function updateUser(Request $request, User $user): RedirectResponse
     {
-        return redirect()->route('admin.users.update', $user);
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'password' => ['nullable', 'string', 'min:8'],
+            'email_verified' => ['nullable', 'boolean'],
+        ]);
+
+        try {
+            DB::transaction(function () use ($user, $validated) {
+                $user->name = $validated['name'];
+                $user->email = $validated['email'];
+
+                if (!empty($validated['password'])) {
+                    $user->password = $validated['password']; // cast('password' => 'hashed') handles hashing
+                }
+
+                // Toggle email verification if provided
+                if (array_key_exists('email_verified', $validated)) {
+                    $user->email_verified_at = $validated['email_verified'] ? now() : null;
+                }
+
+                $user->save();
+            });
+
+            return redirect()
+                ->route('admin.users.show', $user)
+                ->with('success', 'User updated successfully');
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withErrors(['error' => 'Failed to update user.'])->withInput();
+        }
     }
 
     /**
@@ -68,10 +107,20 @@ class UserManagementController extends Controller
      * @param User $user The user to delete
      * @return RedirectResponse Redirect to the users index
      */
-    #@@TODO Add admin user delete feature
     public function deleteUser(User $user): RedirectResponse
     {
-        return redirect()->route('admin.users.destroy', $user);
+        // Prevent an admin from deleting their own account to avoid lockout
+        if (auth()->id() === $user->id) {
+            return back()->withErrors(['error' => "You can't delete your own account."]);
+        }
+
+        try {
+            $user->delete();
+            return redirect()->route('admin.users.index')->with('success', 'User deleted successfully');
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withErrors(['error' => 'Failed to delete user.']);
+        }
     }
 
     /**
@@ -115,6 +164,21 @@ class UserManagementController extends Controller
      */
     public function updateRoles(Request $request, User $user): RedirectResponse
     {
-        return redirect()->route('admin.users.update', $user);
+        $validated = $request->validate([
+            'roles' => ['array'],
+            'roles.*' => ['integer', Rule::exists('roles', 'id')],
+        ]);
+
+        try {
+            $roleIds = $validated['roles'] ?? [];
+            // Sync using IDs to avoid extra queries; Spatie supports arrays of IDs
+            $user->syncRoles(Role::query()->whereIn('id', $roleIds)->pluck('name'));
+
+            return redirect()->route('admin.users.show', $user)
+                ->with('success', 'User roles updated successfully');
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withErrors(['error' => 'Failed to update user roles.']);
+        }
     }
 }
