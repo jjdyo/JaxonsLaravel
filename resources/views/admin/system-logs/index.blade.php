@@ -7,11 +7,16 @@
 @endsection
 
 @section('content')
-    <div id="system-logs-root" class="system-logs-container">
+    <div id="system-logs-root" class="system-logs-container"
+         data-fetch-url="{{ route('admin.system-logs.fetch') }}"
+         data-selected-channel="{{ $selectedChannel }}"
+         data-selected-date="{{ $selectedDate }}"
+         data-latest-date="{{ $selectedChannel ? ($latestDates[$selectedChannel] ?? '') : '' }}"
+         data-default-limit="65536">
         <form id="log-form" method="GET" action="{{ route('admin.system-logs.index') }}" class="log-selector">
 
             {{-- Channel selector: starts blank so no log is loaded initially --}}
-            <select id="channel-selector" name="channel" onchange="this.form.submit()">
+            <select id="channel-selector" name="channel">
                 <option value="">— Select channel —</option>
                 @foreach ($channels as $ch)
                     <option value="{{ $ch }}" @selected($selectedChannel === $ch)>{{ $ch }}</option>
@@ -22,7 +27,7 @@
             @php
                 $latest = $selectedChannel ? ($latestDates[$selectedChannel] ?? null) : null;
             @endphp
-            <select id="date-selector" name="date" onchange="this.form.submit()" @disabled(!$selectedChannel)>
+            <select id="date-selector" name="date" @disabled(!$selectedChannel)>
                 @if(!$selectedChannel)
                     <option value="">— Select date —</option>
                 @else
@@ -34,6 +39,7 @@
                     @endforeach
                 @endif
             </select>
+            <button type="submit" class="log-submit-btn">Load</button>
         </form>
 
         <div id="log-viewer" class="log-viewer">
@@ -52,6 +58,10 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script src="{{ asset('js/admin/system-logs.js') }}" defer></script>
 @endsection
 
 
