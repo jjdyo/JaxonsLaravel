@@ -82,6 +82,6 @@
 </div>
 
 @push('scripts')
-    <script src="{{ asset('js/admin/users/index.js') }}" defer></script>
+    <script src="{{ asset('js/admin/users/index.js') }}"></script>
 @endpush
 @endsection
