@@ -41,17 +41,24 @@ class RequestLogger
 
         $user = Auth::user();
         if ($user) {
+            // Use Eloquent attribute accessors instead of property_exists (attributes are dynamic)
             /** @var string|null $maybeName */
-            $maybeName  = property_exists($user, 'name') ? $user->name : null;
-            /** @var string|null $maybeEmail */
-            $maybeEmail = property_exists($user, 'email') ? $user->email : null;
+            $maybeName = $user->getAttribute('name')
+                ?? $user->getAttribute('full_name')
+                ?? $user->getAttribute('username');
 
-            $displayName = $maybeName ?: ($maybeEmail ?: 'user');
+            /** @var string|null $maybeEmail */
+            $maybeEmail = $user->getAttribute('email');
+
+            $displayName = is_string($maybeName) && $maybeName !== ''
+                ? $maybeName
+                : (is_string($maybeEmail) && $maybeEmail !== '' ? $maybeEmail : 'user');
 
             /** @var mixed $rawId */
-            $rawId = $user->getAuthIdentifier();
-            $idLabel = is_scalar($rawId) ? (string) $rawId : 'unknown';
-
+            $rawId = method_exists($user, 'getAuthIdentifier') ? $user->getAuthIdentifier() : null;
+            $idLabel = is_scalar($rawId) || (is_object($rawId) && method_exists($rawId, '__toString'))
+                ? (string) $rawId
+                : 'unknown';
 
             $userLabel = $displayName . ' (' . $idLabel . ')';
         } else {
