@@ -8,7 +8,7 @@
 
 @section('content')
     <div id="system-logs-root" class="system-logs-container"
-         data-fetch-url="{{ route('admin.system-logs.fetch') }}"
+         data-fetch-url="{{ route('admin.system-logs.fetch', [], false) }}"
          data-selected-channel="{{ $selectedChannel }}"
          data-selected-date="{{ $selectedDate }}"
          data-latest-date="{{ $selectedChannel ? ($latestDates[$selectedChannel] ?? '') : '' }}"
