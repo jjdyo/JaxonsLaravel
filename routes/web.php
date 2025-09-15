@@ -149,9 +149,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         // API key management
         Route::prefix('users/{user}/api-keys')->name('users.api-keys.')->group(function () {
             Route::get('/', [ApiKeyController::class, 'index'])->name('index');
-            //Route::get('/create', [ApiKeyController::class, 'create'])->name('create');
-            //Route::post('/', [ApiKeyController::class, 'store'])->name('store');
-            //Route::delete('/{token}', [ApiKeyController::class, 'destroy'])->name('destroy');
+            Route::get('/create', [ApiKeyController::class, 'create'])->name('create');
+            Route::post('/', [ApiKeyController::class, 'store'])->name('store');
+            Route::delete('/{token}', [ApiKeyController::class, 'destroy'])->name('destroy');
         });
     });
 
