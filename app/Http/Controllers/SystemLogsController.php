@@ -126,8 +126,11 @@ class SystemLogsController extends Controller
             $available[$channel][$date] = true;
         }
 
-        $channel = trim((string) $request->get('channel', ''));
-        $date    = trim((string) $request->get('date', ''));
+        $channelParam = $request->get('channel');
+        $dateParam = $request->get('date');
+
+        $channel = is_string($channelParam) ? trim($channelParam) : '';
+        $date = is_string($dateParam) ? trim($dateParam) : '';
 
         if ($channel === '' || !array_key_exists($channel, $available)) {
             return response()->json(['error' => 'Invalid or missing channel'], 422);
@@ -147,9 +150,11 @@ class SystemLogsController extends Controller
         }
 
         $offset = $request->get('offset');
-        $limit  = (int) $request->get('limit', 65536);
-        $limit  = max(1, min(262144, $limit)); // clamp to [1, 256 KiB]
-        $tailLines = (int) $request->get('tail_lines', 0);
+        $limitParam = $request->get('limit');
+        $limit = is_numeric($limitParam) ? (int) $limitParam : 65536;
+        $limit = max(1, min(262144, $limit)); // clamp to [1, 256 KiB]
+        $tailLinesParam = $request->get('tail_lines');
+        $tailLines = is_numeric($tailLinesParam) ? (int) $tailLinesParam : 0;
 
         $start = 0;
         $chunk = '';
