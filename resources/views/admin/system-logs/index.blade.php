@@ -39,7 +39,6 @@
                     @endforeach
                 @endif
             </select>
-            <button type="submit" class="log-submit-btn">Load</button>
         </form>
 
         <div id="log-viewer" class="log-viewer">
