@@ -1,0 +1,74 @@
+/* =================================
+   Profile and Password Forms Styles
+   ================================= */
+
+/* Shared base styles for both forms */
+.profile-form,
+.password-form {
+    /* Card container styles */
+    .card {
+        border-radius: 10px;
+    }
+
+    .card-body {
+        padding: 2rem;
+    }
+
+    /* Form element styles */
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        padding: 0.6rem 0.75rem;
+        border-radius: 0.5rem;
+    }
+
+    /* Helper text */
+    small.form-text {
+        color: #6b7280;
+    }
+}
+
+/* Button styles */
+.profile-form .btn,
+.password-form .btn {
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+
+    /* Button spacing */
+    + .btn {
+        margin-left: 0.5rem;
+    }
+}
+
+/* Button variants */
+.profile-form .btn-primary,
+.password-form .btn-primary {
+    background-color: #2563eb;
+    color: #fff;
+    border-color: #1d4ed8;
+}
+
+.profile-form .btn-secondary,
+.password-form .btn-secondary {
+    background-color: #6b7280;
+    color: #fff;
+    border-color: #4b5563;
+}
+
+.profile-form .btn-outline-warning {
+    background-color: transparent;
+    color: #d97706;
+    border-color: #d97706;
+}
+

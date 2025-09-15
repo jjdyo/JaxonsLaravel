@@ -2,8 +2,12 @@
 
 @section('title', 'Edit Profile')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/profile.css') }}">
+@endpush
+
 @section('content')
-    <div class="container">
+    <div class="container profile-form">
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card">
