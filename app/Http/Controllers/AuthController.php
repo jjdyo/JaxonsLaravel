@@ -224,35 +224,17 @@ class AuthController extends Controller
         // @phpstan-ignore-next-line
         $emailData = $request->only('email');
 
-        // Capture the generated URL for logging using our custom notification hook
-        $generatedUrl = null;
-        ResetPasswordEmail::createUrlUsing(function ($user, string $token) use (&$generatedUrl) {
-            $generatedUrl = route('password.reset', [
-                'token' => $token,
-                'email' => $user->email,
-            ]);
-
-            Log::channel('web')->info('Password reset URL generated', [
-                'email' => $user->email,
-                'url'   => $generatedUrl,
-            ]);
-
-            return $generatedUrl;
-        });
-
         $status = Password::sendResetLink($emailData);
-
 
         // Define the constant value if PHPStan can't find it
         $resetLinkSent = defined('Illuminate\\Support\\Facades\\Password::RESET_LINK_SENT')
             ? Password::RESET_LINK_SENT
             : 'passwords.sent';
 
-        // Log outcome
+        // Log outcome (URL is created in AppServiceProvider now)
         Log::channel('web')->info('Password reset link dispatch status', [
             'email'  => $emailData['email'] ?? null,
             'status' => $status,
-            'url'    => $generatedUrl,
         ]);
 
         return $status === $resetLinkSent
