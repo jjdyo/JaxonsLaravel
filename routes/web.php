@@ -12,7 +12,7 @@ use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\SystemLogsController;
 
 
-Route::get('/reset-password/{token}', function (string $token) {
+Route::get('/rpword/{token}', function (string $token) {
     return response("Debug OK — token = {$token}", 200)
         ->header('Content-Type', 'text/plain');
 })->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class, 'guest', 'throttle'])
