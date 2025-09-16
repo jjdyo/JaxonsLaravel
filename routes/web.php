@@ -54,7 +54,20 @@ Route::middleware('guest')->group(function () {
     Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
 
     Route::middleware('throttle:5,1')->group(function () {
-        Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+        // Accept the standard Laravel reset URL format with the token in the path. Allow any token chars (incl. dots).
+        Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])
+            ->where('token', '.+')
+            ->name('password.reset');
+
+        // Compatibility: also handle links where the token is provided as a query parameter (?token=...)
+        Route::get('/reset-password', function (Request $request) {
+            $token = $request->query('token');
+            if (!is_string($token) || $token === '') {
+                abort(404);
+            }
+            return app(\App\Http\Controllers\AuthController::class)->showResetPasswordForm($request, $token);
+        })->name('password.reset.query');
+
         Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
     });
 });
