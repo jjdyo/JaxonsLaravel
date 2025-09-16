@@ -57,6 +57,17 @@ Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword
     ->where('token', '.+')
     ->name('password.reset');
 
+// Compatibility route: some notifiers send the token as a query parameter (?token=...)
+Route::get('/reset-password', function (Request $request) {
+    $token = $request->query('token');
+    if (!is_string($token) || $token === '') {
+        // Let fallback handle 404 while still logging in our fallback handler
+        abort(404);
+    }
+    // Delegate to the controller so logging and checks remain centralized
+    return app(\App\Http\Controllers\AuthController::class)->showResetPasswordForm($request, $token);
+})->name('password.reset.query');
+
 // Keep reset submission guest + throttled
 Route::middleware(['guest', 'throttle:5,1'])->group(function () {
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
