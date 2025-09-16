@@ -21,7 +21,6 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Foundation\Http\Middleware\TrimStrings::class,
             \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
             \Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks::class,
-            \App\Http\Middleware\RequestLogger::class,
         ]);
 
         // Web group
