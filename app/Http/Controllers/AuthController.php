@@ -229,6 +229,7 @@ class AuthController extends Controller
         ResetPasswordEmail::createUrlUsing(function ($user, string $token) use (&$generatedUrl) {
             $generatedUrl = route('password.reset', [
                 'token' => $token,
+                'email' => $user->email,
             ]);
 
             Log::channel('web')->info('Password reset URL generated', [
