@@ -8,6 +8,8 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class RequestLogger
 {
@@ -17,11 +19,7 @@ class RequestLogger
     {
         $start = microtime(true);
 
-        /** @var \Symfony\Component\HttpFoundation\Response $response */
-        $response = $next($request);
-
         $pathInfo = $request->getPathInfo();
-
         $isApiPath = str_starts_with($pathInfo, '/api/');
         $channel   = $isApiPath ? 'api' : 'web';
 
@@ -36,12 +34,11 @@ class RequestLogger
         };
 
         $routeName = $this->router->currentRouteName() ?? 'N/A';
-
         $sanitizedPath = $this->maskPathHashes($pathInfo);
 
+        // Prepare common user label
         $user = Auth::user();
         if ($user) {
-            // Use Eloquent attribute accessors instead of property_exists (attributes are dynamic)
             /** @var string|null $maybeName */
             $maybeName = $user->getAttribute('name')
                 ?? $user->getAttribute('full_name')
@@ -65,24 +62,60 @@ class RequestLogger
             $userLabel = 'guest';
         }
 
-        $durationMs = (int) round((microtime(true) - $start) * 1000);
-
         $ua = $request->headers->get('User-Agent');
         $uaStr = is_string($ua) ? $ua : 'N/A';
 
-        $lines = [
-            $emoji . ' ' . $method,
-            '  URI: '      . $sanitizedPath,
-            '  Route: '    . $routeName,
-            '  Status: '   . $response->getStatusCode(),
-            '  User: '     . $userLabel,
-            '  Duration: ' . $durationMs . ' ms',
-            '  UA: '       . $uaStr,
-        ];
+        try {
+            /** @var \Symfony\Component\HttpFoundation\Response $response */
+            $response = $next($request);
 
-        Log::channel($channel)->info(implode("\n", $lines));
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
 
-        return $response;
+            $lines = [
+                $emoji . ' ' . $method,
+                '  URI: '      . $sanitizedPath,
+                '  Route: '    . $routeName,
+                '  Status: '   . $response->getStatusCode(),
+                '  User: '     . $userLabel,
+                '  Duration: ' . $durationMs . ' ms',
+                '  UA: '       . $uaStr,
+            ];
+
+            Log::channel($channel)->info(implode("\n", $lines));
+
+            return $response;
+        } catch (NotFoundHttpException $e) {
+            // Explicitly log 404s that occur via exceptions (not fallback route)
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
+            $lines = [
+                $emoji . ' ' . $method,
+                '  URI: '      . $sanitizedPath,
+                '  Route: '    . $routeName,
+                '  Status: '   . 404,
+                '  User: '     . $userLabel,
+                '  Duration: ' . $durationMs . ' ms',
+                '  UA: '       . $uaStr,
+                '  Note: 404 via NotFoundHttpException'
+            ];
+            Log::channel($channel)->warning(implode("\n", $lines));
+            throw $e; // rethrow for framework to handle
+        } catch (HttpException $e) {
+            if ($e->getStatusCode() === 404) {
+                $durationMs = (int) round((microtime(true) - $start) * 1000);
+                $lines = [
+                    $emoji . ' ' . $method,
+                    '  URI: '      . $sanitizedPath,
+                    '  Route: '    . $routeName,
+                    '  Status: '   . 404,
+                    '  User: '     . $userLabel,
+                    '  Duration: ' . $durationMs . ' ms',
+                    '  UA: '       . $uaStr,
+                    '  Note: 404 via HttpException'
+                ];
+                Log::channel($channel)->warning(implode("\n", $lines));
+            }
+            throw $e; // rethrow other HTTP exceptions too
+        }
     }
 
     /** Masks hash-like PATH segments: /x/abcdef... -> /x/{{HASH:40}} */
