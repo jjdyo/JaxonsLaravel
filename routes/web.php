@@ -74,6 +74,15 @@ Route::middleware('guest')->group(function () {
 |
 | Routes that require user authentication
 |
+|
+|Ladies and gentleman...
+|We got em.
+|
+|It turns out Laravel will intercept routes named token due to (I assume) sensitive information assumption.
+|This messed with my routes, yet worked initially, and I have no idea what the solution is besides using a different
+|variable/naming schema like password_callback.
+|
+|Hours spent here: 8
 */
 
 Route::middleware('auth')->group(function () {
