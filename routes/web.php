@@ -49,7 +49,8 @@ Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('regi
 Route::post('/register', [AuthController::class, 'processRegister'])->name('register.process');
 
 // Password reset routes (guest only)
-Route::middleware('guest')->group(function () {
+//Route::middleware('guest')->group(function () {
+Route::group([], function () {
     Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
     Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
 
