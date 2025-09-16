@@ -56,7 +56,6 @@ Route::middleware('guest')->group(function () {
     Route::middleware('throttle:5,1')->group(function () {
         // Accept the standard Laravel reset URL format with the token in the path. Allow any token chars (incl. dots).
         Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])
-            ->where('token', '.+')
             ->name('password.reset');
 
         // Compatibility: also handle links where the token is provided as a query parameter (?token=...)
