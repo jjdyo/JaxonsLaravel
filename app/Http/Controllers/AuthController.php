@@ -18,8 +18,6 @@ use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Requests\ChangePasswordRequest;
-use App\Models\PendingPasswordChange;
-use App\Notifications\VerifyPasswordChangeNotification;
 
 class AuthController extends Controller
 {
@@ -299,45 +297,18 @@ class AuthController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Hash new password and store as pending
-        $hashed = Hash::make($request->password);
-        PendingPasswordChange::where('user_id', $user->id)->delete();
-        $pending = PendingPasswordChange::create([
-            'user_id' => $user->id,
-            'new_password' => $hashed,
-        ]);
+        // Use Laravel's standard password reset broker to send a reset link
+        $status = Password::sendResetLink(['email' => $user->email]);
 
-        // Send verification email (20-minute signed link)
-        $user->notify(new VerifyPasswordChangeNotification($pending));
+        // Define the constant value if PHPStan can't find it
+        $resetLinkSent = defined('Illuminate\\Support\\Facades\\Password::RESET_LINK_SENT')
+            ? Password::RESET_LINK_SENT
+            : 'passwords.sent';
 
-        return redirect()->route('profile')->with('success', 'We have emailed you a link to confirm your password change. Please check your inbox.');
-    }
-
-    public function verifyPasswordChange(Request $request, int $id): \Illuminate\Http\RedirectResponse
-    {
-        $pending = PendingPasswordChange::query()->find($id);
-        if (!$pending) {
-            return redirect()->route('login')->with('error', 'This password change link is invalid or has already been used.');
+        if ($status === $resetLinkSent) {
+            return redirect()->route('profile')->with('success', 'We have emailed you a link to reset your password. Please check your inbox.');
         }
 
-        if (now()->diffInMinutes($pending->created_at) > 20) {
-            $pending->delete();
-            abort(403, 'This password change link has expired.');
-        }
-
-        $user = User::find($pending->user_id);
-        if (!$user) {
-            $pending->delete();
-            return redirect()->route('login')->with('error', 'User account not found.');
-        }
-
-        $user->password = $pending->new_password; // already hashed
-        $user->setRememberToken(Str::random(60));
-        $user->save();
-
-        // Clean up all pending password changes for this user
-        PendingPasswordChange::where('user_id', $user->id)->delete();
-
-        return redirect()->route('profile')->with('success', 'Your password has been changed successfully.');
+        return redirect()->route('profile')->with('error', __($status));
     }
 }
