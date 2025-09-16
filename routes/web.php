@@ -13,17 +13,6 @@ use App\Http\Controllers\SystemLogsController;
 
 
 
-Route::get('/rpword/{text}', function (string $text) {
-    Log::channel('web')->info('Route hit with text', [
-        'text' => $text,
-        'url' => request()->fullUrl(),
-        'method' => request()->method(),
-    ]);
-
-    return response("Debug OK — token = {$text}", 200)
-        ->header('Content-Type', 'text/plain');
-})->name('password.reset.debug');
-
 /*
 |--------------------------------------------------------------------------
 | Public Routes
