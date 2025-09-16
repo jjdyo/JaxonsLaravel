@@ -13,7 +13,7 @@ use App\Http\Controllers\SystemLogsController;
 
 
 
-Route::get('/rpword/{text}', function (string $token) {
+Route::get('/rpword/{text}', function (string $text) {
     Log::channel('web')->info('Route hit with text', [
         'text' => $text,
         'url' => request()->fullUrl(),
