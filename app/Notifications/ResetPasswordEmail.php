@@ -8,6 +8,13 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 class ResetPasswordEmail extends ResetPassword
 {
+    public string $password_callback;
+
+    public function __construct(string $token)
+    {
+        $this->password_callback = $token; // Store the token as password_callback
+    }
+
     /**
      * Build the mail representation of the notification.
      *
