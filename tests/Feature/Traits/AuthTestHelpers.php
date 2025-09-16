@@ -3,7 +3,7 @@
 namespace Tests\Feature\Traits;
 
 use App\Models\User;
-use App\Models\Role;
+use Spatie\Permission\Models\Role;
 
 /**
  * Trait AuthTestHelpers
