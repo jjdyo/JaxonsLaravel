@@ -66,13 +66,13 @@ Route::middleware('guest')->group(function () {
     Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
     Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
 
-    Route::get('/reset-password/{$key}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+    Route::get('/reset-password/{password_callback}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 
     // Backward-compatibility with legacy path used by older Laravel scaffolding
-    Route::get('/password/reset/{token}', function (Request $request, string $key) {
+    Route::get('/password/reset/{password_callback}', function (Request $request, string $password_callback) {
         return redirect()->route('password.reset', [
-            'token' => $key,
+            'password_callback' => $password_callback,
             'email' => $request->query('email'),
         ]);
     })->name('password.reset.legacy');

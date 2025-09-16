@@ -22,7 +22,7 @@
             @csrf
 
             <!-- Password Reset Token -->
-            <input type="hidden" name="token" value="{{ $token }}">
+            <input type="hidden" name="token" value="{{ $password_callback }}">
 
             <div class="form-group">
                 <label for="email">Email Address</label>

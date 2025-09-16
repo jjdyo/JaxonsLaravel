@@ -249,10 +249,10 @@ class AuthController extends Controller
      * @param \Illuminate\Http\Request $request The HTTP request containing the reset token
      * @return \Illuminate\View\View The password reset form view
      */
-    public function showResetPasswordForm(Request $request, string $key): \Illuminate\View\View
+    public function showResetPasswordForm(Request $request, string $password_callback): \Illuminate\View\View
     {
         return view('auth.reset-password', [
-            'token' => $key,
+            'password_callback' => $password_callback,
             // Use get() for Symfony/Laravel compatibility and allow string|null
             'email' => $request->get('email'),
         ]);

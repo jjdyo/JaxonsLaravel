@@ -17,7 +17,7 @@ class ResetPasswordEmail extends ResetPassword
     {
         /** @var CanResetPassword $notifiable */
         $url = url(route('password.reset', [
-            'token' => $this->token,
+            'password_callback' => $this->password_callback,
             'email' => $notifiable->getEmailForPasswordReset(),
         ], false));
 
