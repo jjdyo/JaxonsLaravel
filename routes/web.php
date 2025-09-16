@@ -48,24 +48,16 @@ Route::post('/user', [AuthController::class, 'processLogin'])->name('login.proce
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'processRegister'])->name('register.process');
 
-// Password reset routes (guest only)
 Route::middleware('guest')->group(function () {
     Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
     Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
 
     Route::middleware('throttle:5,1')->group(function () {
-        // Accept the standard Laravel reset URL format with the token in the path. Allow any token chars (incl. dots).
         Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])
+            ->where('token', '[a-zA-Z0-9]+')
             ->name('password.reset');
 
-        // Compatibility: also handle links where the token is provided as a query parameter (?token=...)
-        Route::get('/reset-password', function (Request $request) {
-            $token = $request->query('token');
-            if (!is_string($token) || $token === '') {
-                abort(404);
-            }
-            return app(\App\Http\Controllers\AuthController::class)->showResetPasswordForm($request, $token);
-        })->name('password.reset.query');
+        // Remove the query parameter route completely
 
         Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
     });
