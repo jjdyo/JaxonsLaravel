@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Password;
+use App\Notifications\ResetPasswordEmail;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Session;
@@ -223,9 +224,9 @@ class AuthController extends Controller
         // @phpstan-ignore-next-line
         $emailData = $request->only('email');
 
-        // Capture the generated URL for logging
+        // Capture the generated URL for logging using our custom notification hook
         $generatedUrl = null;
-        Password::createUrlUsing(function ($user, string $token) use (&$generatedUrl) {
+        ResetPasswordEmail::createUrlUsing(function ($user, string $token) use (&$generatedUrl) {
             $generatedUrl = route('password.reset', [
                 'token' => $token,
                 'email' => $user->email,
@@ -242,7 +243,7 @@ class AuthController extends Controller
         $status = Password::sendResetLink($emailData);
 
         // Clear the custom URL generator to avoid side effects
-        Password::createUrlUsing(null);
+        ResetPasswordEmail::createUrlUsing(null);
 
         // Define the constant value if PHPStan can't find it
         $resetLinkSent = defined('Illuminate\\Support\\Facades\\Password::RESET_LINK_SENT')
