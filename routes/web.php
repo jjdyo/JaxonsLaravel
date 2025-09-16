@@ -11,6 +11,10 @@ use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\SystemLogsController;
 
+Route::get('/reset-password/{token}', function ($token) {
+    return response("RESET OK: {$token}", 200);
+})->name('password.reset');
+
 /*
 |--------------------------------------------------------------------------
 | Public Routes
