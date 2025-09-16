@@ -196,7 +196,6 @@ class AuthController extends Controller
         // Regenerate session to prevent session fixation attacks
         session()->regenerate();
 
-        // Send email verification notification
         $user->sendEmailVerificationNotification();
 
         return redirect()->route('verification.notice');
@@ -253,7 +252,6 @@ class AuthController extends Controller
     {
         return view('auth.reset-password', [
             'password_callback' => $password_callback,
-            // Use get() for Symfony/Laravel compatibility and allow string|null
             'email' => $request->get('email'),
         ]);
     }
@@ -301,7 +299,6 @@ class AuthController extends Controller
      */
     public function processChangePassword(ChangePasswordRequest $request): \Illuminate\Http\RedirectResponse
     {
-        /** @var \App\Models\User|null $user */
         $user = Auth::user();
         if (!$user) {
             return redirect()->route('login')->with('error', 'You must be logged in to change your password.');
@@ -319,7 +316,6 @@ class AuthController extends Controller
             return redirect()->route('profile')->with('success', 'We have emailed you a link to reset your password. Please check your inbox.');
         }
 
-        /** @var string $status */
         return redirect()->route('profile')->with('error', __($status));
     }
 }

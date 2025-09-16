@@ -376,7 +376,7 @@ class AuthControllerTest extends TestCase
             ->get(route('admin.users.api-keys.index', $target))
             ->assertStatus(403);
     }
-    public function test_user_password_change_requires_email_confirmation_and_applies_on_verify(): void
+    public function test_user_password_change_sends_reset_link_and_password_changes_after_reset(): void
     {
         Notification::fake();
         $user = $this->createRegularUser([
@@ -388,31 +388,47 @@ class AuthControllerTest extends TestCase
             'password_confirmation' => 'new-secure-password',
         ];
 
+        // Request password change (now sends standard reset link)
         $response = $this->actingAs($user)
             ->post(route('profile.password.update'), $payload);
 
         $response->assertRedirect(route('profile'));
 
-        $user->refresh();
         // Password should NOT be changed yet
+        $user->refresh();
         $this->assertTrue(Hash::check('old-password', $user->password));
 
-        // Pending record created and verification email sent
-        $pending = \App\Models\PendingPasswordChange::where('user_id', $user->id)->first();
-        $this->assertNotNull($pending);
-        Notification::assertSentTo($user, \App\Notifications\VerifyPasswordChangeNotification::class);
+        // Our custom reset password email notification should be sent
+        Notification::assertSentTo($user, \App\Notifications\ResetPasswordEmail::class);
 
-        // Simulate clicking the link from the email
-        $url = \Illuminate\Support\Facades\URL::temporarySignedRoute('password-change.verify', now()->addMinutes(20), ['id' => $pending->id]);
-        $confirmResponse = $this->get($url);
-        $confirmResponse->assertRedirect(route('profile'));
+        // Simulate completing the reset using a broker token
+        $token = \Illuminate\Support\Facades\Password::createToken($user);
+
+        // Logout to access guest-only reset form
+        auth()->logout();
+        session()->invalidate();
+        session()->regenerateToken();
+
+        // Visit reset form
+        $this->get(route('password.reset', [
+            'password_callback' => $token,
+            'email' => $user->email,
+        ]))->assertStatus(200);
+
+        // Submit new password
+        $confirmResponse = $this->post(route('password.update'), [
+            'token' => $token,
+            'email' => $user->email,
+            'password' => 'new-secure-password',
+            'password_confirmation' => 'new-secure-password',
+        ]);
+        $confirmResponse->assertRedirect(route('login'));
 
         $user->refresh();
         $this->assertTrue(Hash::check('new-secure-password', $user->password));
-        $this->assertDatabaseMissing('pending_password_changes', ['id' => $pending->id]);
     }
 
-    public function test_password_change_verification_link_expires_after_20_minutes(): void
+    public function test_password_reset_token_expires_after_configured_minutes(): void
     {
         Notification::fake();
         $user = $this->createRegularUser([
@@ -424,14 +440,29 @@ class AuthControllerTest extends TestCase
             'password_confirmation' => 'new-secure-password',
         ];
 
+        // Request a reset link via profile password change flow
         $this->actingAs($user)->post(route('profile.password.update'), $payload)->assertRedirect(route('profile'));
-        $pending = \App\Models\PendingPasswordChange::where('user_id', $user->id)->firstOrFail();
-        $url = \Illuminate\Support\Facades\URL::temporarySignedRoute('password-change.verify', now()->addMinutes(20), ['id' => $pending->id]);
+        Notification::assertSentTo($user, \App\Notifications\ResetPasswordEmail::class);
 
-        // Travel 21 minutes forward so the signed URL expires
-        $this->travel(21)->minutes();
-        $this->get($url)->assertStatus(403);
+        // Create a token and then travel beyond expiry
+        $token = \Illuminate\Support\Facades\Password::createToken($user);
+        $expire = (int) config('auth.passwords.users.expire', 60);
+        $this->travel($expire + 1)->minutes();
 
+        // Logout to access guest-only password.update route
+        auth()->logout();
+        session()->invalidate();
+        session()->regenerateToken();
+
+        // Attempt to reset with the expired token
+        $this->post(route('password.update'), [
+            'token' => $token,
+            'email' => $user->email,
+            'password' => 'new-secure-password',
+            'password_confirmation' => 'new-secure-password',
+        ])->assertSessionHasErrors('email');
+
+        // Password should remain unchanged
         $user->refresh();
         $this->assertTrue(Hash::check('old-password', $user->password));
     }
