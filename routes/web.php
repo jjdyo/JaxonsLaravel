@@ -13,14 +13,14 @@ use App\Http\Controllers\SystemLogsController;
 
 
 
-Route::get('/rpword/{token}', function (string $token) {
-    Log::channel('web')->info('Route hit with token', [
-        'token' => $token,
+Route::get('/rpword/{text}', function (string $token) {
+    Log::channel('web')->info('Route hit with text', [
+        'text' => $text,
         'url' => request()->fullUrl(),
         'method' => request()->method(),
     ]);
 
-    return response("Debug OK — token = {$token}", 200)
+    return response("Debug OK — token = {$text}", 200)
         ->header('Content-Type', 'text/plain');
 })->name('password.reset.debug');
 
