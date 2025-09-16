@@ -270,52 +270,10 @@ class AuthController extends Controller
      */
     public function showResetPasswordForm(Request $request, string $token): \Illuminate\View\View
     {
-        $email = $request->query('email');
-
-        // Validate basic format and log context
-        Log::channel('web')->info('Password reset form requested', [
-            'path'  => $request->getPathInfo(),
-            'email' => $email,
-            'token_length' => strlen($token),
-            'is_guest' => !Auth::check(),
-        ]);
-
-        // Cross-check presence of token hash in DB for given email (no sensitive data logged)
-        try {
-            $record = \DB::table('password_reset_tokens')->where('email', $email)->first();
-            if ($record) {
-                /** @var string|null $hash */
-                $hash = is_string($record->token ?? null) ? $record->token : null;
-                $match = $hash && Hash::check($token, $hash);
-                Log::channel('web')->info('Password reset token DB check', [
-                    'email' => $email,
-                    'record_found' => true,
-                    'token_matches' => $match,
-                ]);
-            } else {
-                Log::channel('web')->warning('Password reset token DB record not found for email', [
-                    'email' => $email,
-                ]);
-            }
-        } catch (\Throwable $e) {
-            Log::channel('web')->error('Password reset token DB check failed', [
-                'email' => $email,
-                'error' => $e->getMessage(),
-            ]);
-        }
-
-        // Force an explicit 200 OK status for the reset form to avoid accidental 404s
-        Log::channel('web')->info('Password reset form rendering', [
-            'email' => $email,
-            'token_length' => strlen($token),
-            'status' => 200,
-        ]);
-
-        return response()->view('auth.reset-password', [
-            'request' => $request,
+        return view('auth.reset-password', [
             'token' => $token,
-            'email' => $email,
-        ], 200);
+            'email' => $request->query('email'),
+        ]);
     }
 
     /**
@@ -326,18 +284,8 @@ class AuthController extends Controller
      */
     public function resetPassword(ResetPasswordRequest $request): \Illuminate\Http\RedirectResponse
     {
-        /** @var array<string, string> $credentials */
-        // @phpstan-ignore-next-line
-        $credentials = $request->only('email', 'password', 'password_confirmation', 'token');
-
-        Log::channel('web')->info('Password reset attempt', [
-            'email' => $credentials['email'] ?? null,
-            'token_length' => isset($credentials['token']) ? strlen($credentials['token']) : null,
-            'has_password_confirmation' => isset($credentials['password_confirmation']),
-        ]);
-
         $status = Password::reset(
-            $credentials,
+            $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
                 $user->forceFill([
                     'password' => Hash::make($password)
@@ -349,23 +297,7 @@ class AuthController extends Controller
             }
         );
 
-        // Define the constant value if PHPStan can't find it
-        $passwordReset = defined('Illuminate\\Support\\Facades\\Password::PASSWORD_RESET')
-            ? Password::PASSWORD_RESET
-            : 'passwords.reset';
-
-        // Ensure $status is a string before using it with the __ function
-        if (!is_string($status)) {
-            $status = '';
-        }
-
-        Log::channel('web')->info('Password reset complete', [
-            'email' => $credentials['email'] ?? null,
-            'status' => $status,
-            'success' => $status === $passwordReset,
-        ]);
-
-        return $status === $passwordReset
+        return $status === Password::PASSWORD_RESET
             ? redirect()->route('login')->with('status', __($status))
             : back()->withErrors(['email' => [__($status)]]);
     }
