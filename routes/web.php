@@ -11,12 +11,15 @@ use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\SystemLogsController;
 
+\Log::info('Routes file loaded');
+
 
 Route::get('/rpword/{token}', function (string $token) {
     \Log::info('Route hit with token: ' . $token);
     return response("Debug OK — token = {$token}", 200)
         ->header('Content-Type', 'text/plain');
 })->name('password.reset.debug');
+
 
 /*
 |--------------------------------------------------------------------------
