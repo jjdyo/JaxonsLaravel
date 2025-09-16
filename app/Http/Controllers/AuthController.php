@@ -220,11 +220,12 @@ class AuthController extends Controller
      */
     public function sendResetLinkEmail(ForgotPasswordRequest $request): \Illuminate\Http\RedirectResponse
     {
-        /** @var array<string, string> $emailData */
-        // @phpstan-ignore-next-line
-        $emailData = $request->only('email');
+        /** @var array{email:string} $validated */
+        $validated = $request->validated();
+        $email = $validated['email'];
 
-        $status = Password::sendResetLink($emailData);
+        /** @var string $status */
+        $status = Password::sendResetLink(['email' => $email]);
 
         // Define the constant value if PHPStan can't find it
         $resetLinkSent = defined('Illuminate\\Support\\Facades\\Password::RESET_LINK_SENT')
@@ -233,7 +234,7 @@ class AuthController extends Controller
 
         // Log outcome (URL is created in AppServiceProvider now)
         Log::channel('web')->info('Password reset link dispatch status', [
-            'email'  => $emailData['email'] ?? null,
+            'email'  => $email,
             'status' => $status,
         ]);
 
@@ -252,7 +253,8 @@ class AuthController extends Controller
     {
         return view('auth.reset-password', [
             'token' => $token,
-            'email' => $request->query('email'),
+            // Use get() for Symfony/Laravel compatibility and allow string|null
+            'email' => $request->get('email'),
         ]);
     }
 
@@ -264,9 +266,12 @@ class AuthController extends Controller
      */
     public function resetPassword(ResetPasswordRequest $request): \Illuminate\Http\RedirectResponse
     {
+        /** @var array{token:string, email:string, password:string, password_confirmation:string} $data */
+        $data = $request->validated();
+
         $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
+            $data,
+            function ($user, $password): void {
                 $user->forceFill([
                     'password' => Hash::make($password)
                 ])->setRememberToken(Str::random(60));
@@ -277,7 +282,13 @@ class AuthController extends Controller
             }
         );
 
-        return $status === Password::PASSWORD_RESET
+        // Define the constant value if PHPStan can't find it
+        $passwordReset = defined('Illuminate\\Support\\Facades\\Password::PASSWORD_RESET')
+            ? Password::PASSWORD_RESET
+            : 'passwords.reset';
+
+        /** @var string $status */
+        return $status === $passwordReset
             ? redirect()->route('login')->with('status', __($status))
             : back()->withErrors(['email' => [__($status)]]);
     }
@@ -290,8 +301,11 @@ class AuthController extends Controller
      */
     public function processChangePassword(ChangePasswordRequest $request): \Illuminate\Http\RedirectResponse
     {
-        /** @var \App\Models\User $user */
+        /** @var \App\Models\User|null $user */
         $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'You must be logged in to change your password.');
+        }
 
         // Use Laravel's standard password reset broker to send a reset link
         $status = Password::sendResetLink(['email' => $user->email]);
@@ -305,6 +319,7 @@ class AuthController extends Controller
             return redirect()->route('profile')->with('success', 'We have emailed you a link to reset your password. Please check your inbox.');
         }
 
+        /** @var string $status */
         return redirect()->route('profile')->with('error', __($status));
     }
 }

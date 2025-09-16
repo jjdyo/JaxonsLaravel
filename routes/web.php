@@ -13,10 +13,10 @@ use App\Http\Controllers\SystemLogsController;
 
 
 Route::get('/rpword/{token}', function (string $token) {
+    \Log::info('Route hit with token: ' . $token);
     return response("Debug OK — token = {$token}", 200)
         ->header('Content-Type', 'text/plain');
-})->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class, 'guest', 'throttle'])
-    ->name('password.reset.debug');
+})->name('password.reset.debug');
 
 /*
 |--------------------------------------------------------------------------

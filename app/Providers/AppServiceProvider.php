@@ -47,17 +47,23 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Customize the password reset URL globally, per Laravel documentation
-        ResetPassword::createUrlUsing(function (User $user, string $token): string {
+        ResetPassword::createUrlUsing(function ($user, string $token): string {
             // Build the absolute URL to the reset form with token as a path param and email as query
+            $email = null;
+            if (is_object($user) && method_exists($user, 'getEmailForPasswordReset')) {
+                /** @var object&\Illuminate\Contracts\Auth\CanResetPassword $user */
+                $email = $user->getEmailForPasswordReset();
+            }
+
             $url = route('password.reset', [
                 'token' => $token,
-                'email' => $user->getEmailForPasswordReset(),
+                'email' => $email,
             ]);
 
             // Log for diagnostics (web channel)
             try {
                 Log::channel('web')->info('ResetPassword URL created', [
-                    'email' => $user->getEmailForPasswordReset(),
+                    'email' => $email,
                     'url' => $url,
                 ]);
             } catch (\Throwable $e) {
