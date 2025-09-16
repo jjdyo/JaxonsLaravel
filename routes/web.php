@@ -186,3 +186,27 @@ if (config('app.env') !== 'production') {
     });
 
 }
+
+/*
+|--------------------------------------------------------------------------
+| Fallback route for 404 logging
+|--------------------------------------------------------------------------
+*/
+Route::fallback(function (Request $request) {
+    $path = $request->getPathInfo();
+    $context = [
+        'path' => $path,
+        'full_url' => $request->fullUrl(),
+        'ip' => $request->ip(),
+        'referer' => $request->headers->get('referer'),
+        'user_id' => optional($request->user())->getAuthIdentifier(),
+    ];
+
+    if (str_starts_with($path, '/reset-password/')) {
+        Log::channel('web')->warning('404 on password reset route', $context);
+    } else {
+        Log::channel('web')->warning('404 Not Found', $context);
+    }
+
+    return response()->view('errors.404', [], 404);
+});
