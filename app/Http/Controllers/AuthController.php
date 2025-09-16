@@ -242,8 +242,6 @@ class AuthController extends Controller
 
         $status = Password::sendResetLink($emailData);
 
-        // Clear the custom URL generator to avoid side effects
-        ResetPasswordEmail::createUrlUsing(null);
 
         // Define the constant value if PHPStan can't find it
         $resetLinkSent = defined('Illuminate\\Support\\Facades\\Password::RESET_LINK_SENT')
