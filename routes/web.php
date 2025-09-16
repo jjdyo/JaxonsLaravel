@@ -48,17 +48,18 @@ Route::post('/user', [AuthController::class, 'processLogin'])->name('login.proce
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'processRegister'])->name('register.process');
 
-// Password reset routes (guest only)
-Route::middleware('guest')->group(function () {
-    Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
-    Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
+// Forgot/reset password routes
+// Make GET reset form public to avoid any unexpected guest middleware interference
+Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->middleware('guest')->name('password.request');
+Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->middleware('guest')->name('password.email');
 
-    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])
-        ->name('password.reset');
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])
+    ->where('token', '.+')
+    ->name('password.reset');
 
-    Route::middleware('throttle:5,1')->group(function () {
-        Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
-    });
+// Keep reset submission guest + throttled
+Route::middleware(['guest', 'throttle:5,1'])->group(function () {
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
 
 /*

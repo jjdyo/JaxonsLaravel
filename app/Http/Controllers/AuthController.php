@@ -304,11 +304,18 @@ class AuthController extends Controller
             ]);
         }
 
-        return view('auth.reset-password', [
+        // Force an explicit 200 OK status for the reset form to avoid accidental 404s
+        Log::channel('web')->info('Password reset form rendering', [
+            'email' => $email,
+            'token_length' => strlen($token),
+            'status' => 200,
+        ]);
+
+        return response()->view('auth.reset-password', [
             'request' => $request,
             'token' => $token,
             'email' => $email,
-        ]);
+        ], 200);
     }
 
     /**
