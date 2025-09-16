@@ -49,13 +49,14 @@ Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('regi
 Route::post('/register', [AuthController::class, 'processRegister'])->name('register.process');
 
 // Password reset routes (guest only)
-//Route::middleware('guest')->group(function () {
-Route::group([], function () {
+Route::middleware('guest')->group(function () {
     Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
     Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
 
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])
+        ->name('password.reset');
+
     Route::middleware('throttle:5,1')->group(function () {
-        Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
         Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
     });
 });
