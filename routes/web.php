@@ -11,6 +11,13 @@ use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\SystemLogsController;
 
+
+Route::get('/reset-password/{token}', function (string $token) {
+    return response("Debug OK — token = {$token}", 200)
+        ->header('Content-Type', 'text/plain');
+})->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class, 'guest', 'throttle'])
+    ->name('password.reset.debug');
+
 /*
 |--------------------------------------------------------------------------
 | Public Routes
