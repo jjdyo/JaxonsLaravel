@@ -22,11 +22,16 @@
             @csrf
 
             <!-- Password Reset Token -->
-            <input type="hidden" name="token" value="{{ $token ?? $request->route('token') }}">
+            <input type="hidden" name="token" value="{{ $token }}">
 
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" value="{{ old('email', $email ?? $request->email) }}" required autofocus>
+                <input type="email" id="email" name="email" value="{{ old('email', $email) }}" required autofocus>
+                @error('email')
+                    <div class="error-messages">
+                        <p>{{ $message }}</p>
+                    </div>
+                @enderror
             </div>
 
             <div class="form-group">

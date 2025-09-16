@@ -11,10 +11,6 @@ use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\SystemLogsController;
 
-Route::get('/reset-password/{token}', function ($token) {
-    return response("RESET OK: {$token}", 200);
-})->name('password.reset');
-
 /*
 |--------------------------------------------------------------------------
 | Public Routes
@@ -51,19 +47,24 @@ Route::post('/user', [AuthController::class, 'processLogin'])->name('login.proce
 // Registration routes
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'processRegister'])->name('register.process');
-/*
+
 Route::middleware('guest')->group(function () {
+    // Standard Laravel password reset routes
     Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
     Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
 
-        Route::group([], function () {
-            Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])
-                ->name('password.reset');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 
-            Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
-        });
-    });
-    */
+    // Backward-compatibility with legacy path used by older Laravel scaffolding
+    Route::get('/password/reset/{token}', function (Request $request, string $token) {
+        return redirect()->route('password.reset', [
+            'token' => $token,
+            'email' => $request->query('email'),
+        ]);
+    })->name('password.reset.legacy');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Authenticated User Routes
