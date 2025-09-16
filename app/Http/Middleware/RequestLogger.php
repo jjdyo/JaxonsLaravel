@@ -99,22 +99,6 @@ class RequestLogger
             ];
             Log::channel($channel)->warning(implode("\n", $lines));
             throw $e; // rethrow for framework to handle
-        } catch (HttpException $e) {
-            if ($e->getStatusCode() === 404) {
-                $durationMs = (int) round((microtime(true) - $start) * 1000);
-                $lines = [
-                    $emoji . ' ' . $method,
-                    '  URI: '      . $sanitizedPath,
-                    '  Route: '    . $routeName,
-                    '  Status: '   . 404,
-                    '  User: '     . $userLabel,
-                    '  Duration: ' . $durationMs . ' ms',
-                    '  UA: '       . $uaStr,
-                    '  Note: 404 via HttpException'
-                ];
-                Log::channel($channel)->warning(implode("\n", $lines));
-            }
-            throw $e; // rethrow other HTTP exceptions too
         }
     }
 
