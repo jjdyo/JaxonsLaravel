@@ -241,9 +241,13 @@ class AuthController extends Controller
      * @param \Illuminate\Http\Request $request The HTTP request containing the reset token
      * @return \Illuminate\View\View The password reset form view
      */
-    public function showResetPasswordForm(Request $request): \Illuminate\View\View
+    public function showResetPasswordForm(Request $request, string $token): \Illuminate\View\View
     {
-        return view('auth.reset-password', ['request' => $request]);
+        return view('auth.reset-password', [
+            'request' => $request,
+            'token' => $token,
+            'email' => $request->query('email')
+        ]);
     }
 
     /**
