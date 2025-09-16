@@ -54,7 +54,6 @@ Route::middleware('guest')->group(function () {
 
     Route::middleware('throttle:5,1')->group(function () {
         Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])
-            ->where('token', '[a-zA-Z0-9]+')
             ->name('password.reset');
 
         // Remove the query parameter route completely
