@@ -80,6 +80,26 @@ button:hover {
     text-decoration: underline;
 }
 
+/* Breadcrumbs Styles */
+.login-container .breadcrumbs {
+    display: block;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    color: var(--color-text);
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #555;
+    text-align: left;
+}
+
+.login-container .breadcrumbs a {
+    color: var(--color-link);
+    text-decoration: none;
+}
+
+.login-container .breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
 /* Success Messages */
 .alert-success {
     background-color: #d4edda;

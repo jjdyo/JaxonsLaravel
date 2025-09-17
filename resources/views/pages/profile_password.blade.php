@@ -10,6 +10,9 @@
     <div class="container password-form">
         <div class="row justify-content-center">
             <div class="col-md-8">
+                <div class="breadcrumbs">
+                    <a href="{{ route('profile') }}">Profile</a> » <span>Change Password</span>
+                </div>
                 <div class="card">
                     <div class="card-header">Change Password</div>
 

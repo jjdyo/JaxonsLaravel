@@ -3,7 +3,8 @@
    ================================= */
 
 /* Breadcrumbs Styles (reused pattern) */
-.profile-form .breadcrumbs {
+.profile-form .breadcrumbs,
+.password-form .breadcrumbs {
     display: block;
     margin: 1rem 0;
     font-size: 0.9rem;
@@ -11,11 +12,13 @@
     padding-bottom: 1rem;
     border-bottom: 1px solid #555;
 }
-.profile-form .breadcrumbs a {
+.profile-form .breadcrumbs a,
+.password-form .breadcrumbs a {
     color: var(--color-link);
     text-decoration: none;
 }
-.profile-form .breadcrumbs a:hover {
+.profile-form .breadcrumbs a:hover,
+.password-form .breadcrumbs a:hover {
     text-decoration: underline;
 }
 

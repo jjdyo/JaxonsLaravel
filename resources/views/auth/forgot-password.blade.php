@@ -8,6 +8,9 @@
 
 @section('content')
     <div class="login-container">
+        <div class="breadcrumbs">
+            <a href="{{ route('login') }}">Login</a> » <span>Forgot Password</span>
+        </div>
         <h2>Forgot Password</h2>
 
         @if (session('status'))
