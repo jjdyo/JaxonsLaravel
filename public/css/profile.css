@@ -31,7 +31,7 @@
 
     /* Helper text */
     small.form-text {
-        color: #6b7280;
+        color: var(--color-h1);
     }
 }
 
