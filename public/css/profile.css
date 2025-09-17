@@ -2,12 +2,33 @@
    Profile and Password Forms Styles
    ================================= */
 
+/* Breadcrumbs Styles (reused pattern) */
+.profile-form .breadcrumbs {
+    display: block;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    color: var(--color-text);
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #555;
+}
+.profile-form .breadcrumbs a {
+    color: var(--color-link);
+    text-decoration: none;
+}
+.profile-form .breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
 /* Shared base styles for both forms */
 .profile-form,
 .password-form {
     /* Card container styles */
     .card {
         border-radius: 10px;
+    }
+
+    .card-header {
+        padding: 1rem 2rem; /* align header with body */
     }
 
     .card-body {
@@ -32,6 +53,8 @@
     /* Helper text */
     small.form-text {
         color: var(--color-h1);
+        display: block;
+        margin-bottom: 0.25rem;
     }
 }
 
