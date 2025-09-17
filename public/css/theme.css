@@ -19,4 +19,48 @@
   --color-button: #555;
   --color-button-hover: #666;
   --black-box-shadow: 0px 0px 25px 5px rgba(5,5,7,0.75);
+
+  /* Warning button palette (matches profile edit "outline warning" style) */
+  --color-warning: #d97706; /* amber-600 */
+
+  /* Global button metrics */
+  --button-padding: 0.6rem 1rem;
+  --button-radius: 0.5rem;
+  --button-border-width: 1px;
+  --button-font-weight: 500;
+
+  /* Warning button variables */
+  --button-warning-bg: transparent;
+  --button-warning-border: var(--color-warning);
+  --button-warning-text: var(--color-warning);
+  --button-warning-hover-bg: rgba(217, 119, 6, 0.08);
+  --button-warning-hover-text: var(--color-warning);
+}
+
+/* Global, opt-in button styles (won't affect existing .btn classes) */
+.button {
+  display: inline-block;
+  padding: var(--button-padding);
+  border-radius: var(--button-radius);
+  text-decoration: none;
+  cursor: pointer;
+  border: var(--button-border-width) solid transparent;
+  font-weight: var(--button-font-weight);
+}
+
+/* Spacing between adjacent buttons */
+.button + .button {
+  margin-left: 0.5rem;
+}
+
+/* Warning variant mirrors profile edit outline warning button */
+.button.button-warning {
+  background-color: var(--button-warning-bg);
+  color: var(--button-warning-text);
+  border-color: var(--button-warning-border);
+}
+
+.button.button-warning:hover {
+  background-color: var(--button-warning-hover-bg);
+  color: var(--button-warning-hover-text);
 }

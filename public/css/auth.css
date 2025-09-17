@@ -72,7 +72,7 @@ button:hover {
 .login-links a {
     display: block;
     margin: 5px 0;
-    color: #007bff;
+    color: var(--color-link);
     text-decoration: none;
 }
 
