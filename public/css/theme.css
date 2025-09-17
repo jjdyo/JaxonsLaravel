@@ -30,9 +30,9 @@
   --button-font-weight: 500;
 
   /* Warning button variables */
-  --button-warning-bg: transparent;
+  --button-warning-bg: var(--color-primary);
   --button-warning-border: var(--color-warning);
-  --button-warning-text: var(--color-warning);
+  --button-warning-text: var(--color-link);
   --button-warning-hover-bg: rgba(217, 119, 6, 0.08);
   --button-warning-hover-text: var(--color-warning);
 }
