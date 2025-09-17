@@ -23,18 +23,36 @@
   /* Warning button palette (matches profile edit "outline warning" style) */
   --color-warning: #d97706; /* amber-600 */
 
+  /* Confirmation (success) palette */
+  --color-success: #16a34a; /* green-600 */
+  --color-success-hover: #15803d; /* green-700 */
+
   /* Global button metrics */
   --button-padding: 0.6rem 1rem;
   --button-radius: 0.5rem;
   --button-border-width: 1px;
   --button-font-weight: 500;
 
-  /* Warning button variables */
+  /* Warning button variables (outline on dark bg) */
   --button-warning-bg: var(--color-primary);
   --button-warning-border: var(--color-primary);
   --button-warning-text: var(--color-link);
   --button-warning-hover-bg: rgba(217, 119, 6, 0.08);
   --button-warning-hover-text: var(--color-warning);
+
+  /* Confirmation button variables (solid green) */
+  --button-confirmation-bg: var(--color-success);
+  --button-confirmation-text: #ffffff;
+  --button-confirmation-border: var(--color-success);
+  --button-confirmation-hover-bg: var(--color-success-hover);
+  --button-confirmation-hover-text: #ffffff;
+
+  /* Black button variables (solid primary) */
+  --button-black-bg: var(--color-primary);
+  --button-black-text: var(--color-text);
+  --button-black-border: var(--color-primary);
+  --button-black-hover-bg: #0a0d0d; /* slightly lighter than pure black */
+  --button-black-hover-text: var(--color-text);
 }
 
 /* Global, opt-in button styles (won't affect existing .btn classes) */
@@ -63,4 +81,26 @@
 .button.button-warning:hover {
   background-color: var(--button-warning-hover-bg);
   color: var(--button-warning-hover-text);
+}
+
+/* Confirmation (success) solid variant */
+.button.button-confirmation {
+  background-color: var(--button-confirmation-bg);
+  color: var(--button-confirmation-text);
+  border-color: var(--button-confirmation-border);
+}
+.button.button-confirmation:hover {
+  background-color: var(--button-confirmation-hover-bg);
+  color: var(--button-confirmation-hover-text);
+}
+
+/* Black solid variant */
+.button.button-black {
+  background-color: var(--button-black-bg);
+  color: var(--button-black-text);
+  border-color: var(--button-black-border);
+}
+.button.button-black:hover {
+  background-color: var(--button-black-hover-bg);
+  color: var(--button-black-hover-text);
 }

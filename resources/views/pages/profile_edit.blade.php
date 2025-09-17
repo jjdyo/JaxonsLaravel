@@ -49,14 +49,11 @@
 
                             <div class="form-group row mb-0">
                                 <div class="col-md-6 offset-md-4">
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="button button-confirmation">
                                         Update Profile
                                     </button>
-                                    <a href="{{ route('profile') }}" class="btn btn-secondary ml-2">
+                                    <a href="{{ route('profile') }}" class="button ml-2" role="button">
                                         Cancel
-                                    </a>
-                                    <a href="{{ route('profile.password.edit') }}" class="btn btn-outline-warning ml-2">
-                                        Change Password
                                     </a>
                                 </div>
                             </div>
