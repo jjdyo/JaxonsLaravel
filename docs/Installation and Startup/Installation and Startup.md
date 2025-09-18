@@ -465,6 +465,6 @@ php artisan key:generate
 
 For detailed instructions on setting up your `.env` file, including common configurations and troubleshooting tips, please refer to our dedicated guide:
 
-[Setting up .env File Guide](../Development%20Environments/Setting%20up%20.env.md)
+[Setting up .env File Guide](Setting%20up%20.env.md)
 
 ---

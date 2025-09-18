@@ -69,6 +69,8 @@ These routes require authentication and a verified email address.
 | `/profile` | GET | `AuthController@profile` | `profile` | `auth`, `verified` | Displays the user profile page |
 | `/profile/edit` | GET | `AuthController@editProfile` | `profile.edit` | `auth`, `verified` | Displays the profile edit form |
 | `/profile/edit` | PUT | `AuthController@updateProfile` | `profile.update` | `auth`, `verified` | Processes the profile update form submission |
+| `/profile/password` | GET | `AuthController@showChangePasswordForm` | `profile.password.edit` | `auth`, `verified` | Displays the change password form (sends a reset link upon submit) |
+| `/profile/password` | POST | `AuthController@processChangePassword` | `profile.password.update` | `auth`, `verified` | Processes the change password request and emails a reset link |
 | `/api-tokens` | GET | `ApiKeyController@userIndex` | `api-tokens.index` | `auth`, `verified` | Displays the user's API tokens |
 | `/api-tokens/create` | GET | `ApiKeyController@userCreate` | `api-tokens.create` | `auth`, `verified` | Displays the form to create a new API token |
 | `/api-tokens` | POST | `ApiKeyController@userStore` | `api-tokens.store` | `auth`, `verified` | Creates a new API token |
@@ -82,8 +84,9 @@ These routes handle the password reset process for users who have forgotten thei
 |-----|--------|------------------|------|------------|-------------|
 | `/forgot-password` | GET | `AuthController@showForgotPasswordForm` | `password.request` | `guest` | Displays the forgot password form |
 | `/forgot-password` | POST | `AuthController@sendResetLinkEmail` | `password.email` | `guest` | Sends a password reset link to the user's email |
-| `/reset-password/{token}` | GET | `AuthController@showResetPasswordForm` | `password.reset` | `guest`, `throttle:5,1` | Displays the reset password form (limited to 5 attempts per minute) |
-| `/reset-password` | POST | `AuthController@resetPassword` | `password.update` | `guest`, `throttle:5,1` | Processes the password reset form submission (limited to 5 attempts per minute) |
+| `/reset-password/{password_callback}` | GET | `AuthController@showResetPasswordForm` | `password.reset` | `guest` | Displays the reset password form |
+| `/reset-password` | POST | `AuthController@resetPassword` | `password.update` | `guest` | Processes the password reset form submission |
+| `/password/reset/{password_callback}` | GET | `redirect()->route('password.reset')` | `password.reset.legacy` | `guest` | Legacy compatibility path that redirects to `/reset-password/{password_callback}` |
 
 ### Documentation Routes
 These routes handle the documentation system, allowing users to browse and view markdown documentation files.
@@ -98,6 +101,9 @@ These routes handle administrative functions and require admin role.
 
 | URL | Method | Controller Action | Name | Middleware | Description |
 |-----|--------|------------------|------|------------|-------------|
+| `/admin` | GET | `view('admin.dashboard')` | `admin.dashboard` | `auth`, `verified`, `role:admin` | Admin dashboard |
+| `/admin/system-logs` | GET | `SystemLogsController@index` | `admin.system-logs.index` | `auth`, `verified`, `role:admin` | View available log channels and latest logs |
+| `/admin/system-logs/fetch` | GET | `SystemLogsController@fetchLogs` | `admin.system-logs.fetch` | `auth`, `verified`, `role:admin` | Fetch chunks of a specific log file via JSON |
 | `/admin/users` | GET | `UserManagementController@listUsers` | `admin.users.index` | `auth`, `verified`, `role:admin` | Lists all users |
 | `/admin/users/{user}` | GET | `UserManagementController@showUser` | `admin.users.show` | `auth`, `verified`, `role:admin` | Shows details for a specific user |
 | `/admin/users/{user}/edit` | GET | `UserManagementController@editUser` | `admin.users.edit` | `auth`, `verified`, `role:admin` | Shows the edit form for a specific user |

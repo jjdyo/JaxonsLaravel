@@ -9,6 +9,8 @@ This folder contains comprehensive documentation for the Laravel application. Th
 - [AuthController Documentation](Controllers/AuthController.md) - Documentation for authentication-related functionality
 - [DocsController Documentation](Controllers/DocsController.md) - Documentation for the documentation system
 - [PageController Documentation](Controllers/PageController.md) - Documentation for page rendering functionality
+- [UserManagementController Documentation](Controllers/UserManagementController.md) - Admin user management (list/show/edit/delete/verify/roles)
+- [SystemLogsController Documentation](Controllers/SystemLogsController.md) - Admin interface to browse and fetch application logs
 
 ### Models
 - [Models Documentation](Models.md) - Documentation for data models and relationships
@@ -70,13 +72,20 @@ The application includes the following pages:
 
 - Home page (`/`)
 - About page (`/about`)
-- Contact page (`/contact`) - Requires authentication and permission
-- Profile page (`/profile`) - Requires authentication
+- Contact page (`/contact`) - Requires authentication and 'view contact page url' permission
+- Profile page (`/profile`) - Requires authentication and verified email
+- Edit Profile page (`/profile/edit`) - Requires authentication and verified email
+- Change Password page (`/profile/password`) - Requires authentication and verified email
+- API Tokens pages (`/api-tokens`, `/api-tokens/create`, `/api-tokens/{token}`) - Requires authentication and verified email
+- Documentation index (`/docs`) and document viewer (`/docs/{filename}`)
+- Admin Dashboard (`/admin`) - Requires admin role
+- System Logs (`/admin/system-logs`) - Requires admin role
+- User Management (various under `/admin/users/...`) - Requires admin role
 - Login page (`/user`)
 - Registration page (`/register`)
 - Email verification page (`/email/verify`)
 - Forgot password page (`/forgot-password`)
-- Reset password page (`/reset-password/{token}`)
+- Reset password page (`/reset-password/{password_callback}`)
 
 ## API Endpoints
 The application includes the following API endpoints:

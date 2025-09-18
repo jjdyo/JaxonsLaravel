@@ -30,7 +30,7 @@ Displays the login form to the user.
 **Example Usage:**
 ```php
 // In routes/web.php
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::get('/user', [AuthController::class, 'showLoginForm'])->name('login');
 ```
 
 ### `showRegisterForm()`
@@ -59,7 +59,7 @@ Handles the login form submission, validates credentials, and authenticates the 
 **Example Usage:**
 ```php
 // In routes/web.php
-Route::post('/login', [AuthController::class, 'processLogin'])->name('login.process');
+Route::post('/user', [AuthController::class, 'processLogin'])->name('login.process');
 ```
 
 ### `logout(Request $request)`
@@ -135,6 +135,34 @@ Handles the profile update form submission. This route is protected by authentic
 Route::put('/profile/edit', [AuthController::class, 'updateProfile'])->middleware(['auth', 'verified'])->name('profile.update');
 ```
 
+### `showChangePasswordForm()`
+Displays the change password form. Submitting the form will trigger an email containing a secure password reset link.
+
+Parameters: None
+Returns: View (`pages.profile_password`)
+Middleware: auth, verified
+
+Example Usage:
+```php
+// In routes/web.php
+Route::get('/profile/password', [AuthController::class, 'showChangePasswordForm'])->middleware(['auth','verified'])->name('profile.password.edit');
+```
+
+### `processChangePassword(ChangePasswordRequest $request)`
+Initiates a password change by emailing the authenticated user a standard Laravel reset link. Actual password update happens via the reset form the user opens from email.
+
+Parameters:
+- $request (ChangePasswordRequest)
+
+Returns: Redirect back to profile with success or error message
+Middleware: auth, verified
+
+Example Usage:
+```php
+// In routes/web.php
+Route::post('/profile/password', [AuthController::class, 'processChangePassword'])->middleware(['auth','verified'])->name('profile.password.update');
+```
+
 ### `processRegister(Request $request)`
 Handles the registration form submission, creates a new user, logs them in, and sends a verification email.
 
@@ -194,7 +222,7 @@ Displays the reset password form to the user.
 **Example Usage:**
 ```php
 // In routes/web.php
-Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->middleware('guest')->name('password.reset');
+Route::get('/reset-password/{password_callback}', [AuthController::class, 'showResetPasswordForm'])->middleware('guest')->name('password.reset');
 ```
 
 ### `resetPassword(Request $request)`

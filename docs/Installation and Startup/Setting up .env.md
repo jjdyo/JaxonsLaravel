@@ -394,3 +394,44 @@ DB_PASSWORD=your_secure_password
 * Regularly rotate API keys and passwords
 * Different environments (development, staging, production) should have different `.env` files
 * For team development, consider documenting required environment variables in your README
+
+
+---
+
+## 🔐 Authentication & Authorization Notes
+
+### Email Verification
+- New users receive an email verification link automatically after registration.
+- Ensure mail settings are correctly configured (MailHog recommended in development) so verification emails are delivered.
+
+### Laravel Sanctum (API Token Authentication)
+This project uses Sanctum for token-based API authentication.
+
+Recommended .env settings:
+
+```env
+APP_URL=http://localhost
+APP_API_URL=http://api.localhost
+SANCTUM_STATEFUL_DOMAINS=localhost,127.0.0.1
+SESSION_DOMAIN=localhost
+```
+
+Notes:
+- For token-based authentication (not SPA), SANCTUM_STATEFUL_DOMAINS is not strictly required but harmless in local dev.
+- Use the in-app UI under /api-tokens to create personal access tokens with specific scopes/abilities.
+- Include the Authorization: Bearer <token> header on API requests.
+
+### Roles & Permissions (Spatie)
+- Seeding creates roles (admin, user) and permissions (e.g., 'view contact page url').
+- Run the seeder after migrations:
+
+```bash
+php artisan migrate --force
+php artisan db:seed --class=PermissionSeeder
+```
+
+- The admin user created by the seeder can access /admin, /admin/system-logs, and user management.
+
+### Logging Channels
+- LOG_STACK is configured to include web and api for daily log files and optional slack for critical alerts.
+- You can test channels locally via the /test-logging route (available only in non-production when authenticated with Sanctum).
