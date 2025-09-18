@@ -113,3 +113,19 @@
     margin: 20px auto;
     max-width: 1200px;
 }
+
+/* Alert Partials */
+
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.alert-success{
+    --color-success: #16a34a;
+}
+
+.alert-danger{
+    background-color: #D70040;
+}
