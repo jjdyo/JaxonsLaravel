@@ -65,6 +65,16 @@ protected function casts(): array
 }
 ```
 
+## Query Scopes
+- `verified()` – Only users with a verified email.
+- `unverified()` – Only users without a verified email.
+- `admins()` – Users with the admin role (via Spatie's role scope).
+- `selectSummary()` – Selects common summary columns for listings.
+- `withRolesMinimal()` – Eager loads roles with minimal columns.
+- `search(string $term)` – Case-insensitive search by name or email.
+- `orderByName(string $direction = 'asc')` – Orders by name.
+- `newest()` – Orders by most recent creation date.
+
 ## Methods
 
 ### `sendPasswordResetNotification($token)`
@@ -91,6 +101,15 @@ Sends a custom email verification notification to the user.
 ```php
 $user->sendEmailVerificationNotification();
 ```
+
+### `canBeDeletedBy(?User $actor): bool`
+Returns whether this user can be deleted by the given actor. Currently prevents self-deletion.
+
+### `markEmailVerified(): void`
+Marks the user's email as verified (no-op if already verified).
+
+### `markEmailUnverified(): void`
+Marks the user's email as unverified.
 
 ## Relationships
 - `tokens()` - Morphs many relationship to Sanctum PersonalAccessToken model

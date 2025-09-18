@@ -117,9 +117,13 @@ class UserManagementController extends Controller
                     $user->password = $validated['password']; // cast('password' => 'hashed') handles hashing
                 }
 
-                // Toggle email verification if provided
+                // Toggle email verification if provided (delegated to model helpers)
                 if (array_key_exists('email_verified', $validated)) {
-                    $user->email_verified_at = $validated['email_verified'] ? now() : null;
+                    if ($validated['email_verified']) {
+                        $user->markEmailVerified();
+                    } else {
+                        $user->markEmailUnverified();
+                    }
                 }
 
                 $user->save();
@@ -142,8 +146,8 @@ class UserManagementController extends Controller
      */
     public function deleteUser(User $user): RedirectResponse
     {
-        // Prevent an admin from deleting their own account to avoid lockout
-        if (auth()->id() === $user->id) {
+        // Prevent deletion when actor is the same user (centralized in model)
+        if (!$user->canBeDeletedBy(auth()->user())) {
             return back()->withErrors(['error' => "You can't delete your own account."]);
         }
 
@@ -164,10 +168,7 @@ class UserManagementController extends Controller
      */
     public function verifyUser(User $user): RedirectResponse
     {
-        if (!$user->hasVerifiedEmail()) {
-            $user->email_verified_at = now();
-            $user->save();
-        }
+        $user->markEmailVerified();
 
         return redirect()->route('admin.users.show', $user)
             ->with('success', 'User email verified successfully');
@@ -181,8 +182,7 @@ class UserManagementController extends Controller
      */
     public function unverifyUser(User $user): RedirectResponse
     {
-        $user->email_verified_at = null;
-        $user->save();
+        $user->markEmailUnverified();
 
         return redirect()->route('admin.users.show', $user)
             ->with('success', 'User email verification removed');

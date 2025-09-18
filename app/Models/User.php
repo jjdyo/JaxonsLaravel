@@ -174,4 +174,38 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $this->notify(new VerifyEmailNotification);
     }
+
+    /**
+     * Determine if this user can be deleted by the given actor.
+     *
+     * Rules (minimal): a user cannot delete themselves.
+     * Additional authorization should be handled via policies/gates.
+     */
+    public function canBeDeletedBy(?self $actor): bool
+    {
+        if ($actor === null) {
+            return false;
+        }
+        return $actor->id !== $this->id;
+    }
+
+    /**
+     * Mark the user's email as verified if not already.
+     */
+    public function markEmailVerified(): void
+    {
+        if (!$this->hasVerifiedEmail()) {
+            $this->email_verified_at = now();
+            $this->save();
+        }
+    }
+
+    /**
+     * Mark the user's email as unverified.
+     */
+    public function markEmailUnverified(): void
+    {
+        $this->email_verified_at = null;
+        $this->save();
+    }
 }

@@ -34,17 +34,17 @@ The UserManagementController provides administrative functionality for managing 
   - email: required|email|max:255|unique:users,email,{user}
   - password: nullable|string|min:8
   - email_verified: nullable|boolean
-- Behavior: Updates fields; password is hashed by model cast; toggles email_verified_at if provided.
+- Behavior: Updates fields; password is hashed by model cast; email verification toggling is delegated to User model helpers.
 - Redirects: admin.users.show with success message.
 
 5) DELETE /admin/users/{user} (name: admin.users.destroy)
 - Method: deleteUser(User $user)
-- Description: Deletes a user (prevents deleting your own account).
+- Description: Deletes a user (prevents deleting your own account via User::canBeDeletedBy()).
 - Redirects: admin.users.index
 
 6) POST /admin/users/{user}/verify (name: admin.users.verify)
 - Method: verifyUser(User $user)
-- Description: Manually marks a user's email as verified (sets email_verified_at=now()).
+- Description: Manually marks a user's email as verified via User::markEmailVerified().
 
 7) POST /admin/users/{user}/unverify (name: admin.users.unverify)
 - Method: unverifyUser(User $user)
