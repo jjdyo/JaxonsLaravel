@@ -16,11 +16,7 @@
         <span>{{ $user->name }}</span>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
+    @include('partials.alerts')
 
     <div class="user-detail-card">
         <div class="user-detail-header">

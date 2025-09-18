@@ -4,11 +4,7 @@
 
 @section('content')
     <div class="profile-dashboard container-shadow">
-        @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
+        @include('partials.alerts')
 
         <h2>Welcome, {{ Auth::user()->name ?? Auth::user()->email }}!</h2>
         <p>This is your dashboard. Here you can view personalized info, upcoming stuff, etc.</p>

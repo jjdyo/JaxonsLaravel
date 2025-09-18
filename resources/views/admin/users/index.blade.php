@@ -11,11 +11,7 @@
 <div class="user-management">
     <h1>User Management</h1>
 
-    @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
+    @include('partials.alerts')
 
     <form method="GET" action="{{ route('admin.users.index') }}" class="user-filter-form">
         <label for="filter">View:</label>
