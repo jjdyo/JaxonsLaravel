@@ -132,7 +132,10 @@ class UserManagementController extends Controller
 
                 // Sync roles from the validated data (empty selection clears roles)
                 $roleIds = $validated['roles'] ?? [];
-                $user->syncRoles($roleIds);
+                $roleNames = empty($roleIds)
+                    ? []
+                    : Role::query()->whereIn('id', $roleIds)->pluck('name');
+                $user->syncRoles($roleNames);
             });
 
             return redirect()
