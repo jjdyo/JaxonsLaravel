@@ -11,8 +11,9 @@
 <div class="user-management">
     <nav class="breadcrumb">
         <a href="{{ route('admin.dashboard') }}">Admin</a> »
-        <a href="{{ route('admin.users.index') }}">Users</a> »
-        <span>Edit {{ $user->name }}</span>
+        <a href="{{ route('admin.users.index') }}">User Management</a> »
+        <a href="{{ route('admin.users.show', $user) }}">{{ $user->name }}</a> »
+        <span>Edit</span>
     </nav>
 
     <h1>Edit User</h1>

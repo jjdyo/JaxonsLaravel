@@ -1,20 +1,18 @@
 @extends('layouts.app')
 
-@section('title', 'Change Password')
-
+{{--  @section('title', 'Change Password') --}}
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
 @endpush
 
 @section('content')
-    <div class="container password-form">
+    <div class="container-shadow password-form">
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="breadcrumbs">
                     <a href="{{ route('profile') }}">Profile</a> » <span>Change Password</span>
                 </div>
                 <div class="card">
-                    <div class="card-header">Change Password</div>
 
                     <div class="card-body">
                         <p class="text-muted">Enter your new password below. We'll email you a quick confirmation link to verify the change. The change will not take effect until you confirm via email.</p>
@@ -43,11 +41,11 @@
 
                             <div class="form-group row mb-0">
                                 <div class="col-md-6 offset-md-4">
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="button button-confirmation">
                                         Request Password Change
                                     </button>
-                                    <a href="{{ route('profile.edit') }}" class="btn btn-secondary ml-2">
-                                        Back to Profile Edit
+                                    <a href="{{ route('profile') }}" class="button button-warning ml-2">
+                                        Cancel
                                     </a>
                                 </div>
                             </div>

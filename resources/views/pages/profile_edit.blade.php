@@ -3,18 +3,17 @@
 @section('title', 'Edit Profile')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/profile.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
 @endpush
 
 @section('content')
-    <div class="container profile-form">
+    <div class="container-shadow profile-form">
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="breadcrumbs">
                     <a href="{{ route('profile') }}">Profile</a> » <span>Edit</span>
                 </div>
                 <div class="card">
-                    <div class="card-header">Edit Profile</div>
 
                     <div class="card-body">
                         <form method="POST" action="{{ route('profile.update') }}">
@@ -28,7 +27,7 @@
                                     <input id="name" type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name', $user->name) }}" required autocomplete="name" autofocus>
 
                                     @error('name')
-                                        <span class="invalid-feedback" role="alert">
+                                    <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>
                                         </span>
                                     @enderror
@@ -43,7 +42,7 @@
                                     <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email', $user->email) }}" required autocomplete="email">
 
                                     @error('email')
-                                        <span class="invalid-feedback" role="alert">
+                                    <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>
                                         </span>
                                     @enderror
@@ -55,7 +54,7 @@
                                     <button type="submit" class="button button-confirmation">
                                         Update Profile
                                     </button>
-                                    <a href="{{ route('profile') }}" class="button ml-2" role="button">
+                                    <a href="{{ route('profile') }}" class="button button-warning ml-2" role="button">
                                         Cancel
                                     </a>
                                 </div>

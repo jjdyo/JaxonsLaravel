@@ -12,7 +12,7 @@
     <h1>API Keys for {{ $user->name }}</h1>
 
     <div class="breadcrumbs">
-        <a href="{{ route('admin.users.index') }}">Users</a> &raquo;
+        <a href="{{ route('admin.users.index') }}">User Management</a> &raquo;
         <a href="{{ route('admin.users.show', $user) }}">{{ $user->name }}</a> &raquo;
         <span>API Keys</span>
     </div>

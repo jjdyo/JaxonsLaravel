@@ -3,7 +3,7 @@
 @section('title', 'Welcome')
 
 @section('content')
-    <div class="profile-dashboard">
+    <div class="profile-dashboard container-shadow">
         @if(session('success'))
             <div class="alert alert-success">
                 {{ session('success') }}

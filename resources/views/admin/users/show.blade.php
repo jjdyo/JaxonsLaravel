@@ -12,7 +12,7 @@
     <h1>User Details</h1>
 
     <div class="breadcrumbs">
-        <a href="{{ route('admin.users.index') }}">Users</a> &raquo;
+        <a href="{{ route('admin.users.index') }}">User Management</a> &raquo;
         <span>{{ $user->name }}</span>
     </div>
 

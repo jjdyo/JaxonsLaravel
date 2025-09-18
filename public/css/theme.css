@@ -104,3 +104,12 @@
   background-color: var(--button-black-hover-bg);
   color: var(--button-black-hover-text);
 }
+
+.container-shadow {
+    box-shadow: var(--black-box-shadow);
+    border-radius: 8px;
+    padding: 20px;
+    background-color: var(--color-bg-main);
+    margin: 20px auto;
+    max-width: 1200px;
+}
