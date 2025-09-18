@@ -106,6 +106,8 @@ class UserManagementController extends Controller
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8'],
             'email_verified' => ['nullable', 'boolean'],
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['integer', Rule::exists('roles', 'id')],
         ]);
 
         try {
@@ -127,6 +129,10 @@ class UserManagementController extends Controller
                 }
 
                 $user->save();
+
+                // Sync roles from the validated data (empty selection clears roles)
+                $roleIds = $validated['roles'] ?? [];
+                $user->syncRoles($roleIds);
             });
 
             return redirect()

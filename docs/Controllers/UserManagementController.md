@@ -34,7 +34,9 @@ The UserManagementController provides administrative functionality for managing 
   - email: required|email|max:255|unique:users,email,{user}
   - password: nullable|string|min:8
   - email_verified: nullable|boolean
-- Behavior: Updates fields; password is hashed by model cast; email verification toggling is delegated to User model helpers.
+  - roles: nullable|array
+  - roles.*: integer|exists:roles,id
+- Behavior: Updates user fields and synchronizes roles (empty selection clears roles). Password is hashed by model cast; email verification toggling is delegated to User model helpers.
 - Redirects: admin.users.show with success message.
 
 5) DELETE /admin/users/{user} (name: admin.users.destroy)
@@ -56,6 +58,7 @@ The UserManagementController provides administrative functionality for managing 
   - roles: array
   - roles.*: integer|exists:roles,id
 - Behavior: Syncs user roles by ID via Spatie Permissions.
+- Note: The UI now updates roles via PUT /admin/users/{user} (Save Changes). This endpoint remains for API/backward compatibility.
 
 9) Nested API Key Management
 - Prefix: /admin/users/{user}/api-keys (name: admin.users.api-keys.)

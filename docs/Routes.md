@@ -111,7 +111,7 @@ These routes handle administrative functions and require admin role.
 | `/admin/users/{user}` | DELETE | `UserManagementController@deleteUser` | `admin.users.destroy` | `auth`, `verified`, `role:admin` | Deletes a specific user |
 | `/admin/users/{user}/verify` | POST | `UserManagementController@verifyUser` | `admin.users.verify` | `auth`, `verified`, `role:admin` | Manually verifies a user's email |
 | `/admin/users/{user}/unverify` | POST | `UserManagementController@unverifyUser` | `admin.users.unverify` | `auth`, `verified`, `role:admin` | Manually unverifies a user's email |
-| `/admin/users/{user}/roles` | POST | `UserManagementController@updateRoles` | `admin.users.roles.update` | `auth`, `verified`, `role:admin` | Updates a user's roles |
+| `/admin/users/{user}/roles` | POST | `UserManagementController@updateRoles` | `admin.users.roles.update` | `auth`, `verified`, `role:admin` | Updates a user's roles (UI uses PUT /admin/users/{user}; this endpoint remains for API/back-compat) |
 | `/admin/users/{user}/api-keys` | GET | `ApiKeyController@index` | `admin.users.api-keys.index` | `auth`, `verified`, `role:admin` | Lists a user's API keys |
 | `/admin/users/{user}/api-keys/create` | GET | `ApiKeyController@create` | `admin.users.api-keys.create` | `auth`, `verified`, `role:admin` | Shows the form to create a new API key |
 | `/admin/users/{user}/api-keys` | POST | `ApiKeyController@store` | `admin.users.api-keys.store` | `auth`, `verified`, `role:admin` | Creates a new API key for a user |
