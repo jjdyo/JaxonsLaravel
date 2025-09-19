@@ -7,7 +7,7 @@
 @endpush
 
 @section('content')
-<div class="api-tokens-container">
+<div class="api-tokens-container container-shadow">
     <h1>API Token Details</h1>
 
     <div class="token-details">

@@ -20,6 +20,10 @@
   --color-button-hover: #666;
   --black-box-shadow: 0px 0px 25px 5px rgba(5,5,7,0.75);
 
+  /* Halo effects */
+  --halo-blue: rgba(59, 130, 246, 0.55); /* blue-500 @ ~55% */
+  --halo-blue-outer: rgba(59, 130, 246, 0.3);
+
   /* Warning button palette (matches profile edit "outline warning" style) */
   --color-warning: #d97706; /* amber-600 */
 
@@ -37,8 +41,9 @@
   --button-warning-bg: var(--color-primary);
   --button-warning-border: var(--color-primary);
   --button-warning-text: var(--color-link);
-  --button-warning-hover-bg: rgba(217, 119, 6, 0.08);
-  --button-warning-hover-text: var(--color-warning);
+  /* Removed orange overlay on hover */
+  --button-warning-hover-bg: var(--button-warning-bg);
+  --button-warning-hover-text: var(--button-warning-text);
 
   /* Confirmation button variables (solid green) */
   --button-confirmation-bg: var(--color-success);
@@ -103,6 +108,20 @@
 .button.button-black:hover {
   background-color: var(--button-black-hover-bg);
   color: var(--button-black-hover-text);
+}
+
+.button.link-hover {
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease-in-out; /* smooth glow */
+}
+
+.button.link-hover:hover,
+.button.link-hover:focus-visible {
+    transform: translateY(-2px);
+    box-shadow:
+        0 0 10px 3px var(--halo-blue),
+        0 0 25px 6px var(--halo-blue-outer);
 }
 
 .container-shadow {

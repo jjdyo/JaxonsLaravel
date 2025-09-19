@@ -11,7 +11,7 @@
     <div class="api-token-header">
         <h1>Your API Tokens</h1>
         @if(!$apiKeys->isEmpty())
-            <a href="{{ route('api-tokens.create') }}" class="btn btn-primary">Create New Token</a>
+            <a href="{{ route('api-tokens.create') }}" class="button button-warning link-hover" role="button">Create New Token</a>
         @endif
     </div>
 
@@ -29,10 +29,10 @@
     @if($apiKeys->isEmpty())
         <div class="no-tokens-message">
             <p>You don't have any API tokens yet.</p>
-            <a href="{{ route('api-tokens.create') }}" class="btn btn-primary">Create a Token</a>
+            <a href="{{ route('api-tokens.create') }}" class="button button-warning link-hover">Create a Token</a>
         </div>
     @else
-        <div class="table-responsive">
+        <div class="table-responsive container-shadow">
             <table class="api-key-table">
                 <thead>
                     <tr>
@@ -72,7 +72,7 @@
                             </td>
                             <td>
                                 <div class="api-key-actions">
-                                    <a href="{{ route('api-tokens.show', $token) }}" class="btn btn-secondary btn-sm">Details</a>
+                                    <a href="{{ route('api-tokens.show', $token) }}" class="button button-warning btn-sm">Details</a>
                                     <form action="{{ route('api-tokens.destroy', $token) }}" method="POST" class="inline-form">
                                         @csrf
                                         @method('DELETE')
