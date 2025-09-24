@@ -84,8 +84,8 @@ class SlashCommandService
                 ],
             ];
 
-            // Keep a simple top-level text for clients that ignore attachments
-            $payload['text'] = $text;
+            // Keep a simple top-level fallback text without the URL to avoid duplicate link rendering
+            $payload['text'] = 'Team Handbook';
             $hasBlocks = true;
         }
 
