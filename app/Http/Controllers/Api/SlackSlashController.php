@@ -6,12 +6,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
+use App\Services\Slack\SlashCommandService;
 
 class SlackSlashController extends Controller
 {
-    // Centralized, easily editable URL for the handbook command
-    private const HANDBOOK_URL = 'https://docs.google.com/document/d/1AJOXgbRYp5Bcm9mxGp3Z3SY1ocHHoqDIPSdewa0J_KQ/edit?usp=sharing';
     /**
      * Handle Slack slash command requests.
      *
@@ -21,19 +19,19 @@ class SlackSlashController extends Controller
      *   - text: simple text response
      * Additionally, if a response_url is provided, we POST the message payload to it.
      */
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request, SlashCommandService $service): JsonResponse
     {
         $commandRaw = $request->get('command', '');
         $command = is_string($commandRaw) ? $commandRaw : '';
         // Normalize potential spacing variants like "/example 3"
-        $normalized = preg_replace('/\s+/', '', $command);
+        $normalizedTemp = preg_replace('/\s+/', '', $command);
+        $normalized = is_string($normalizedTemp) ? $normalizedTemp : '';
 
-        $text = match ($normalized) {
-            '/handbook' => self::HANDBOOK_URL, // clickable URL in Slack
-            '/example2' => 'example2',
-            '/example3' => 'example3',
-            default => 'Unknown command. Try /handbook, /example2, or /example3.',
-        };
+        $build = $service->buildPayload($normalized);
+        $payload = $build['payload'];
+        $text = $build['text'];
+        $responseType = $build['response_type'];
+        $hasBlocks = $build['has_blocks'];
 
         // Gather request metadata safely for logging
         $ip = is_string($_SERVER['REMOTE_ADDR'] ?? null) ? $_SERVER['REMOTE_ADDR'] : 'unknown';
@@ -54,7 +52,6 @@ class SlackSlashController extends Controller
         $responseUrlRaw = $request->get('response_url');
         $responseUrl = is_string($responseUrlRaw) ? $responseUrlRaw : null;
 
-        $responseType = 'in_channel';
 
         // If response_url is provided, POST the message there per Slack docs
         $postStatus = null;
@@ -62,18 +59,11 @@ class SlackSlashController extends Controller
         $postError = null;
         $postBody = null;
         if (is_string($responseUrl) && $responseUrl !== '') {
-            try {
-                $resp = Http::timeout(3)->asJson()->post($responseUrl, [
-                    'text' => $text,
-                    'response_type' => $responseType,
-                ]);
-                $postStatus = $resp->status();
-                $postOk = $resp->successful();
-                $postBody = $resp->body();
-            } catch (\Throwable $e) {
-                $postOk = false;
-                $postError = $e->getMessage();
-            }
+            $result = $service->postToResponseUrl($responseUrl, $payload);
+            $postStatus = $result['status'];
+            $postOk = $result['ok'];
+            $postError = $result['error'];
+            $postBody = $result['body'];
         }
 
         // Log to the dedicated 'api' logging channel
@@ -88,6 +78,7 @@ class SlackSlashController extends Controller
             'command_normalized' => $normalized,
             'response_text' => $text,
             'response_type' => $responseType,
+            'has_blocks' => $hasBlocks,
             'ip' => $ip,
             'user_agent' => $userAgent,
             'team_id' => $teamId,
