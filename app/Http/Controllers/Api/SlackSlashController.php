@@ -23,15 +23,33 @@ class SlackSlashController extends Controller
     {
         $commandRaw = $request->get('command', '');
         $command = is_string($commandRaw) ? $commandRaw : '';
-        // Normalize potential spacing variants like "/example 3"
         $normalizedTemp = preg_replace('/\s+/', '', $command);
         $normalized = is_string($normalizedTemp) ? $normalizedTemp : '';
 
-        $build = $service->buildPayload($normalized);
-        $payload = $build['payload'];
-        $text = $build['text'];
-        $responseType = $build['response_type'];
-        $hasBlocks = $build['has_blocks'];
+        // Delegate payload construction to the service. It returns a structured array:
+        //    - payload: the final Slack message (could be a simple text or a large nested array of blocks/attachments)
+        //    - text: the raw text chosen for this command (useful for logging)
+        //    - response_type: Slack visibility mode (we default to in_channel)
+        //    - has_blocks: whether the payload contains rich Block Kit structures
+        try {
+            $build = $service->buildPayload($normalized);
+            $payload = $build['payload'];
+            $text = $build['text'];
+            $responseType = $build['response_type'];
+            $hasBlocks = $build['has_blocks'];
+        } catch (\Throwable $e) {
+            Log::channel('api')->error('Slack slash command build failed', [
+                'command_raw' => $command,
+                'command_normalized' => $normalized,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'ok' => false,
+                'acknowledged' => true,
+                'error' => 'Unable to process command at this time.',
+            ]);
+        }
 
         // Gather request metadata safely for logging
         $ip = is_string($_SERVER['REMOTE_ADDR'] ?? null) ? $_SERVER['REMOTE_ADDR'] : 'unknown';
@@ -53,7 +71,6 @@ class SlackSlashController extends Controller
         $responseUrl = is_string($responseUrlRaw) ? $responseUrlRaw : null;
 
 
-        // If response_url is provided, POST the message there per Slack docs
         $postStatus = null;
         $postOk = null;
         $postError = null;
@@ -66,7 +83,6 @@ class SlackSlashController extends Controller
             $postBody = $result['body'];
         }
 
-        // Log to the dedicated 'api' logging channel
         $responseUrlHost = null;
         if (is_string($responseUrl) && $responseUrl !== '') {
             $parts = parse_url($responseUrl);
@@ -94,8 +110,7 @@ class SlackSlashController extends Controller
             'response_post_body' => $postBody,
         ]);
 
-        // Acknowledge the slash command quickly. We keep the JSON for compatibility,
-        // but the authoritative message is sent via response_url when provided.
+        // Final ACK - Handled by Cloudflare Edge Worker initially
         return response()->json([
             'ok' => true,
             'acknowledged' => true,
