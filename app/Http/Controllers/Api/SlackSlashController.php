@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Http;
 
 class SlackSlashController extends Controller
 {
+    // Centralized, easily editable URL for the handbook command
+    private const HANDBOOK_URL = 'https://docs.google.com/document/d/1AJOXgbRYp5Bcm9mxGp3Z3SY1ocHHoqDIPSdewa0J_KQ/edit?usp=sharing';
     /**
      * Handle Slack slash command requests.
      *
@@ -27,7 +29,7 @@ class SlackSlashController extends Controller
         $normalized = preg_replace('/\s+/', '', $command);
 
         $text = match ($normalized) {
-            '/handbook' => 'handbook',
+            '/handbook' => self::HANDBOOK_URL, // clickable URL in Slack
             '/example2' => 'example2',
             '/example3' => 'example3',
             default => 'Unknown command. Try /handbook, /example2, or /example3.',
@@ -58,6 +60,7 @@ class SlackSlashController extends Controller
         $postStatus = null;
         $postOk = null;
         $postError = null;
+        $postBody = null;
         if (is_string($responseUrl) && $responseUrl !== '') {
             try {
                 $resp = Http::timeout(3)->asJson()->post($responseUrl, [
@@ -66,6 +69,7 @@ class SlackSlashController extends Controller
                 ]);
                 $postStatus = $resp->status();
                 $postOk = $resp->successful();
+                $postBody = $resp->body();
             } catch (\Throwable $e) {
                 $postOk = false;
                 $postError = $e->getMessage();
@@ -91,10 +95,12 @@ class SlackSlashController extends Controller
             'user_id' => $userId,
             'user_name' => $userName,
             'has_response_url' => is_string($responseUrl) && $responseUrl !== '',
+            'response_url' => $responseUrl,
             'response_url_host' => $responseUrlHost,
             'response_post_ok' => $postOk,
             'response_post_status' => $postStatus,
             'response_post_error' => $postError,
+            'response_post_body' => $postBody,
         ]);
 
         // Acknowledge the slash command quickly. We keep the JSON for compatibility,
