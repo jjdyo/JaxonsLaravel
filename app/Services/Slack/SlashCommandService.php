@@ -84,8 +84,8 @@ class SlashCommandService
                 ],
             ];
 
-            // Keep a simple top-level fallback text without the URL to avoid duplicate link rendering
-            $payload['text'] = 'Team Handbook';
+            // Remove top-level text so only blocks/attachments are rendered for /handbook
+            unset($payload['text']);
             $hasBlocks = true;
         }
 
