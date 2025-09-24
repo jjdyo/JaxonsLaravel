@@ -42,33 +42,50 @@ class SlashCommandService
             $docUrl = self::HANDBOOK_URL;
             $payload['unfurl_links'] = true;
             $payload['unfurl_media'] = true;
-            $payload['blocks'] = [
+
+            // Use an attachment to provide a colored accent/background-like treatment
+            // and move the button into an actions block so it's not floated to the side.
+            $payload['attachments'] = [
                 [
-                    'type' => 'section',
-                    'text' => [
-                        'type' => 'mrkdwn',
-                        'text' => "*Team Handbook*\n<{$docUrl}|Open the live document>",
-                    ],
-                    'accessory' => [
-                        'type' => 'button',
-                        'text' => [
-                            'type' => 'plain_text',
-                            'text' => 'Open Handbook',
-                            'emoji' => true,
-                        ],
-                        'url' => $docUrl,
-                    ],
-                ],
-                [
-                    'type' => 'context',
-                    'elements' => [
+                    'color' => '#1D9BD1', // Slack blue accent (differentiating color)
+                    'blocks' => [
                         [
-                            'type' => 'mrkdwn',
-                            'text' => 'Google Doc • Always up to date',
+                            'type' => 'section',
+                            'text' => [
+                                'type' => 'mrkdwn',
+                                'text' => "*Team Handbook*\n<{$docUrl}|Open the live document>",
+                            ],
+                        ],
+                        [
+                            'type' => 'actions',
+                            'elements' => [
+                                [
+                                    'type' => 'button',
+                                    'text' => [
+                                        'type' => 'plain_text',
+                                        'text' => 'Open Handbook',
+                                        'emoji' => true,
+                                    ],
+                                    'style' => 'primary',
+                                    'url' => $docUrl,
+                                ],
+                            ],
+                        ],
+                        [
+                            'type' => 'context',
+                            'elements' => [
+                                [
+                                    'type' => 'mrkdwn',
+                                    'text' => 'Google Doc • Always up to date',
+                                ],
+                            ],
                         ],
                     ],
                 ],
             ];
+
+            // Keep a simple top-level text for clients that ignore attachments
+            $payload['text'] = $text;
             $hasBlocks = true;
         }
 
