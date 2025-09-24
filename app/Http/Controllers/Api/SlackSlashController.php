@@ -6,6 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class SlackSlashController extends Controller
 {
@@ -16,6 +17,7 @@ class SlackSlashController extends Controller
      * We return a JSON response matching Slack's expected schema:
      *   - response_type: "in_channel" (visible to everyone in the channel)
      *   - text: simple text response
+     * Additionally, if a response_url is provided, we POST the message payload to it.
      */
     public function __invoke(Request $request): JsonResponse
     {
@@ -47,9 +49,36 @@ class SlackSlashController extends Controller
         $userNameRaw = $request->get('user_name');
         $userName = is_string($userNameRaw) ? $userNameRaw : null;
 
+        $responseUrlRaw = $request->get('response_url');
+        $responseUrl = is_string($responseUrlRaw) ? $responseUrlRaw : null;
+
         $responseType = 'in_channel';
 
+        // If response_url is provided, POST the message there per Slack docs
+        $postStatus = null;
+        $postOk = null;
+        $postError = null;
+        if (is_string($responseUrl) && $responseUrl !== '') {
+            try {
+                $resp = Http::timeout(3)->asJson()->post($responseUrl, [
+                    'text' => $text,
+                    'response_type' => $responseType,
+                ]);
+                $postStatus = $resp->status();
+                $postOk = $resp->successful();
+            } catch (\Throwable $e) {
+                $postOk = false;
+                $postError = $e->getMessage();
+            }
+        }
+
         // Log to the dedicated 'api' logging channel
+        $responseUrlHost = null;
+        if (is_string($responseUrl) && $responseUrl !== '') {
+            $parts = parse_url($responseUrl);
+            $responseUrlHost = is_array($parts) && isset($parts['host']) ? $parts['host'] : null;
+        }
+
         Log::channel('api')->info('Slack slash command processed', [
             'command_raw' => $command,
             'command_normalized' => $normalized,
@@ -61,11 +90,19 @@ class SlackSlashController extends Controller
             'channel_id' => $channelId,
             'user_id' => $userId,
             'user_name' => $userName,
+            'has_response_url' => is_string($responseUrl) && $responseUrl !== '',
+            'response_url_host' => $responseUrlHost,
+            'response_post_ok' => $postOk,
+            'response_post_status' => $postStatus,
+            'response_post_error' => $postError,
         ]);
 
+        // Acknowledge the slash command quickly. We keep the JSON for compatibility,
+        // but the authoritative message is sent via response_url when provided.
         return response()->json([
-            'response_type' => $responseType,
-            'text' => $text,
+            'ok' => true,
+            'acknowledged' => true,
+            'note' => 'Message posted via response_url when available.',
         ]);
     }
 }
