@@ -163,7 +163,7 @@ class SlashCommandService
                 $url = null;
 
                 $proj = $this->asana->getProject($gid);
-                if (is_array($proj) && isset($proj['permalink_url']) && is_string($proj['permalink_url'])) {
+                if (is_array($proj) && isset($proj['permalink_url'])) {
                     $url = $proj['permalink_url'];
                 }
 
