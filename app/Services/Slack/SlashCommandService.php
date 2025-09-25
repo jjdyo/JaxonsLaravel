@@ -2,6 +2,7 @@
 
 namespace App\Services\Slack;
 
+use App\Services\Asana\AsanaService;
 use Illuminate\Support\Facades\Http;
 
 /**
@@ -15,8 +16,21 @@ class SlashCommandService
      */
     public const HANDBOOK_URL = 'https://docs.google.com/document/d/1AJOXgbRYp5Bcm9mxGp3Z3SY1ocHHoqDIPSdewa0J_KQ/edit?usp=sharing';
 
+    public function __construct(private readonly AsanaService $asana)
+    {
+    }
+
     /**
      * Build the Slack message payload for a given (already normalized) command.
+     *
+     * Why a separate function from buildPayloadAsanaProjects?
+     * - This method handles our "basic" commands that only need simple text or a small set of static blocks
+     *   (e.g., /handbook, /example2, /example3). These are fast-path responses with no external API calls.
+     * - Keeping simple commands here avoids mixing them with the Asana pipeline, which has network I/O and
+     *   richer block composition logic.
+     *
+     * The Asana-specific flow lives in buildPayloadAsanaProjects(), which isolates that integration (API calls,
+     * parsing, and block construction) behind a clear boundary, keeping this method focused on basic text/url commands.
      *
      * @param string $normalized e.g. "/handbook", "/example2", "/example3"
      * @return array{payload: array<string,mixed>, text: string, response_type: string, has_blocks: bool}
@@ -94,6 +108,88 @@ class SlashCommandService
             'text' => $text,
             'response_type' => $responseType,
             'has_blocks' => $hasBlocks,
+        ];
+    }
+
+    /**
+     * Build payload for /asanaprojects <query>
+     *
+     * This method encapsulates our Asana integration pipeline.
+     * - It calls Asana Typeahead to fetch matching projects in the configured workspace.
+     * - Then, for each project, it retrieves the permalink_url via the Projects API.
+     * - Finally, it constructs rich Slack Block Kit sections listing project names and links.
+     *
+     * Keeping this logic separate from buildPayload() keeps concerns clean:
+     * - buildPayload() remains focused on basic text/URL-based commands that do not require network I/O.
+     * - buildPayloadAsanaProjects() owns external API calls and richer, list-style block composition.
+     *
+     * @param string $normalized
+     * @param string|null $query
+     * @return array{payload: array<string,mixed>, text: string, response_type: string, has_blocks: bool}
+     */
+    public function buildPayloadAsanaProjects(string $normalized, ?string $query): array
+    {
+        $responseType = 'in_channel';
+        $q = is_string($query) ? trim($query) : '';
+
+        $results = $this->asana->typeaheadProjects($q, 5);
+
+        $blocks = [];
+        if (empty($results)) {
+            $blocks[] = [
+                'type' => 'section',
+                'text' => [
+                    'type' => 'mrkdwn',
+                    'text' => ($q === '')
+                        ? "No recent projects found. Try '/asanaprojects <keywords>'."
+                        : "No projects found for ‘{$q}’.",
+                ],
+            ];
+        } else {
+            $blocks[] = [
+                'type' => 'section',
+                'text' => [
+                    'type' => 'mrkdwn',
+                    'text' => $q === '' ? '*Recent Asana Projects*' : "*Asana Projects matching:* {$q}",
+                ],
+            ];
+            $blocks[] = ['type' => 'divider'];
+
+            // Fetch permalink_url for each project (best-effort)
+            foreach ($results as $item) {
+                // $results items are guaranteed to have string 'gid' and 'name' by AsanaService::typeaheadProjects return type
+                $gid = $item['gid'];
+                $name = $item['name'];
+                $url = null;
+
+                $proj = $this->asana->getProject($gid);
+                if (is_array($proj) && isset($proj['permalink_url']) && is_string($proj['permalink_url'])) {
+                    $url = $proj['permalink_url'];
+                }
+
+                $text = $url ? "• *{$name}* — <{$url}|Open>" : "• *{$name}* (no URL)";
+                $blocks[] = [
+                    'type' => 'section',
+                    'text' => [
+                        'type' => 'mrkdwn',
+                        'text' => $text,
+                    ],
+                ];
+            }
+        }
+
+        $payload = [
+            'response_type' => $responseType,
+            'unfurl_links' => false,
+            'unfurl_media' => false,
+            'blocks' => $blocks,
+        ];
+
+        return [
+            'payload' => $payload,
+            'text' => $q,
+            'response_type' => $responseType,
+            'has_blocks' => true,
         ];
     }
 

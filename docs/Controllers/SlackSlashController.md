@@ -75,6 +75,7 @@ SlashCommandService centralizes the message construction logic so it’s easy to
   - Commands supported today:
     - /handbook — links to the team handbook (blocks/attachments with a button)
     - /example2, /example3 — placeholders
+    - /asanaprojects <query?> — queries Asana Typeahead for projects in configured workspace and lists project links
     - default — returns an “Unknown command” text
 
 - postToResponseUrl(string $responseUrl, array $payload): array

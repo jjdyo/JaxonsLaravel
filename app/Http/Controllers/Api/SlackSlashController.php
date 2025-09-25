@@ -26,13 +26,20 @@ class SlackSlashController extends Controller
         $normalizedTemp = preg_replace('/\s+/', '', $command);
         $normalized = is_string($normalizedTemp) ? $normalizedTemp : '';
 
+        $textRaw = $request->get('text');
+        $textParam = is_string($textRaw) ? $textRaw : null;
+
         // Delegate payload construction to the service. It returns a structured array:
         //    - payload: the final Slack message (could be a simple text or a large nested array of blocks/attachments)
         //    - text: the raw text chosen for this command (useful for logging)
         //    - response_type: Slack visibility mode (we default to in_channel)
         //    - has_blocks: whether the payload contains rich Block Kit structures
         try {
-            $build = $service->buildPayload($normalized);
+            if ($normalized === '/asanaprojects') {
+                $build = $service->buildPayloadAsanaProjects($normalized, $textParam);
+            } else {
+                $build = $service->buildPayload($normalized);
+            }
             $payload = $build['payload'];
             $text = $build['text'];
             $responseType = $build['response_type'];

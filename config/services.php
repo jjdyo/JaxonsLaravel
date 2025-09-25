@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    // Asana integration credentials
+    'asana' => [
+        // personal access token for Asana API
+        'token' => env('ASANA_ACCESS_TOKEN'),
+        // default workspace GID used for typeahead queries
+        'workspace_gid' => env('ASANA_WORKSPACE_GID'),
+    ],
+
 ];
