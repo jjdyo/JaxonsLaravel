@@ -21,6 +21,27 @@ class SlashCommandService
     }
 
     /**
+     * Route the normalized command to the appropriate payload builder.
+     * This keeps the controller slim and makes it easy to add more commands.
+     *
+     * For now we keep simple routing logic here. In the future, this can evolve
+     * into a map of handlers implementing a common interface, without changing
+     * the controller.
+     *
+     * @param string $normalized
+     * @param string|null $text Optional free-text argument sent after the command (e.g., for searches)
+     * @return array{payload: array<string,mixed>, text: string, response_type: string, has_blocks: bool}
+     */
+    public function routeAndBuild(string $normalized, ?string $text = null): array
+    {
+        if ($normalized === '/asanaprojects') {
+            return $this->buildPayloadAsanaProjects($normalized, $text);
+        }
+
+        return $this->buildSimplePayloads($normalized);
+    }
+
+    /**
      * Build the Slack message payload for a given (already normalized) command.
      *
      * Why a separate function from buildPayloadAsanaProjects?
@@ -29,13 +50,13 @@ class SlashCommandService
      * - Keeping simple commands here avoids mixing them with the Asana pipeline, which has network I/O and
      *   richer block composition logic.
      *
-     * The Asana-specific flow lives in buildPayloadAsanaProjects(), which isolates that integration (API calls,
+     * The Asana-specific/other flow lives in buildPayloadAsanaProjects()/other, which isolates that integration (API calls,
      * parsing, and block construction) behind a clear boundary, keeping this method focused on basic text/url commands.
      *
      * @param string $normalized e.g. "/handbook", "/example2", "/example3"
      * @return array{payload: array<string,mixed>, text: string, response_type: string, has_blocks: bool}
      */
-    public function buildPayload(string $normalized): array
+    public function buildSimplePayloads(string $normalized): array
     {
         $responseType = 'in_channel';
 
@@ -119,8 +140,8 @@ class SlashCommandService
      * - Then, for each project, it retrieves the permalink_url via the Projects API.
      * - Finally, it constructs rich Slack Block Kit sections listing project names and links.
      *
-     * Keeping this logic separate from buildPayload() keeps concerns clean:
-     * - buildPayload() remains focused on basic text/URL-based commands that do not require network I/O.
+     * Keeping this logic separate from buildSimplePayloads() keeps concerns clean:
+     * - buildSimplePayloads() remains focused on basic text/URL-based commands that do not require network I/O.
      * - buildPayloadAsanaProjects() owns external API calls and richer, list-style block composition.
      *
      * @param string $normalized

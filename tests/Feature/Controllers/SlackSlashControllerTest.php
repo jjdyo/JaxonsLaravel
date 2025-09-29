@@ -26,9 +26,9 @@ class SlackSlashControllerTest extends TestCase
         ];
 
         $mock = m::mock(SlashCommandService::class);
-        $mock->shouldReceive('buildPayload')
+        $mock->shouldReceive('routeAndBuild')
             ->once()
-            ->with($expectedNormalized)
+            ->with($expectedNormalized, m::any())
             ->andReturn($built);
 
         if ($postResult !== null) {
@@ -133,7 +133,7 @@ class SlackSlashControllerTest extends TestCase
     public function test_handles_service_exception_gracefully(): void
     {
         $mock = m::mock(SlashCommandService::class);
-        $mock->shouldReceive('buildPayload')
+        $mock->shouldReceive('routeAndBuild')
             ->once()
             ->andThrow(new \Exception('Service error'));
 

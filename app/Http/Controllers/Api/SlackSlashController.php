@@ -35,11 +35,7 @@ class SlackSlashController extends Controller
         //    - response_type: Slack visibility mode (we default to in_channel)
         //    - has_blocks: whether the payload contains rich Block Kit structures
         try {
-            if ($normalized === '/asanaprojects') {
-                $build = $service->buildPayloadAsanaProjects($normalized, $textParam);
-            } else {
-                $build = $service->buildPayload($normalized);
-            }
+            $build = $service->routeAndBuild($normalized, $textParam);
             $payload = $build['payload'];
             $text = $build['text'];
             $responseType = $build['response_type'];

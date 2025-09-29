@@ -11,7 +11,7 @@ This document explains how our Slack slash command endpoint works end‑to‑end
 - Entry point: POST /api/slack/slash (routes/api.php)
 - Controller: App\Http\Controllers\Api\SlackSlashController (invokable)
 - Service: App\Services\Slack\SlashCommandService
-- Pattern: Skinny controller delegating to a service to construct Slack messages, then optionally posting via Slack’s response_url for the final user-visible message.
+- Pattern: Skinny controller delegating to a service that routes commands to the right payload builder, then optionally posting via Slack’s response_url for the final user-visible message.
 - Philosophy: The app immediately acknowledges the request (HTTP 200 with a small JSON “ack”) and, when provided, pushes the rich message to Slack asynchronously via response_url.
 
 
@@ -66,7 +66,7 @@ Response (immediate):
 
 SlashCommandService centralizes the message construction logic so it’s easy to test and extend.
 
-- buildPayload(string $normalized): array
+- buildSimplePayloads(string $normalized): array
   - Returns a structured array with keys:
     - payload: array — final Slack message body (response_type, text, and optionally blocks/attachments)
     - text: string — the chosen textual representation/log summary
@@ -101,7 +101,7 @@ The controller writes a single structured log entry to the api channel (configur
 - response_url presence and host
 - result of posting to response_url (status/ok/error/body)
 
-On failures within buildPayload(), the controller logs an error and still returns a safe JSON ack with ok=false to avoid breaking the proxy pipeline.
+On failures within buildSimplePayloads(), the controller logs an error and still returns a safe JSON ack with ok=false to avoid breaking the proxy pipeline.
 
 
 ## Error Handling
@@ -120,7 +120,7 @@ On failures within buildPayload(), the controller logs an error and still return
 
 ## Configuration and Extensibility
 
-- Add new commands: Extend the match statement and payload logic in SlashCommandService::buildPayload().
+- Add new commands: Extend the match statement and payload logic in SlashCommandService::buildSimplePayloads().
 - URLs and constants: Use class constants (e.g., HANDBOOK_URL) for easy updates.
 - Timeouts: postToResponseUrl uses a short timeout (currently 3s via Http::timeout(3)). Adjust based on reliability needs.
 - Logging channel: api channel is used; configure in logging.php if needed.
