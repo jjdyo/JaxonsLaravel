@@ -9,6 +9,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class UserManagementController extends Controller
 {
@@ -83,11 +84,12 @@ class UserManagementController extends Controller
      */
     public function editUser(User $user): View
     {
-        $user->loadMissing(['roles:id,name']);
+        $user->loadMissing(['roles:id,name', 'permissions:id,name']);
         $roles = Role::query()->select(['id', 'name'])->orderBy('name')->get();
+        $permissions = Permission::query()->select(['id', 'name'])->orderBy('name')->get();
         /** @var \Illuminate\View\View $view */
         // @phpstan-ignore-next-line
-        $view = view('admin.users.edit', compact('user', 'roles'));
+        $view = view('admin.users.edit', compact('user', 'roles', 'permissions'));
 
         return $view;
     }
@@ -108,6 +110,8 @@ class UserManagementController extends Controller
             'email_verified' => ['nullable', 'boolean'],
             'roles' => ['nullable', 'array'],
             'roles.*' => ['integer', Rule::exists('roles', 'id')],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['integer', Rule::exists('permissions', 'id')],
         ]);
 
         try {
@@ -136,6 +140,15 @@ class UserManagementController extends Controller
                     ? []
                     : Role::query()->whereIn('id', $roleIds)->pluck('name');
                 $user->syncRoles($roleNames);
+
+                // Sync direct permissions from the validated data (empty selection clears direct permissions)
+                if (array_key_exists('permissions', $validated) || request()->boolean('permissions_force_sync')) {
+                    $permissionIds = $validated['permissions'] ?? [];
+                    $permissionNames = empty($permissionIds)
+                        ? []
+                        : Permission::query()->whereIn('id', $permissionIds)->pluck('name');
+                    $user->syncPermissions($permissionNames);
+                }
             });
 
             return redirect()
@@ -221,6 +234,31 @@ class UserManagementController extends Controller
         } catch (\Throwable $e) {
             report($e);
             return back()->withErrors(['error' => 'Failed to update user roles.']);
+        }
+    }
+
+    /**
+     * Update the direct permissions assigned to a user
+     */
+    public function updatePermissions(Request $request, User $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'permissions' => ['array'],
+            'permissions.*' => ['integer', Rule::exists('permissions', 'id')],
+        ]);
+
+        try {
+            $permissionIds = $validated['permissions'] ?? [];
+            $permissionNames = empty($permissionIds)
+                ? []
+                : Permission::query()->whereIn('id', $permissionIds)->pluck('name');
+            $user->syncPermissions($permissionNames);
+
+            return redirect()->route('admin.users.show', $user)
+                ->with('success', 'User permissions updated successfully');
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withErrors(['error' => 'Failed to update user permissions.']);
         }
     }
 }

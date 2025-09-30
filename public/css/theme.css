@@ -45,7 +45,10 @@
   --button-warning-hover-bg: var(--button-warning-bg);
   --button-warning-hover-text: var(--button-warning-text);
 
-  /* Confirmation button variables (solid green) */
+    /* Danger color styling */
+    --color-danger: #C41E3A;
+
+    /* Confirmation button variables (solid green) */
   --button-confirmation-bg: var(--color-success);
   --button-confirmation-text: #ffffff;
   --button-confirmation-border: var(--color-success);
@@ -70,6 +73,19 @@
   border: var(--button-border-width) solid transparent;
   font-weight: var(--button-font-weight);
 }
+
+.button-success {
+    background-color: var(--color-success);
+    color: #ffffff;
+    border-color: var(--color-success);
+}
+
+.button-danger {
+    background-color: var(--color-danger);
+    color: #ffffff;
+    border-color: var(--color-danger);
+}
+
 
 /* Spacing between adjacent buttons */
 .button + .button {

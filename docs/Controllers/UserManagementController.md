@@ -24,7 +24,7 @@ The UserManagementController provides administrative functionality for managing 
 
 3) GET /admin/users/{user}/edit (name: admin.users.edit)
 - Method: editUser(User $user)
-- Description: Shows the user edit form. Loads available roles.
+- Description: Shows the user edit form. Loads available roles and all permissions. Eager-loads the user's roles and direct permissions to avoid N+1.
 - View: resources/views/admin/users/edit.blade.php
 
 4) PUT /admin/users/{user} (name: admin.users.update)
@@ -36,7 +36,9 @@ The UserManagementController provides administrative functionality for managing 
   - email_verified: nullable|boolean
   - roles: nullable|array
   - roles.*: integer|exists:roles,id
-- Behavior: Updates user fields and synchronizes roles (empty selection clears roles). Password is hashed by model cast; email verification toggling is delegated to User model helpers.
+  - permissions: nullable|array
+  - permissions.*: integer|exists:permissions,id
+- Behavior: Updates user fields and synchronizes roles, and if 'permissions' key is present, synchronizes direct permissions (empty selections clear direct permissions). Password is hashed by model cast; email verification toggling is delegated to User model helpers.
 - Redirects: admin.users.show with success message.
 
 5) DELETE /admin/users/{user} (name: admin.users.destroy)
@@ -60,14 +62,21 @@ The UserManagementController provides administrative functionality for managing 
 - Behavior: Syncs user roles by ID via Spatie Permissions.
 - Note: The UI now updates roles via PUT /admin/users/{user} (Save Changes). This endpoint remains for API/backward compatibility.
 
-9) Nested API Key Management
+9) POST /admin/users/{user}/permissions (name: admin.users.permissions.update)
+- Method: updatePermissions(Request $request, User $user)
+- Validation:
+  - permissions: array
+  - permissions.*: integer|exists:permissions,id
+- Behavior: Syncs user direct permissions by ID via Spatie Permissions. Mirrors the Roles box UI with multi-select in the edit form.
+
+10) Nested API Key Management
 - Prefix: /admin/users/{user}/api-keys (name: admin.users.api-keys.)
 - Methods handled by ApiKeyController:
   - GET index, GET create, POST store, DELETE destroy
 
 ## Dependencies
 - Models: App\\Models\\User
-- Packages: spatie/laravel-permission (Role model)
+- Packages: spatie/laravel-permission (Role and Permission models)
 - Views: admin/users/*
 
 ## Authorization

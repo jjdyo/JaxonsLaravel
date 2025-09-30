@@ -157,6 +157,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         // User role management
         Route::post('/users/{user}/roles', [UserManagementController::class, 'updateRoles'])->name('users.roles.update');
 
+        // User permission management
+        Route::post('/users/{user}/permissions', [UserManagementController::class, 'updatePermissions'])->name('users.permissions.update');
+
         // API key management
         Route::prefix('users/{user}/api-keys')->name('users.api-keys.')->group(function () {
             Route::get('/', [ApiKeyController::class, 'index'])->name('index');

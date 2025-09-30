@@ -112,6 +112,7 @@ These routes handle administrative functions and require admin role.
 | `/admin/users/{user}/verify` | POST | `UserManagementController@verifyUser` | `admin.users.verify` | `auth`, `verified`, `role:admin` | Manually verifies a user's email |
 | `/admin/users/{user}/unverify` | POST | `UserManagementController@unverifyUser` | `admin.users.unverify` | `auth`, `verified`, `role:admin` | Manually unverifies a user's email |
 | `/admin/users/{user}/roles` | POST | `UserManagementController@updateRoles` | `admin.users.roles.update` | `auth`, `verified`, `role:admin` | Updates a user's roles (UI uses PUT /admin/users/{user}; this endpoint remains for API/back-compat) |
+| `/admin/users/{user}/permissions` | POST | `UserManagementController@updatePermissions` | `admin.users.permissions.update` | `auth`, `verified`, `role:admin` | Updates a user's direct permissions (UI also supports via PUT /admin/users/{user}) |
 | `/admin/users/{user}/api-keys` | GET | `ApiKeyController@index` | `admin.users.api-keys.index` | `auth`, `verified`, `role:admin` | Lists a user's API keys |
 | `/admin/users/{user}/api-keys/create` | GET | `ApiKeyController@create` | `admin.users.api-keys.create` | `auth`, `verified`, `role:admin` | Shows the form to create a new API key |
 | `/admin/users/{user}/api-keys` | POST | `ApiKeyController@store` | `admin.users.api-keys.store` | `auth`, `verified`, `role:admin` | Creates a new API key for a user |
@@ -167,6 +168,7 @@ Routes that require admin role (all under `/admin` prefix):
 - `/admin/users/{user}/verify` - Verify user's email
 - `/admin/users/{user}/unverify` - Unverify user's email
 - `/admin/users/{user}/roles` - Update user's roles
+- `/admin/users/{user}/permissions` - Update user's direct permissions
 - `/admin/users/{user}/api-keys` - List user's API keys
 - `/admin/users/{user}/api-keys/create` - Create new API key form
 - `/admin/users/{user}/api-keys` (POST) - Store new API key

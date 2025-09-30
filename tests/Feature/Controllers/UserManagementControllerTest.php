@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Tests\Feature\Traits\AuthTestHelpers;
 use Tests\TestCase;
 
@@ -80,7 +81,8 @@ class UserManagementControllerTest extends TestCase
             ->assertStatus(200)
             ->assertViewIs('admin.users.edit')
             ->assertSee('Account Details')
-            ->assertSee('Roles');
+            ->assertSee('Roles')
+            ->assertSee('Permissions');
     }
 
     public function test_admin_update_user_validates_and_updates_fields(): void
@@ -199,6 +201,67 @@ class UserManagementControllerTest extends TestCase
             ->assertSessionHasErrors(['roles.0']);
     }
 
+    public function test_admin_update_permissions_syncs_permissions_by_ids(): void
+    {
+        $admin = $this->createAdminUser();
+        $target = $this->createRegularUser();
+
+        $perm = Permission::firstOrCreate(['name' => 'edit posts']);
+
+        $this->actingAs($admin)
+            ->post(route('admin.users.permissions.update', $target), [
+                'permissions' => [$perm->id],
+            ])
+            ->assertRedirect(route('admin.users.show', $target))
+            ->assertSessionHas('success');
+
+        $this->assertTrue($target->fresh()->hasDirectPermission('edit posts'));
+
+        // Validation: non-existent ID
+        $this->actingAs($admin)
+            ->from(route('admin.users.edit', $target))
+            ->post(route('admin.users.permissions.update', $target), [
+                'permissions' => [999999],
+            ])
+            ->assertRedirect(route('admin.users.edit', $target))
+            ->assertSessionHasErrors(['permissions.0']);
+    }
+
+    public function test_admin_update_user_can_sync_permissions_via_main_form(): void
+    {
+        $admin = $this->createAdminUser();
+        $target = $this->createRegularUser();
+
+        $perm1 = Permission::firstOrCreate(['name' => 'view reports']);
+        $perm2 = Permission::firstOrCreate(['name' => 'export reports']);
+
+        $this->actingAs($admin)
+            ->put(route('admin.users.update', $target), [
+                'name' => $target->name,
+                'email' => $target->email,
+                'password' => '',
+                'permissions' => [$perm1->id, $perm2->id],
+            ])
+            ->assertRedirect(route('admin.users.show', $target))
+            ->assertSessionHas('success');
+
+        $target->refresh();
+        $this->assertTrue($target->hasDirectPermission('view reports'));
+        $this->assertTrue($target->hasDirectPermission('export reports'));
+
+        // If permissions key is omitted, no change should occur
+        $this->actingAs($admin)
+            ->put(route('admin.users.update', $target), [
+                'name' => $target->name,
+                'email' => $target->email,
+                'password' => '',
+            ])
+            ->assertRedirect(route('admin.users.show', $target));
+
+        $this->assertTrue($target->fresh()->hasDirectPermission('view reports'));
+        $this->assertTrue($target->fresh()->hasDirectPermission('export reports'));
+    }
+
     public function test_non_admin_is_forbidden_from_admin_user_routes(): void
     {
         $regular = $this->createRegularUser();
@@ -234,6 +297,10 @@ class UserManagementControllerTest extends TestCase
 
         $this->actingAs($regular)
             ->post(route('admin.users.roles.update', $target), [])
+            ->assertStatus(403);
+
+        $this->actingAs($regular)
+            ->post(route('admin.users.permissions.update', $target), [])
             ->assertStatus(403);
     }
 }
