@@ -58,6 +58,20 @@
             </div>
 
             <div class="user-detail-item">
+                <span class="user-detail-label">Permissions</span>
+                <span class="user-detail-value">
+                    @php($permissions = $user->getPermissionNames())
+                    @if($permissions->count() > 0)
+                        @foreach($permissions as $permission)
+                            <span class="role-badge">{{ $permission }}</span>
+                        @endforeach
+                    @else
+                        <span class="role-badge role-none">None</span>
+                    @endif
+                </span>
+            </div>
+
+            <div class="user-detail-item">
                 <span class="user-detail-label">Created</span>
                 <span class="user-detail-value">{{ $user->created_at->format('M d, Y H:i') }}</span>
             </div>

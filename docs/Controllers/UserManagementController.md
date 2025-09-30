@@ -19,7 +19,7 @@ The UserManagementController provides administrative functionality for managing 
 
 2) GET /admin/users/{user} (name: admin.users.show)
 - Method: showUser(User $user)
-- Description: Shows details for a specific user.
+- Description: Shows details for a specific user, including Roles and Permissions (Spatie) with eager-loaded relations to avoid N+1.
 - View: resources/views/admin/users/show.blade.php
 
 3) GET /admin/users/{user}/edit (name: admin.users.edit)

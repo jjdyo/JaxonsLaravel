@@ -70,8 +70,8 @@ class UserManagementController extends Controller
      */
     public function showUser(User $user): View
     {
-        // Ensure roles are loaded to avoid N+1 in the view
-        $user->loadMissing(['roles:id,name']);
+        // Ensure roles and permissions are loaded to avoid N+1 in the view
+        $user->loadMissing(['roles:id,name', 'permissions:id,name']);
         return view('admin.users.show', compact('user'));
     }
 
