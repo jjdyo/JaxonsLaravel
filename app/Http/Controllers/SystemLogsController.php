@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use Illuminate\View\View;
+use Illuminate\Contracts\View\View;
+use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\JsonResponse;
 
 class SystemLogsController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|Factory
     {
         $base = storage_path('logs');
 

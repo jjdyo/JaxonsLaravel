@@ -6,7 +6,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use Illuminate\View\View;
+use Illuminate\Contracts\View\View;
+use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\RedirectResponse;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
@@ -56,20 +57,22 @@ class UserManagementController extends Controller
 
         $users = $query->paginate(self::USERS_PER_PAGINATION)->withQueryString();
 
-        return view('admin.users.index', [
+        /** @var View $view */
+        $view = view('admin.users.index', [
             'users' => $users,
             'filter' => $filter,
             'q' => $q,
         ]);
+        return $view;
     }
 
     /**
      * Display the specified user
      *
      * @param \App\Models\User $user The user to display
-     * @return \Illuminate\View\View The user detail view
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory The user detail view
      */
-    public function showUser(User $user): View
+    public function showUser(User $user): View|Factory
     {
         // Ensure roles and permissions are loaded to avoid N+1 in the view
         $user->loadMissing(['roles:id,name', 'permissions:id,name']);
@@ -87,8 +90,7 @@ class UserManagementController extends Controller
         $user->loadMissing(['roles:id,name', 'permissions:id,name']);
         $roles = Role::query()->select(['id', 'name'])->orderBy('name')->get();
         $permissions = Permission::query()->select(['id', 'name'])->orderBy('name')->get();
-        /** @var \Illuminate\View\View $view */
-        // @phpstan-ignore-next-line
+        /** @var View $view */
         $view = view('admin.users.edit', compact('user', 'roles', 'permissions'));
 
         return $view;

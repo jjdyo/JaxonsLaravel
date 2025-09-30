@@ -117,7 +117,10 @@ Route::middleware('auth')->group(function () {
 
     // Permission-protected routes
     Route::middleware('permission:view functions page')->group(function () {
-        Route::get('/functions', [PageController::class, 'functions'])->name('functions');
+        Route::get('/functions', [\App\Http\Controllers\Functions\FunctionsController::class, 'index'])->name('functions');
+        Route::get('/functions/backup', [\App\Http\Controllers\Functions\BackupController::class, 'show'])->name('functions.backup');
+        Route::post('/functions/backup', [\App\Http\Controllers\Functions\BackupController::class, 'dispatch'])->name('functions.backup.dispatch');
+        Route::get('/functions/backup/download/{site}', [\App\Http\Controllers\Functions\BackupController::class, 'download'])->name('functions.backup.download');
     });
 });
 

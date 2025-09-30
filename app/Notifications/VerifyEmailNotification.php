@@ -14,15 +14,17 @@ class VerifyEmailNotification extends VerifyEmail
      * @param mixed $notifiable
      * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail($notifiable): MailMessage
     {
         $verificationUrl = $this->verificationUrl($notifiable);
 
         if (static::$toMailCallback) {
-            return call_user_func(static::$toMailCallback, $notifiable, $verificationUrl);
+            /** @var callable(mixed, string): MailMessage $callback */
+            $callback = static::$toMailCallback;
+            return $callback($notifiable, $verificationUrl);
         }
 
-        return $this->buildMailMessage($verificationUrl);
+        return $this->makeMailMessage($verificationUrl);
     }
 
     /**
@@ -31,7 +33,7 @@ class VerifyEmailNotification extends VerifyEmail
      * @param string $url
      * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    protected function buildMailMessage($url)
+    private function makeMailMessage(string $url): MailMessage
     {
         // Get localized strings and ensure they are strings
         /** @var string|array<string> $subject */

@@ -6,7 +6,8 @@ use App\Models\ApiKey;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Illuminate\Contracts\View\View;
+use Illuminate\Contracts\View\Factory;
 use Illuminate\Support\Carbon;
 
 class ApiKeyController extends Controller
@@ -21,7 +22,9 @@ class ApiKeyController extends Controller
     {
         $apiKeys = ApiKey::getAllForUser($user);
 
-        return view('admin.users.api-keys.index', compact('user', 'apiKeys'));
+        /** @var View $view */
+                $view = view('admin.users.api-keys.index', compact('user', 'apiKeys'));
+                return $view;
     }
 
     /**
@@ -30,9 +33,11 @@ class ApiKeyController extends Controller
      * @param User $user The user to create an API key for
      * @return View The API key creation form
      */
-    public function create(User $user): View
+    public function create(User $user): View|Factory
     {
-        return view('admin.users.api-keys.create', compact('user'));
+        /** @var View $view */
+                $view = view('admin.users.api-keys.create', compact('user'));
+                return $view;
     }
 
     /**
@@ -98,7 +103,9 @@ class ApiKeyController extends Controller
 
         $apiKeys = ApiKey::getAllForUser($user);
 
-        return view('user.api-tokens.index', compact('apiKeys'));
+        /** @var View $view */
+        $view = view('user.api-tokens.index', compact('apiKeys'));
+        return $view;
     }
 
     /**
@@ -108,7 +115,9 @@ class ApiKeyController extends Controller
      */
     public function userCreate(): View
     {
-        return view('user.api-tokens.create');
+        /** @var View $view */
+        $view = view('user.api-tokens.create');
+        return $view;
     }
 
     /**
@@ -163,7 +172,9 @@ class ApiKeyController extends Controller
     {
         $this->authorizeToken($token);
 
-        return view('user.api-tokens.show', compact('token'));
+        /** @var View $view */
+        $view = view('user.api-tokens.show', compact('token'));
+        return $view;
     }
 
     /**

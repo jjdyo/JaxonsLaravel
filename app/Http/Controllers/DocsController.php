@@ -11,9 +11,9 @@ class DocsController extends Controller
     /**
      * Display the documentation index page
      *
-     * @return \Illuminate\View\View The documentation index view with documents hierarchy and readme content
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory The documentation index view with documents hierarchy and readme content
      */
-    public function index(): \Illuminate\View\View
+    public function index()
     {
         $docsPath = base_path('docs');
         $documents = $this->getDocumentsHierarchy();
@@ -37,9 +37,9 @@ class DocsController extends Controller
      * Display a specific documentation page
      *
      * @param string $filename The documentation file to display (can include directory path)
-     * @return \Illuminate\View\View The documentation page view with parsed content
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory The documentation page view with parsed content
      */
-    public function show($filename): \Illuminate\View\View
+    public function show($filename)
     {
         $docsPath = base_path('docs');
 

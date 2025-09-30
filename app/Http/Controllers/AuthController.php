@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Contracts\View\View;
+use Illuminate\Contracts\View\Factory;
+
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,9 +28,9 @@ class AuthController extends Controller
     /**
      * Display the login form
      *
-     * @return \Illuminate\View\View The login form view
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory The login form view
      */
-    public function showLoginForm(): \Illuminate\View\View
+    public function showLoginForm()
     {
         return view('auth.login');
     }
@@ -35,9 +38,9 @@ class AuthController extends Controller
     /**
      * Display the registration form
      *
-     * @return \Illuminate\View\View The registration form view
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory The registration form view
      */
-    public function showRegisterForm(): \Illuminate\View\View
+    public function showRegisterForm()
     {
         return view('auth.register');
     }
@@ -45,9 +48,9 @@ class AuthController extends Controller
     /**
      * Display the user profile page
      *
-     * @return \Illuminate\View\View The profile page view
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory The profile page view
      */
-    public function profile(): \Illuminate\View\View
+    public function profile()
     {
         return view('pages.profile');
     }
@@ -55,9 +58,9 @@ class AuthController extends Controller
     /**
      * Display the profile edit form
      *
-     * @return \Illuminate\View\View The profile edit form view with user data
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory The profile edit form view with user data
      */
-    public function editProfile(): \Illuminate\View\View
+    public function editProfile()
     {
         $user = Auth::user();
         return view('pages.profile_edit', compact('user'));
@@ -66,7 +69,7 @@ class AuthController extends Controller
     /**
      * Show change password form
      */
-    public function showChangePasswordForm(): \Illuminate\View\View
+    public function showChangePasswordForm(): View|Factory
     {
         return view('pages.profile_password');
     }
@@ -204,9 +207,9 @@ class AuthController extends Controller
     /**
      * Display the forgot password form
      *
-     * @return \Illuminate\View\View The forgot password form view
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory The forgot password form view
      */
-    public function showForgotPasswordForm(): \Illuminate\View\View
+    public function showForgotPasswordForm()
     {
         return view('auth.forgot-password');
     }
@@ -246,9 +249,9 @@ class AuthController extends Controller
      * Display the password reset form
      *
      * @param \Illuminate\Http\Request $request The HTTP request containing the reset token
-     * @return \Illuminate\View\View The password reset form view
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory The password reset form view
      */
-    public function showResetPasswordForm(Request $request, string $password_callback): \Illuminate\View\View
+    public function showResetPasswordForm(Request $request, string $password_callback)
     {
         return view('auth.reset-password', [
             'password_callback' => $password_callback,
