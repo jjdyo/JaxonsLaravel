@@ -1,1 +1,9 @@
+@@TODO
+-Write documentation on proper ownership of the laravel application and relevant directories, including
+NGINX, storage, database, and other.
+-AuthSanctum on relevant API routes, add API bot user/add tokens under personal account.
+-Update file retrievals considering proxy setup in production
+-VueJS
+-CSS Tree Shaking/Clumping/Minification (VITE)
+-Redis Cache: Update relevant frequent queried items to use cache db
 
