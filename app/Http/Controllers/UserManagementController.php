@@ -114,8 +114,10 @@ class UserManagementController extends Controller
             'permissions.*' => ['integer', Rule::exists('permissions', 'id')],
         ]);
 
+        $forceSync = filter_var($request->get('permissions_force_sync', false), FILTER_VALIDATE_BOOLEAN);
+
         try {
-            DB::transaction(function () use ($user, $validated) {
+            DB::transaction(function () use ($user, $validated, $forceSync) {
                 $user->name = $validated['name'];
                 $user->email = $validated['email'];
 
@@ -142,7 +144,7 @@ class UserManagementController extends Controller
                 $user->syncRoles($roleNames);
 
                 // Sync direct permissions from the validated data (empty selection clears direct permissions)
-                if (array_key_exists('permissions', $validated) || request()->boolean('permissions_force_sync')) {
+                if (array_key_exists('permissions', $validated) || $forceSync) {
                     $permissionIds = $validated['permissions'] ?? [];
                     $permissionNames = empty($permissionIds)
                         ? []
