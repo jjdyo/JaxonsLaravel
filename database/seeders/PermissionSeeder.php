@@ -15,7 +15,7 @@ class PermissionSeeder extends Seeder
     {
         $permissions = [
             'view about page url',
-            'view contact page url',
+            'view functions page',
         ];
 
         foreach ($permissions as $permission) {

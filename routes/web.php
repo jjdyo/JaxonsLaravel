@@ -116,8 +116,8 @@ Route::middleware('auth')->group(function () {
     });
 
     // Permission-protected routes
-    Route::middleware('permission:view contact page url')->group(function () {
-        Route::get('/contact', [PageController::class, 'contact'])->name('contact');
+    Route::middleware('permission:view functions page')->group(function () {
+        Route::get('/functions', [PageController::class, 'functions'])->name('functions');
     });
 });
 

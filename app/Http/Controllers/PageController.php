@@ -27,13 +27,13 @@ class PageController extends Controller
     }
 
     /**
-     * Display the contact page
+     * Display the functions page
      *
-     * @return \Illuminate\View\View The contact page view
+     * @return \Illuminate\View\View The functions page view
      */
-    public function contact(): \Illuminate\View\View
+    public function functions(): \Illuminate\View\View
     {
-        return view('pages.contact');
+        return view('pages.functions');
     }
 
 }
