@@ -174,6 +174,8 @@ class BackupWebsite implements ShouldQueue, \Illuminate\Contracts\Queue\ShouldBe
             '--page-requisites',
             '--no-parent',
             '--no-cache',
+            // Ensure filenames are safe on Windows (prevents I/O errors for illegal characters)
+            '--restrict-file-names=ascii',
             '-e', 'robots=off',
             '--wait=1',
             '--limit-rate=100k',
@@ -189,7 +191,7 @@ class BackupWebsite implements ShouldQueue, \Illuminate\Contracts\Queue\ShouldBe
             'working_dir' => $backupDir,
         ]);
         $dlStart = microtime(true);
-        $this->runProcess($wgetArgs, $backupDir, self::DEFAULT_MAX_RUNTIME_SECONDS, [0, 8], true); // up to 24 hours; allow Wget exit 8 and treat timeout as success
+        $this->runProcess($wgetArgs, $backupDir, self::DEFAULT_MAX_RUNTIME_SECONDS, [0, 3, 8], true); // up to 24 hours; allow Wget exit 3 (file I/O on some filenames) and 8 (server errors); treat timeout as success
         Log::info('BackupWebsite: Step 4 completed - Site download finished', [
             'duration_ms' => (int) round((microtime(true) - $dlStart) * 1000),
         ]);
