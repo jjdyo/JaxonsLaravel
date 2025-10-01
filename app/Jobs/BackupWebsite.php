@@ -10,13 +10,20 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 
-class BackupWebsite implements ShouldQueue
+class BackupWebsite implements ShouldQueue, \Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, Batchable;
 
+    /**
+     * Default maximum runtime for a single backup download phase (in seconds).
+     * When exceeded, we gracefully stop wget and proceed to packaging.
+     */
+    public const DEFAULT_MAX_RUNTIME_SECONDS = 24 * 60 * 60; // 24 hours
 
     /**
      * Target URL to back up.
@@ -49,6 +56,37 @@ class BackupWebsite implements ShouldQueue
         $this->disk = $disk ?? 'local';
         // Ensure this job goes to the dedicated 'backups' queue
         $this->onQueue('backups');
+    }
+
+    /**
+     * Prevent overlapping executions across workers for the same URL
+     *
+     * @return list<\Illuminate\Queue\Middleware\WithoutOverlapping>
+     */
+    public function middleware(): array
+    {
+        return [
+            // Lock key is per-URL to allow parallel backups of different URLs
+            (new WithoutOverlapping($this->overlapKey()))
+                ->expireAfter(2 * 60 * 60), // prevent stale locks (2 hours max)
+        ];
+    }
+
+    /**
+     * Ensure only one queued instance exists for a given URL until processing starts
+     */
+    public function uniqueId(): string
+    {
+        return $this->overlapKey();
+    }
+
+    /**
+     * Build a stable lock/unique key for the job based on the URL
+     */
+    protected function overlapKey(): string
+    {
+        // Normalize: trim and lowercase the URL string
+        return 'backup-website:' . md5(strtolower(trim($this->url)));
     }
 
     /**
@@ -151,7 +189,7 @@ class BackupWebsite implements ShouldQueue
             'working_dir' => $backupDir,
         ]);
         $dlStart = microtime(true);
-        $this->runProcess($wgetArgs, $backupDir, 3600); // up to 1 hour
+        $this->runProcess($wgetArgs, $backupDir, self::DEFAULT_MAX_RUNTIME_SECONDS, [0, 8], true); // up to 24 hours; allow Wget exit 8 and treat timeout as success
         Log::info('BackupWebsite: Step 4 completed - Site download finished', [
             'duration_ms' => (int) round((microtime(true) - $dlStart) * 1000),
         ]);
@@ -192,7 +230,7 @@ class BackupWebsite implements ShouldQueue
             'archive' => $tarFullPath,
         ]);
         $tarStart = microtime(true);
-        $this->runProcess($tarArgs, $backupDir, 3600);
+        $this->runProcess($tarArgs, $backupDir, 3600, [0]);
         Log::info('BackupWebsite: Step 5 completed - Archive created', [
             'archive' => $tarFullPath,
             'duration_ms' => (int) round((microtime(true) - $tarStart) * 1000),
@@ -271,13 +309,16 @@ class BackupWebsite implements ShouldQueue
     }
 
     /**
-     * Run a process and throw a detailed exception on failure.
+     * Run a process and handle non-zero exit codes with optional allowances.
+     * Also optionally treat a timeout as success (useful for long-running downloads capped by policy).
      *
      * @param list<string> $command
      * @param string $workingDir
      * @param int|null $timeoutSeconds
+     * @param list<int> $allowedExitCodes Exit codes to be treated as success (defaults to [0, 8]).
+     * @param bool $treatTimeoutAsSuccess When true, a timeout will be logged and treated as success.
      */
-    protected function runProcess(array $command, string $workingDir, ?int $timeoutSeconds = null): void
+    protected function runProcess(array $command, string $workingDir, ?int $timeoutSeconds = null, array $allowedExitCodes = [0, 8], bool $treatTimeoutAsSuccess = false): void
     {
         $process = new Process($command, $workingDir);
         if ($timeoutSeconds !== null) {
@@ -292,37 +333,84 @@ class BackupWebsite implements ShouldQueue
             'command' => $cmdStr,
             'working_dir' => $workingDir,
             'timeout' => $timeoutSeconds,
+            'allowed_exit_codes' => $allowedExitCodes,
+            'treat_timeout_as_success' => $treatTimeoutAsSuccess,
         ]);
         $procStart = microtime(true);
 
+        $timedOut = false;
         // Stream output to logs for visibility
-        $process->run(function ($type, $buffer) {
-            $lines = preg_split("/(\r\n|\r|\n)/", (string) $buffer, -1, PREG_SPLIT_NO_EMPTY) ?: [];
-            foreach ($lines as $line) {
-                if ($type === Process::ERR) {
-                    Log::warning('BackupWebsite: STDERR ' . $line);
-                } else {
-                    Log::info('BackupWebsite: ' . $line);
+        try {
+            $process->run(function ($type, $buffer) {
+                $lines = preg_split("/(\r\n|\r|\n)/", (string) $buffer, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+                foreach ($lines as $line) {
+                    if ($type === Process::ERR) {
+                        Log::warning('BackupWebsite: STDERR ' . $line);
+                    } else {
+                        Log::info('BackupWebsite: ' . $line);
+                    }
                 }
+            });
+        } catch (ProcessTimedOutException $e) {
+            if ($treatTimeoutAsSuccess) {
+                $timedOut = true;
+                Log::warning('BackupWebsite: Process timed out but is treated as success', [
+                    'command' => $cmdStr,
+                    'timeout' => $timeoutSeconds,
+                    'message' => $e->getMessage(),
+                ]);
+            } else {
+                Log::error('BackupWebsite: Process timed out', [
+                    'command' => $cmdStr,
+                    'timeout' => $timeoutSeconds,
+                    'message' => $e->getMessage(),
+                ]);
+                throw $e;
             }
-        });
+        }
 
         $durationMs = (int) round((microtime(true) - $procStart) * 1000);
-        if (!$process->isSuccessful()) {
+        $exitCode = $timedOut ? null : $process->getExitCode();
+        $exitText = $timedOut ? 'TIMEOUT' : $process->getExitCodeText();
+
+        $treatAsSuccess = $timedOut || $process->isSuccessful();
+        if (!$treatAsSuccess) {
+            $treatAsSuccess = in_array((int) $exitCode, $allowedExitCodes, true);
+        }
+
+        if (!$treatAsSuccess) {
             Log::error('BackupWebsite: Process failed', [
                 'command' => $cmdStr,
-                'exit_code' => $process->getExitCode(),
+                'exit_code' => $exitCode,
+                'exit_text' => $exitText,
                 'duration_ms' => $durationMs,
                 'error_output' => Str::limit($process->getErrorOutput(), 5000),
             ]);
             throw new ProcessFailedException($process);
         }
 
-        Log::info('BackupWebsite: Process completed', [
-            'command' => $cmdStr,
-            'exit_code' => $process->getExitCode(),
-            'duration_ms' => $durationMs,
-        ]);
+        if ($timedOut) {
+            Log::warning('BackupWebsite: Process considered successful due to timeout policy', [
+                'command' => $cmdStr,
+                'timeout' => $timeoutSeconds,
+                'duration_ms' => $durationMs,
+            ]);
+        } elseif ($process->isSuccessful()) {
+            Log::info('BackupWebsite: Process completed', [
+                'command' => $cmdStr,
+                'exit_code' => $exitCode,
+                'exit_text' => $exitText,
+                'duration_ms' => $durationMs,
+            ]);
+        } else {
+            // Non-zero but allowed exit code (e.g., Wget exit 8). Log as warning but continue.
+            Log::warning('BackupWebsite: Process completed with allowed non-zero exit code', [
+                'command' => $cmdStr,
+                'exit_code' => $exitCode,
+                'exit_text' => $exitText,
+                'duration_ms' => $durationMs,
+            ]);
+        }
     }
     /**
      * Called by the queue worker if the job fails permanently.
