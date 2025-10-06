@@ -6,4 +6,5 @@ NGINX, storage, database, and other.
 -VueJS
 -CSS Tree Shaking/Clumping/Minification (VITE)
 -Redis Cache: Update relevant frequent queried items to use cache db
+-Refactor user management controller to use default role hierarchy user->mod->admin (can apply, view, edit at equal or lower)
 
