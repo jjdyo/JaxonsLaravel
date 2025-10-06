@@ -164,36 +164,24 @@ class BackupWebsite implements ShouldQueue, \Illuminate\Contracts\Queue\ShouldBe
         $this->assertCommandAvailable('tar');
         Log::info('BackupWebsite: Step 3 completed - Commands verified');
 
-        // Build wget command as per backupwebsite.sh
-        $userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15';
-        $wgetArgs = [
-            'wget',
-            '--mirror',
-            '--convert-links',
-            '--adjust-extension',
-            '--page-requisites',
-            '--no-parent',
-            '--no-cache',
-            // Ensure filenames are safe on Windows (prevents I/O errors for illegal characters)
-            '--restrict-file-names=ascii',
-            '-e', 'robots=off',
-            '--wait=1',
-            '--limit-rate=100k',
-            '--tries=3',
-            '--timeout=30',
-            '--user-agent=' . $userAgent,
-            '-P', $downloadDir,
-            $effectiveUrl,
-        ];
+        // Step 4: Mirror website via dedicated service
+        /** @var \App\Services\BackupWebsite\WebsiteMirrorService $mirrorService */
+        $mirrorService = app(\App\Services\BackupWebsite\WebsiteMirrorService::class);
 
-        // Step 4: Download site using wget
+        // Step 4: Download site using wget via service
         Log::info('BackupWebsite: Step 4 - Starting site download (wget)', [
             'working_dir' => $backupDir,
         ]);
-        $dlStart = microtime(true);
-        $this->runProcess($wgetArgs, $backupDir, self::DEFAULT_MAX_RUNTIME_SECONDS, [0, 3, 8], true); // up to 24 hours; allow Wget exit 3 (file I/O on some filenames) and 8 (server errors); treat timeout as success
+        $mirrorResult = $mirrorService->mirror(
+            url: $effectiveUrl,
+            downloadDir: $downloadDir,
+            workingDir: $backupDir,
+            timeoutSeconds: self::DEFAULT_MAX_RUNTIME_SECONDS,
+            allowedExitCodes: [0, 3, 8],
+            treatTimeoutAsSuccess: true,
+        );
         Log::info('BackupWebsite: Step 4 completed - Site download finished', [
-            'duration_ms' => (int) round((microtime(true) - $dlStart) * 1000),
+            'duration_ms' => $mirrorResult->durationMs,
         ]);
 
         // Create tar.gz archive and place it at backups/<site>/<site>.tar.gz (above the timestamp folder)
