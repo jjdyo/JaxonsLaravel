@@ -13,8 +13,10 @@ class RoleHierarchy
      */
     public static function levelForRole(string $roleName): int
     {
-        $map = config('roles.hierarchy', []);
+        /** @var array<string,int> $map */
+        $map = (array) config('roles.hierarchy', []);
         $roleName = strtolower($roleName);
+        // Cast directly to int to satisfy static analysis regardless of config value type
         return (int) ($map[$roleName] ?? 0);
     }
 
@@ -42,7 +44,9 @@ class RoleHierarchy
 
         $actorLevel = self::highestLevelForUser($actor);
         $targetLevel = self::highestLevelForUser($target);
-        $levels = array_values(config('roles.hierarchy', []));
+        /** @var array<string,int> $hier */
+        $hier = (array) config('roles.hierarchy', []);
+        $levels = array_values($hier);
         $maxLevel = empty($levels) ? 0 : max($levels);
 
         // Admins (max level) can manage anyone, including themselves
@@ -69,28 +73,43 @@ class RoleHierarchy
     {
         $actorLevel = self::highestLevelForUser($actor);
 
-        // If no candidates provided, use all roles
+        // If no candidates provided, use all role names (strings)
         if (empty($candidates)) {
-            $candidates = Role::query()
+            /** @var array<int,string> $allNames */
+            $allNames = Role::query()
                 ->select(['name'])
                 ->where('guard_name', config('roles.guard', 'web'))
                 ->get()
                 ->pluck('name')
                 ->all();
+            $candidates = $allNames;
         } else {
-            // Normalize input to names
-            $candidates = array_map(function ($r) {
-                if ($r instanceof Role) { return $r->name; }
-                return (string) $r;
-            }, $candidates);
+            // Normalize input to names and keep only strings
+            $normalized = [];
+            foreach ($candidates as $r) {
+                if ($r instanceof Role) {
+                    $normalized[] = $r->name; // already string
+                } elseif (is_string($r)) {
+                    $normalized[] = $r;
+                }
+                // ignore non-string, non-Role values
+            }
+            /** @var array<int,string> $candidates */
+            $candidates = $normalized;
         }
 
-        $names = array_values(array_filter($candidates, function (string $name) use ($actorLevel) {
-            return self::levelForRole($name) <= $actorLevel && self::levelForRole($name) > 0;
-        }));
+        // Filter by actor level without casting from mixed
+        $names = [];
+        foreach ($candidates as $name) {
+            // $name is guaranteed string here
+            $level = self::levelForRole($name);
+            if ($level <= $actorLevel && $level > 0) {
+                $names[] = $name;
+            }
+        }
 
         // Ensure uniqueness and preserve order
-        $names = array_values(array_unique(array_map('strval', $names)));
+        $names = array_values(array_unique($names));
         return $names;
     }
 

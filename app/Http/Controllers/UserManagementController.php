@@ -101,13 +101,9 @@ class UserManagementController extends Controller
         }
 
         $allRoles = Role::query()->select(['id', 'name'])->orderBy('name')->get();
-        if ($actor instanceof User) {
-            $assignableNames = RoleHierarchy::assignableRoleNames($actor, $allRoles->all());
-            $roles = $allRoles->whereIn('name', $assignableNames)->values();
-        } else {
-            // Fallback: no actor, show no roles
-            $roles = collect();
-        }
+        // At this point, $actor is guaranteed to be an authenticated User (checked above)
+        $assignableNames = RoleHierarchy::assignableRoleNames($actor, $allRoles->all());
+        $roles = $allRoles->whereIn('name', $assignableNames)->values();
 
         $permissions = Permission::query()->select(['id', 'name'])->orderBy('name')->get();
         /** @var View $view */
@@ -165,9 +161,12 @@ class UserManagementController extends Controller
 
                 // Sync roles from the validated data, filtered by actor's assignable roles
                 $roleIds = $validated['roles'] ?? [];
-                $roleNames = empty($roleIds)
+                $roleNamesRaw = empty($roleIds)
                     ? []
                     : Role::query()->whereIn('id', $roleIds)->pluck('name')->all();
+                // Ensure a strictly typed array<int,string> for static analysis
+                $roleNames = array_values(array_filter($roleNamesRaw, static fn($v): bool => is_string($v)));
+                /** @var array<int,string> $roleNames */
                 $roleNames = RoleHierarchy::filterAssignable($actor, $roleNames);
                 $user->syncRoles($roleNames);
 
