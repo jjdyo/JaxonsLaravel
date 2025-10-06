@@ -115,7 +115,7 @@ class BackupWebsite implements ShouldQueue, \Illuminate\Contracts\Queue\ShouldBe
         Log::info('BackupWebsite: Step 1 - Resolving effective URL');
         $resolveStarted = microtime(true);
         $effectiveUrl = $this->resolveEffectiveUrl($this->url);
-        $resolveDurationMs = (int) round((microtime(true) - $resolveStarted) * 1000);
+        $resolveDurationMs = (int) round((microtime(true) - $resolveStarted) * 1000, 0, PHP_ROUND_HALF_UP);
         Log::info('BackupWebsite: Step 1 completed - Effective URL resolved', [
             'effective_url' => $effectiveUrl,
             'duration_ms' => $resolveDurationMs,
@@ -148,7 +148,7 @@ class BackupWebsite implements ShouldQueue, \Illuminate\Contracts\Queue\ShouldBe
             throw new \RuntimeException('BackupWebsite: Failed to create backup directory: ' . $downloadDir);
         }
         Log::info('BackupWebsite: Step 2 completed - Directories ready', [
-            'duration_ms' => (int) round((microtime(true) - $dirStart) * 1000),
+            'duration_ms' => (int) round((microtime(true) - $dirStart) * 1000, 0, PHP_ROUND_HALF_UP),
         ]);
 
         Log::info('BackupWebsite: Starting backup', [
@@ -223,7 +223,7 @@ class BackupWebsite implements ShouldQueue, \Illuminate\Contracts\Queue\ShouldBe
         $this->runProcess($tarArgs, $backupDir, 3600, [0]);
         Log::info('BackupWebsite: Step 5 completed - Archive created', [
             'archive' => $tarFullPath,
-            'duration_ms' => (int) round((microtime(true) - $tarStart) * 1000),
+            'duration_ms' => (int) round((microtime(true) - $tarStart) * 1000, 0, PHP_ROUND_HALF_UP),
         ]);
 
         // Step 6: Archive is stored in the site root (above timestamp folder) for easy access
@@ -236,7 +236,7 @@ class BackupWebsite implements ShouldQueue, \Illuminate\Contracts\Queue\ShouldBe
             'archive' => $tarFullPath,
             'folder' => $siteDir,
             'relative_path' => 'backups' . DIRECTORY_SEPARATOR . $siteName . DIRECTORY_SEPARATOR . $tarName,
-            'total_duration_ms' => (int) round((microtime(true) - $jobStart) * 1000),
+            'total_duration_ms' => (int) round((microtime(true) - $jobStart) * 1000, 0, PHP_ROUND_HALF_UP),
         ]);
     }
 
@@ -359,7 +359,7 @@ class BackupWebsite implements ShouldQueue, \Illuminate\Contracts\Queue\ShouldBe
             }
         }
 
-        $durationMs = (int) round((microtime(true) - $procStart) * 1000);
+        $durationMs = (int) round((microtime(true) - $procStart) * 1000, 0, PHP_ROUND_HALF_UP);
         $exitCode = $timedOut ? null : $process->getExitCode();
         $exitText = $timedOut ? 'TIMEOUT' : $process->getExitCodeText();
 
