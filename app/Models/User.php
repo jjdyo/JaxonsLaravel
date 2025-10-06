@@ -155,6 +155,42 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Highest role level for this user based on configured role hierarchy.
+     */
+    public function highestRoleLevel(): int
+    {
+        return \App\Services\Authorization\RoleHierarchy::highestLevelForUser($this);
+    }
+
+    /**
+     * Determine if this user (actor) can manage the given target user via role hierarchy.
+     */
+    public function canManageUser(?self $target): bool
+    {
+        if ($target === null) { return false; }
+        return \App\Services\Authorization\RoleHierarchy::canManageUser($this, $target);
+    }
+
+    /**
+     * Scope: users manageable by the given actor based on role hierarchy.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder<User> $query
+     * @param User $actor
+     * @return \Illuminate\Database\Eloquent\Builder<User>
+     */
+    public function scopeManageableBy(\Illuminate\Database\Eloquent\Builder $query, User $actor): \Illuminate\Database\Eloquent\Builder
+    {
+        // We can't compute level purely in SQL without level column; fallback to filtering IDs in memory for minimal change.
+        // For pagination safety, we first fetch IDs then filter by PHP and re-query.
+        $ids = $query->pluck('id');
+        $manageableIds = User::query()->whereIn('id', $ids)->get()->filter(function (User $u) use ($actor) {
+            return \App\Services\Authorization\RoleHierarchy::canManageUser($actor, $u);
+        })->pluck('id')->all();
+        return User::query()->whereIn('id', $manageableIds);
+    }
+
+
+    /**
      * Send the password reset notification.
      *
      * @param  string  $token

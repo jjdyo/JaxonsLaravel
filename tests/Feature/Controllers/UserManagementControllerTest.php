@@ -303,4 +303,167 @@ class UserManagementControllerTest extends TestCase
             ->post(route('admin.users.permissions.update', $target), [])
             ->assertStatus(403);
     }
+    public function test_moderator_can_access_user_management_routes(): void
+    {
+        $moderator = $this->createModeratorUser();
+        $target = $this->createRegularUser();
+
+        $this->actingAs($moderator)
+            ->get(route('admin.users.index'))
+            ->assertStatus(200);
+
+        $this->actingAs($moderator)
+            ->get(route('admin.users.show', $target))
+            ->assertStatus(200);
+
+        $this->actingAs($moderator)
+            ->get(route('admin.users.edit', $target))
+            ->assertStatus(200);
+    }
+
+    public function test_moderator_cannot_access_edit_page_for_admin_or_peer(): void
+    {
+        $moderator = $this->createModeratorUser();
+        $peer = $this->createModeratorUser();
+        $admin = $this->createAdminUser();
+
+        // Cannot view edit page for peer moderator
+        $this->actingAs($moderator)
+            ->get(route('admin.users.edit', $peer))
+            ->assertStatus(403);
+
+        // Cannot view edit page for admin
+        $this->actingAs($moderator)
+            ->get(route('admin.users.edit', $admin))
+            ->assertStatus(403);
+    }
+
+    public function test_moderator_can_update_regular_user_roles_within_allowed_set(): void
+    {
+        $moderator = $this->createModeratorUser();
+        $target = $this->createRegularUser();
+
+        $modRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'moderator']);
+        $adminRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+
+        // Attempt to assign both moderator (allowed) and admin (not allowed)
+        $this->actingAs($moderator)
+            ->put(route('admin.users.update', $target), [
+                'name' => $target->name,
+                'email' => $target->email,
+                'password' => '',
+                'roles' => [$modRole->id, $adminRole->id],
+            ])
+            ->assertRedirect(route('admin.users.show', $target))
+            ->assertSessionHas('success');
+
+        $fresh = $target->fresh();
+        $this->assertTrue($fresh->hasRole('moderator'));
+        $this->assertFalse($fresh->hasRole('admin'));
+    }
+
+    public function test_moderator_cannot_update_or_delete_moderator_or_admin(): void
+    {
+        $moderator = $this->createModeratorUser();
+        $peer = $this->createModeratorUser();
+        $admin = $this->createAdminUser();
+
+        // Cannot update peer moderator
+        $this->actingAs($moderator)
+            ->from(route('admin.users.edit', $peer))
+            ->put(route('admin.users.update', $peer), [
+                'name' => $peer->name,
+                'email' => $peer->email,
+                'password' => '',
+            ])
+            ->assertRedirect(route('admin.users.edit', $peer))
+            ->assertSessionHasErrors(['error']);
+
+        // Cannot delete peer moderator
+        $this->actingAs($moderator)
+            ->from(route('admin.users.show', $peer))
+            ->delete(route('admin.users.destroy', $peer))
+            ->assertRedirect()
+            ->assertSessionHasErrors(['error']);
+
+        // Cannot delete admin
+        $this->actingAs($moderator)
+            ->from(route('admin.users.show', $admin))
+            ->delete(route('admin.users.destroy', $admin))
+            ->assertRedirect()
+            ->assertSessionHasErrors(['error']);
+    }
+
+    public function test_moderator_can_delete_regular_user(): void
+    {
+        $moderator = $this->createModeratorUser();
+        $user = $this->createRegularUser();
+
+        $this->actingAs($moderator)
+            ->delete(route('admin.users.destroy', $user))
+            ->assertRedirect(route('admin.users.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
+    }
+
+    public function test_admin_can_delete_moderator(): void
+    {
+        $admin = $this->createAdminUser();
+        $moderator = $this->createModeratorUser();
+
+        $this->actingAs($admin)
+            ->delete(route('admin.users.destroy', $moderator))
+            ->assertRedirect(route('admin.users.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('users', ['id' => $moderator->id]);
+    }
+
+    public function test_admin_can_update_self_permissions_via_main_form(): void
+    {
+        $admin = $this->createAdminUser();
+        $perm1 = \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'self manage']);
+        $perm2 = \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'view secrets']);
+
+        $this->actingAs($admin)
+            ->put(route('admin.users.update', $admin), [
+                'name' => $admin->name,
+                'email' => $admin->email,
+                'password' => '',
+                'permissions' => [$perm1->id, $perm2->id],
+            ])
+            ->assertRedirect(route('admin.users.show', $admin))
+            ->assertSessionHas('success');
+
+        $admin->refresh();
+        $this->assertTrue($admin->hasDirectPermission('self manage'));
+        $this->assertTrue($admin->hasDirectPermission('view secrets'));
+    }
+
+    public function test_moderator_can_update_own_permissions_but_not_admin_permissions(): void
+    {
+        $moderator = $this->createModeratorUser();
+        $admin = $this->createAdminUser();
+        $perm = \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'moderate forum']);
+
+        // Moderator can update their own permissions via dedicated endpoint
+        $this->actingAs($moderator)
+            ->post(route('admin.users.permissions.update', $moderator), [
+                'permissions' => [$perm->id],
+            ])
+            ->assertRedirect(route('admin.users.show', $moderator))
+            ->assertSessionHas('success');
+
+        $this->assertTrue($moderator->fresh()->hasDirectPermission('moderate forum'));
+
+        // Moderator cannot update an admin's permissions
+        $this->actingAs($moderator)
+            ->from(route('admin.users.edit', $admin))
+            ->post(route('admin.users.permissions.update', $admin), [
+                'permissions' => [$perm->id],
+            ])
+            ->assertRedirect(route('admin.users.edit', $admin))
+            ->assertSessionHasErrors(['error']);
+    }
 }

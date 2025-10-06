@@ -11,6 +11,7 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\RedirectResponse;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use App\Services\Authorization\RoleHierarchy;
 
 class UserManagementController extends Controller
 {
@@ -88,7 +89,26 @@ class UserManagementController extends Controller
     public function editUser(User $user): View
     {
         $user->loadMissing(['roles:id,name', 'permissions:id,name']);
-        $roles = Role::query()->select(['id', 'name'])->orderBy('name')->get();
+
+        $actor = auth()->user();
+        // Deny access to edit form if actor cannot manage the target (except allow self)
+        if (!($actor instanceof User)) {
+            abort(403);
+        }
+        if ($actor->id !== $user->id && !RoleHierarchy::canManageUser($actor, $user)) {
+            // Mirror other controller methods: redirect back with error message
+            abort(403, 'You do not have permission to edit this user.');
+        }
+
+        $allRoles = Role::query()->select(['id', 'name'])->orderBy('name')->get();
+        if ($actor instanceof User) {
+            $assignableNames = RoleHierarchy::assignableRoleNames($actor, $allRoles->all());
+            $roles = $allRoles->whereIn('name', $assignableNames)->values();
+        } else {
+            // Fallback: no actor, show no roles
+            $roles = collect();
+        }
+
         $permissions = Permission::query()->select(['id', 'name'])->orderBy('name')->get();
         /** @var View $view */
         $view = view('admin.users.edit', compact('user', 'roles', 'permissions'));
@@ -116,10 +136,15 @@ class UserManagementController extends Controller
             'permissions.*' => ['integer', Rule::exists('permissions', 'id')],
         ]);
 
+        $actor = auth()->user();
+        if (!($actor instanceof User) || !RoleHierarchy::canManageUser($actor, $user)) {
+            return back()->withErrors(['error' => 'You do not have permission to update this user.']);
+        }
+
         $forceSync = filter_var($request->get('permissions_force_sync', false), FILTER_VALIDATE_BOOLEAN);
 
         try {
-            DB::transaction(function () use ($user, $validated, $forceSync) {
+            DB::transaction(function () use ($actor, $user, $validated, $forceSync) {
                 $user->name = $validated['name'];
                 $user->email = $validated['email'];
 
@@ -138,11 +163,12 @@ class UserManagementController extends Controller
 
                 $user->save();
 
-                // Sync roles from the validated data (empty selection clears roles)
+                // Sync roles from the validated data, filtered by actor's assignable roles
                 $roleIds = $validated['roles'] ?? [];
                 $roleNames = empty($roleIds)
                     ? []
-                    : Role::query()->whereIn('id', $roleIds)->pluck('name');
+                    : Role::query()->whereIn('id', $roleIds)->pluck('name')->all();
+                $roleNames = RoleHierarchy::filterAssignable($actor, $roleNames);
                 $user->syncRoles($roleNames);
 
                 // Sync direct permissions from the validated data (empty selection clears direct permissions)
@@ -172,9 +198,13 @@ class UserManagementController extends Controller
      */
     public function deleteUser(User $user): RedirectResponse
     {
-        // Prevent deletion when actor is the same user (centralized in model)
-        if (!$user->canBeDeletedBy(auth()->user())) {
+        $actor = auth()->user();
+        // Prevent deletion when actor is the same user (centralized in model) and enforce role hierarchy
+        if (!$user->canBeDeletedBy($actor)) {
             return back()->withErrors(['error' => "You can't delete your own account."]);
+        }
+        if (!($actor instanceof User) || !RoleHierarchy::canManageUser($actor, $user)) {
+            return back()->withErrors(['error' => 'You do not have permission to delete this user.']);
         }
 
         try {
@@ -194,6 +224,11 @@ class UserManagementController extends Controller
      */
     public function verifyUser(User $user): RedirectResponse
     {
+        $actor = auth()->user();
+        if (!($actor instanceof User) || !RoleHierarchy::canManageUser($actor, $user)) {
+            return back()->withErrors(['error' => 'You do not have permission to verify this user.']);
+        }
+
         $user->markEmailVerified();
 
         return redirect()->route('admin.users.show', $user)
@@ -208,6 +243,11 @@ class UserManagementController extends Controller
      */
     public function unverifyUser(User $user): RedirectResponse
     {
+        $actor = auth()->user();
+        if (!($actor instanceof User) || !RoleHierarchy::canManageUser($actor, $user)) {
+            return back()->withErrors(['error' => 'You do not have permission to unverify this user.']);
+        }
+
         $user->markEmailUnverified();
 
         return redirect()->route('admin.users.show', $user)
@@ -250,6 +290,14 @@ class UserManagementController extends Controller
             'permissions' => ['array'],
             'permissions.*' => ['integer', Rule::exists('permissions', 'id')],
         ]);
+
+        $actor = auth()->user();
+        if (!($actor instanceof User)) {
+            abort(403);
+        }
+        if ($actor->id !== $user->id && !RoleHierarchy::canManageUser($actor, $user)) {
+            return back()->withErrors(['error' => 'You do not have permission to update this user.']);
+        }
 
         try {
             $permissionIds = $validated['permissions'] ?? [];

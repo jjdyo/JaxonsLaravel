@@ -21,12 +21,22 @@ return new class extends Migration
         });
 
         /**
-         * Seed the roles table with required "user" and "admin" roles. Required for user registration.
+         * Seed the roles table with required "user", "moderator", and "admin" roles. Required for user registration.
          * Debatebly not a good practice; Not hard to remove in the future.
          * We all sin sometimes baby...
          */
         DB::table('roles')->updateOrInsert(
             ['name' => 'admin', 'guard_name' => 'web'],
+            ['created_at' => now(), 'updated_at' => now()]
+        );
+
+        DB::table('roles')->updateOrInsert(
+            ['name' => 'moderator', 'guard_name' => 'web'],
+            ['created_at' => now(), 'updated_at' => now()]
+        );
+
+        DB::table('roles')->updateOrInsert(
+            ['name' => 'csc', 'guard_name' => 'web'],
             ['created_at' => now(), 'updated_at' => now()]
         );
 

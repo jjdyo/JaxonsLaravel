@@ -20,10 +20,12 @@ trait AuthTestHelpers
     protected function createRoles(): array
     {
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $moderatorRole = Role::firstOrCreate(['name' => 'moderator']);
         $userRole = Role::firstOrCreate(['name' => 'user']);
 
         return [
             'admin' => $adminRole,
+            'moderator' => $moderatorRole,
             'user' => $userRole,
         ];
     }
@@ -101,5 +103,18 @@ trait AuthTestHelpers
             $user->hasRole($role),
             "User has a role that they should not have: {$role}"
         );
+    }
+    /**
+     * Create a moderator user for testing.
+     *
+     * @param array $attributes
+     * @return User
+     */
+    protected function createModeratorUser(array $attributes = []): User
+    {
+        $user = User::factory()->create($attributes);
+        $roles = $this->createRoles();
+        $user->assignRole($roles['moderator']);
+        return $user;
     }
 }

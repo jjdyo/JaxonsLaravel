@@ -137,7 +137,7 @@ class WebsiteMirrorService
             }
         }
 
-        $durationMs = (int) round((microtime(true) - $start) * 1000);
+        $durationMs = (int) round((microtime(true) - $start) * 1000, 0, PHP_ROUND_HALF_UP);
         $exitCode = $timedOut ? null : $process->getExitCode();
         $exitText = $timedOut ? 'TIMEOUT' : $process->getExitCodeText();
 
