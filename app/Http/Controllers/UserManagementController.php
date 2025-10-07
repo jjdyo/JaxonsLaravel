@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Services\Authorization\RoleHierarchy;
+use App\Services\Authorization\PermissionHierarchy;
 
 class UserManagementController extends Controller
 {
@@ -105,7 +106,10 @@ class UserManagementController extends Controller
         $assignableNames = RoleHierarchy::assignableRoleNames($actor, $allRoles->all());
         $roles = $allRoles->whereIn('name', $assignableNames)->values();
 
-        $permissions = Permission::query()->select(['id', 'name'])->orderBy('name')->get();
+        $allPermissions = Permission::query()->select(['id', 'name'])->orderBy('name')->get();
+        // Filter permissions to only those the actor is allowed to manage by level
+        $allowedPermissionNames = PermissionHierarchy::filterAllowed($actor, $allPermissions->pluck('name')->all());
+        $permissions = $allPermissions->whereIn('name', $allowedPermissionNames)->values();
         /** @var View $view */
         $view = view('admin.users.edit', compact('user', 'roles', 'permissions'));
 
@@ -300,10 +304,21 @@ class UserManagementController extends Controller
 
         try {
             $permissionIds = $validated['permissions'] ?? [];
-            $permissionNames = empty($permissionIds)
+            $requestedNames = empty($permissionIds)
                 ? []
-                : Permission::query()->whereIn('id', $permissionIds)->pluck('name');
-            $user->syncPermissions($permissionNames);
+                : Permission::query()->whereIn('id', $permissionIds)->pluck('name')->all();
+
+            // Only allow assigning permissions at or below the actor's level
+            $allowedRequested = PermissionHierarchy::filterAllowed($actor, $requestedNames);
+
+            // Preserve existing permissions that the actor is NOT allowed to manage (so they cannot remove them)
+            $existingNames = $user->permissions()->pluck('name')->all();
+            $existingAllowed = PermissionHierarchy::filterAllowed($actor, $existingNames);
+            $existingProtected = array_values(array_diff($existingNames, $existingAllowed));
+
+            // Final set to sync: allowed requested + protected existing
+            $finalNames = array_values(array_unique(array_merge($allowedRequested, $existingProtected)));
+            $user->syncPermissions($finalNames);
 
             return redirect()->route('admin.users.show', $user)
                 ->with('success', 'User permissions updated successfully');
