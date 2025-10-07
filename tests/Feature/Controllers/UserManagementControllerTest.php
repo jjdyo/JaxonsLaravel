@@ -207,6 +207,10 @@ class UserManagementControllerTest extends TestCase
         $target = $this->createRegularUser();
 
         $perm = Permission::firstOrCreate(['name' => 'edit posts']);
+        // Map permission level so PermissionHierarchy allows admin to manage it
+        config(['permissions.levels' => array_merge(config('permissions.levels', []), [
+            'edit posts' => 4,
+        ])]);
 
         $this->actingAs($admin)
             ->post(route('admin.users.permissions.update', $target), [
@@ -446,6 +450,10 @@ class UserManagementControllerTest extends TestCase
         $moderator = $this->createModeratorUser();
         $admin = $this->createAdminUser();
         $perm = \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'moderate forum']);
+        // Map permission so moderator level (3) can manage it
+        config(['permissions.levels' => array_merge(config('permissions.levels', []), [
+            'moderate forum' => 3,
+        ])]);
 
         // Moderator can update their own permissions via dedicated endpoint
         $this->actingAs($moderator)
@@ -465,5 +473,61 @@ class UserManagementControllerTest extends TestCase
             ])
             ->assertRedirect(route('admin.users.edit', $admin))
             ->assertSessionHasErrors(['error']);
+    }
+
+    public function test_moderator_edit_view_filters_permissions_by_hierarchy(): void
+    {
+        $moderator = $this->createModeratorUser();
+        $target = $this->createRegularUser();
+
+        $adminOnly = Permission::firstOrCreate(['name' => 'admin only']);
+        $modAction = Permission::firstOrCreate(['name' => 'moderator action']);
+
+        // Configure levels: admin-only is level 4, moderator action is level 3
+        config(['permissions.levels' => array_merge(config('permissions.levels', []), [
+            'admin only' => 4,
+            'moderator action' => 3,
+        ])]);
+
+        $this->actingAs($moderator)
+            ->get(route('admin.users.edit', $target))
+            ->assertStatus(200)
+            ->assertSee('moderator action')
+            ->assertDontSee('admin only');
+    }
+
+    public function test_moderator_cannot_assign_or_remove_higher_level_permissions(): void
+    {
+        $moderator = $this->createModeratorUser();
+        $target = $this->createRegularUser();
+
+        $adminOnly = Permission::firstOrCreate(['name' => 'delete system']);
+
+        // Map adminOnly as level 4, above moderator
+        config(['permissions.levels' => array_merge(config('permissions.levels', []), [
+            'delete system' => 4,
+        ])]);
+
+        // Attempt to assign higher-level permission: should be ignored
+        $this->actingAs($moderator)
+            ->post(route('admin.users.permissions.update', $target), [
+                'permissions' => [$adminOnly->id],
+            ])
+            ->assertRedirect(route('admin.users.show', $target))
+            ->assertSessionHas('success');
+
+        $this->assertFalse($target->fresh()->hasDirectPermission('delete system'));
+
+        // If target already has the higher-level permission, moderator cannot remove it
+        $target->givePermissionTo('delete system');
+
+        $this->actingAs($moderator)
+            ->post(route('admin.users.permissions.update', $target), [
+                'permissions' => [],
+            ])
+            ->assertRedirect(route('admin.users.show', $target))
+            ->assertSessionHas('success');
+
+        $this->assertTrue($target->fresh()->hasDirectPermission('delete system'));
     }
 }

@@ -108,7 +108,10 @@ class UserManagementController extends Controller
 
         $allPermissions = Permission::query()->select(['id', 'name'])->orderBy('name')->get();
         // Filter permissions to only those the actor is allowed to manage by level
-        $allowedPermissionNames = PermissionHierarchy::filterAllowed($actor, $allPermissions->pluck('name')->all());
+        $allowedPermissionNames = PermissionHierarchy::filterAllowed(
+            $actor,
+            array_values(array_filter($allPermissions->pluck('name')->all(), static fn($v): bool => is_string($v)))
+        );
         $permissions = $allPermissions->whereIn('name', $allowedPermissionNames)->values();
         /** @var View $view */
         $view = view('admin.users.edit', compact('user', 'roles', 'permissions'));
@@ -307,12 +310,15 @@ class UserManagementController extends Controller
             $requestedNames = empty($permissionIds)
                 ? []
                 : Permission::query()->whereIn('id', $permissionIds)->pluck('name')->all();
+            // Ensure strictly typed string arrays for static analysis
+            $requestedNames = array_values(array_filter($requestedNames, static fn($v): bool => is_string($v)));
 
             // Only allow assigning permissions at or below the actor's level
             $allowedRequested = PermissionHierarchy::filterAllowed($actor, $requestedNames);
 
             // Preserve existing permissions that the actor is NOT allowed to manage (so they cannot remove them)
             $existingNames = $user->permissions()->pluck('name')->all();
+            $existingNames = array_values(array_filter($existingNames, static fn($v): bool => is_string($v)));
             $existingAllowed = PermissionHierarchy::filterAllowed($actor, $existingNames);
             $existingProtected = array_values(array_diff($existingNames, $existingAllowed));
 

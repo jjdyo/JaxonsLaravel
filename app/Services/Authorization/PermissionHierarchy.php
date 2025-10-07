@@ -43,9 +43,6 @@ class PermissionHierarchy
     {
         $allowed = [];
         foreach ($permissionNames as $name) {
-            if (!is_string($name)) {
-                continue;
-            }
             if (self::userHasByLevel($user, $name)) {
                 $allowed[] = $name;
             }
