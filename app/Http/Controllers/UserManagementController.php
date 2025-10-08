@@ -175,15 +175,43 @@ class UserManagementController extends Controller
                 $roleNames = array_values(array_filter($roleNamesRaw, static fn($v): bool => is_string($v)));
                 /** @var array<int,string> $roleNames */
                 $roleNames = RoleHierarchy::filterAssignable($actor, $roleNames);
-                $user->syncRoles($roleNames);
+                $user->syncRoles(...$roleNames);
 
-                // Sync direct permissions from the validated data (empty selection clears direct permissions)
+                // Sync direct permissions from the validated data while preserving any existing
+                // permissions that are above the actor's permission level (so they cannot be removed).
                 if (array_key_exists('permissions', $validated) || $forceSync) {
                     $permissionIds = $validated['permissions'] ?? [];
-                    $permissionNames = empty($permissionIds)
+
+                    // Resolve requested permission names from IDs
+                    $requestedNames = empty($permissionIds)
                         ? []
-                        : Permission::query()->whereIn('id', $permissionIds)->pluck('name');
-                    $user->syncPermissions($permissionNames);
+                        : Permission::query()->whereIn('id', $permissionIds)->pluck('name')->all();
+                    // Ensure strictly typed string array
+                    $requestedNames = array_values(array_filter($requestedNames, static fn($v): bool => is_string($v)));
+
+                    // Keep only permissions the actor is allowed to manage.
+                    // For top-level admins (max role level), allow all requested permissions even if not mapped.
+                    $actorLevel = RoleHierarchy::highestLevelForUser($actor);
+                    /** @var array<string,int> $hier */
+                    $hier = (array) config('roles.hierarchy', []);
+                    $levels = array_values($hier);
+                    $maxLevel = empty($levels) ? 0 : max($levels);
+                    $allowedRequested = ($actorLevel === $maxLevel)
+                        ? $requestedNames
+                        : PermissionHierarchy::filterAllowed($actor, $requestedNames);
+
+                    // Determine existing direct permissions on the user
+                    $existingNames = $user->permissions()->pluck('name')->all();
+                    $existingNames = array_values(array_filter($existingNames, static fn($v): bool => is_string($v)));
+
+                    // Of the existing, which are allowed vs protected relative to the actor?
+                    $existingAllowed = PermissionHierarchy::filterAllowed($actor, $existingNames);
+                    $existingProtected = array_values(array_diff($existingNames, $existingAllowed));
+
+                    // Final set: allowed requested + protected existing (prevents removal of higher-level perms)
+                    $finalNames = array_values(array_unique(array_merge($allowedRequested, $existingProtected)));
+
+                    $user->syncPermissions($finalNames);
                 }
             });
 

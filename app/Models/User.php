@@ -17,7 +17,11 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles {
+            assignRole as protected traitAssignRole;
+            syncRoles as protected traitSyncRoles;
+            removeRole as protected traitRemoveRole;
+        }
 
     /**
      * The attributes that are mass assignable.
@@ -51,8 +55,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role_level' => 'integer',
         ];
     }
+
+    /**
+     * Section: Query Scopes
+     * Brief: Common reusable database filters for users (searching, sorting, verification, roles, listings).
+     */
 
     /**
      * Query scope: only users with a verified email.
@@ -155,12 +165,76 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Section: Role Hierarchy & Level Sync
+     * Brief: Helpers for computing and maintaining a user's highest role level and syncing the denormalized role_level column.
+     */
+
+    /**
      * Highest role level for this user based on configured role hierarchy.
      */
     public function highestRoleLevel(): int
     {
         return \App\Services\Authorization\RoleHierarchy::highestLevelForUser($this);
     }
+
+    /**
+     * Recalculate and persist the user's role_level based on current roles.
+     */
+    public function refreshRoleLevel(): void
+    {
+        $level = $this->highestRoleLevel();
+        // Update only if changed to avoid unnecessary writes
+        if ((int)($this->role_level ?? 0) !== $level) {
+            $this->forceFill(['role_level' => $level]);
+            // Save quietly to avoid triggering observers infinitely
+            $this->saveQuietly();
+        }
+    }
+
+    /**
+     * Wrap Spatie assignRole to also update the denormalized role_level column.
+     *
+     * @param array|\BackedEnum|\Illuminate\Support\Collection|int|\Spatie\Permission\Contracts\Role|string ...$roles
+     * @phpstan-param (\BackedEnum|int|string|\Spatie\Permission\Contracts\Role|list<\BackedEnum|int|string|\Spatie\Permission\Contracts\Role>|\Illuminate\Support\Collection<array-key, \BackedEnum|int|string|\Spatie\Permission\Contracts\Role>) ...$roles
+     * @return $this
+     */
+    public function assignRole(array|\BackedEnum|\Illuminate\Support\Collection|int|\Spatie\Permission\Contracts\Role|string ...$roles): self
+    {
+        $this->traitAssignRole(...$roles);
+        $this->refreshRoleLevel();
+        return $this;
+    }
+
+    /**
+     * Wrap Spatie syncRoles to also update role_level.
+     *
+     * @param array|\BackedEnum|\Illuminate\Support\Collection|int|\Spatie\Permission\Contracts\Role|string ...$roles
+     * @phpstan-param (\BackedEnum|int|string|\Spatie\Permission\Contracts\Role|list<\BackedEnum|int|string|\Spatie\Permission\Contracts\Role>|\Illuminate\Support\Collection<array-key, \BackedEnum|int|string|\Spatie\Permission\Contracts\Role>) ...$roles
+     * @return $this
+     */
+    public function syncRoles(array|\BackedEnum|\Illuminate\Support\Collection|int|\Spatie\Permission\Contracts\Role|string ...$roles): self
+    {
+        $this->traitSyncRoles(...$roles);
+        $this->refreshRoleLevel();
+        return $this;
+    }
+
+    /**
+     * Wrap Spatie removeRole to also update role_level.
+     * @param string|\Spatie\Permission\Contracts\Role $role
+     * @return $this
+     */
+    public function removeRole($role): self
+    {
+        $this->traitRemoveRole($role);
+        $this->refreshRoleLevel();
+        return $this;
+    }
+
+    /**
+     * Section: Authorization Helpers
+     * Brief: Convenience methods and scopes that encapsulate authorization rules based on role hierarchy.
+     */
 
     /**
      * Determine if this user (actor) can manage the given target user via role hierarchy.
@@ -173,6 +247,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * Scope: users manageable by the given actor based on role hierarchy.
+     * Fully SQL-driven using the denormalized users.role_level column for pagination safety and performance.
      *
      * @param \Illuminate\Database\Eloquent\Builder<User> $query
      * @param User $actor
@@ -180,15 +255,23 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function scopeManageableBy(\Illuminate\Database\Eloquent\Builder $query, User $actor): \Illuminate\Database\Eloquent\Builder
     {
-        // We can't compute level purely in SQL without level column; fallback to filtering IDs in memory for minimal change.
-        // For pagination safety, we first fetch IDs then filter by PHP and re-query.
-        $ids = $query->pluck('id');
-        $manageableIds = User::query()->whereIn('id', $ids)->get()->filter(function (User $u) use ($actor) {
-            return \App\Services\Authorization\RoleHierarchy::canManageUser($actor, $u);
-        })->pluck('id')->all();
-        return User::query()->whereIn('id', $manageableIds);
+        // Use computed highest level to avoid relying on potentially stale column on the actor
+        $actorLevel = $actor->highestRoleLevel();
+        if ($actorLevel <= 0) {
+            return $query->whereRaw('1=0'); // actor with no roles manages nobody
+        }
+
+        // Exclude self from manageable list for safety, even for max-level users
+        return $query
+            ->where('users.id', '!=', $actor->id)
+            ->where('users.role_level', '<', $actorLevel);
     }
 
+
+    /**
+     * Section: Notifications
+     * Brief: Outbound notifications to the user (password reset, email verification).
+     */
 
     /**
      * Send the password reset notification.
@@ -212,6 +295,11 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Section: Account Rules
+     * Brief: In-model rules around account lifecycle actions that are not full authorization checks.
+     */
+
+    /**
      * Determine if this user can be deleted by the given actor.
      *
      * Rules (minimal): a user cannot delete themselves.
@@ -224,6 +312,11 @@ class User extends Authenticatable implements MustVerifyEmail
         }
         return $actor->id !== $this->id;
     }
+
+    /**
+     * Section: Email Verification Helpers
+     * Brief: Conveniences for toggling the user's email verification state.
+     */
 
     /**
      * Mark the user's email as verified if not already.
