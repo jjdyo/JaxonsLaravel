@@ -177,7 +177,7 @@ class BackupWebsite implements ShouldQueue, \Illuminate\Contracts\Queue\ShouldBe
             downloadDir: $downloadDir,
             workingDir: $backupDir,
             timeoutSeconds: self::DEFAULT_MAX_RUNTIME_SECONDS,
-            allowedExitCodes: [0, 3, 8],
+            allowedExitCodes: [0, 3, 4, 8],
             treatTimeoutAsSuccess: true,
         );
         Log::info('BackupWebsite: Step 4 completed - Site download finished', [
