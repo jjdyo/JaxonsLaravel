@@ -39,7 +39,7 @@ class WebsiteMirrorService
         string $downloadDir,
         string $workingDir,
         ?int $timeoutSeconds = 86400,
-        array $allowedExitCodes = [0, 3, 8],
+        array $allowedExitCodes = [0, 3, 4, 5, 8],
         bool $treatTimeoutAsSuccess = true,
         ?string $userAgent = null,
     ): WebsiteMirrorResult {
