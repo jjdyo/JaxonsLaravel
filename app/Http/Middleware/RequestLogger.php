@@ -36,31 +36,6 @@ class RequestLogger
         $routeName = $this->router->currentRouteName() ?? 'N/A';
         $sanitizedPath = $this->maskPathHashes($pathInfo);
 
-        // Prepare common user label
-        $user = Auth::user();
-        if ($user) {
-            /** @var string|null $maybeName */
-            $maybeName = $user->getAttribute('name')
-                ?? $user->getAttribute('full_name')
-                ?? $user->getAttribute('username');
-
-            /** @var string|null $maybeEmail */
-            $maybeEmail = $user->getAttribute('email');
-
-            $displayName = is_string($maybeName) && $maybeName !== ''
-                ? $maybeName
-                : (is_string($maybeEmail) && $maybeEmail !== '' ? $maybeEmail : 'user');
-
-            /** @var mixed $rawId */
-            $rawId = $user->getAuthIdentifier();
-            $idLabel = is_scalar($rawId) || (is_object($rawId) && method_exists($rawId, '__toString'))
-                ? (string) $rawId
-                : 'unknown';
-
-            $userLabel = $displayName . ' (' . $idLabel . ')';
-        } else {
-            $userLabel = 'guest';
-        }
 
         $ua = $request->headers->get('User-Agent');
         $uaStr = is_string($ua) ? $ua : 'N/A';
@@ -70,6 +45,8 @@ class RequestLogger
             $response = $next($request);
 
             $durationMs = (int) round((microtime(true) - $start) * 1000);
+
+            $userLabel = $this->buildUserLabel();
 
             $lines = [
                 $emoji . ' ' . $method,
@@ -87,6 +64,7 @@ class RequestLogger
         } catch (NotFoundHttpException $e) {
             // Explicitly log 404s that occur via exceptions (not fallback route)
             $durationMs = (int) round((microtime(true) - $start) * 1000);
+            $userLabel = $this->buildUserLabel();
             $lines = [
                 $emoji . ' ' . $method,
                 '  URI: '      . $sanitizedPath,
@@ -100,6 +78,29 @@ class RequestLogger
             Log::channel($channel)->warning(implode("\n", $lines));
             throw $e; // rethrow for framework to handle
         }
+    }
+
+    /** Build a readable user label after authentication middleware has run. */
+    private function buildUserLabel(): string
+    {
+        $user = Auth::user();
+        if ($user) {
+            $maybeName = $user->getAttribute('name');
+
+            $maybeEmail = $user->getAttribute('email');
+
+            $displayName = is_string($maybeName) && $maybeName !== ''
+                ? $maybeName
+                : (is_string($maybeEmail) && $maybeEmail !== '' ? $maybeEmail : 'user');
+
+            $rawId = $user->getAuthIdentifier();
+            $idLabel = is_scalar($rawId) || (is_object($rawId) && method_exists($rawId, '__toString'))
+                ? (string) $rawId
+                : 'unknown';
+
+            return $displayName . ' (' . $idLabel . ')';
+        }
+        return 'guest';
     }
 
     /** Masks hash-like PATH segments: /x/abcdef... -> /x/{{HASH:40}} */
