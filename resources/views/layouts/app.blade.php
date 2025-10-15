@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') - JaxonsLaravel</title>
+    <title>@yield('title') - {{ config('app.name', 'Laravel') }}</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('media/jdwob.png') }}">
@@ -68,7 +68,7 @@
 
     <!-- Footer -->
     <footer class="starry-background">
-        <p class="content-shadow">&copy; 2025 JaxonsLaravel - All Rights Reserved</p>
+        <p class="content-shadow">&copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }} - All Rights Reserved</p>
     </footer>
 
 </div>

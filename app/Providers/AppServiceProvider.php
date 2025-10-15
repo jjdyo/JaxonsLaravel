@@ -46,6 +46,29 @@ class AppServiceProvider extends ServiceProvider
             return $user && $user->hasRole('admin');
         });
 
+        // Apply persisted system timezone and site name at boot (safe if table exists)
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
+                /** @var \App\Services\Settings\SettingsService $settings */
+                $settings = app(\App\Services\Settings\SettingsService::class);
+
+                // Timezone
+                $tz = $settings->getSystemTimezone();
+                if ($tz !== '') {
+                    \Illuminate\Support\Facades\Config::set('app.timezone', $tz);
+                    @date_default_timezone_set($tz);
+                }
+
+                // Site name
+                $siteName = $settings->getSiteName();
+                if ($siteName !== '') {
+                    \Illuminate\Support\Facades\Config::set('app.name', $siteName);
+                }
+            }
+        } catch (\Throwable $e) {
+            // Ignore failures during early boot/migrations
+        }
+
         // Customize the password reset URL globally, per Laravel documentation
         ResetPassword::createUrlUsing(function ($user, string $token): string {
             // Build the absolute URL to the reset form with token as a path param and email as query

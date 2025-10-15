@@ -170,6 +170,15 @@ Route::middleware(['auth', 'verified', 'role:admin|moderator'])
             Route::post('/', [ApiKeyController::class, 'store'])->name('store');
             Route::delete('/{token}', [ApiKeyController::class, 'destroy'])->name('destroy');
         });
+
+        // Systems / Settings
+        Route::prefix('systems')->name('systems.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\SystemsController::class, 'index'])->name('index');
+            // Unified save endpoint
+            Route::post('/', [\App\Http\Controllers\Admin\SystemsController::class, 'update'])->name('update');
+            // Legacy endpoint (deprecated) kept temporarily for compatibility
+            Route::post('/timezone', [\App\Http\Controllers\Admin\SystemsController::class, 'update'])->name('timezone.update');
+        });
     });
 
 /*

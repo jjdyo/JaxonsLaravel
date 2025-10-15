@@ -31,7 +31,7 @@
         <div class="card">
             <h2>Settings</h2>
             <p>Configure application settings</p>
-            <a href="#" class="button button-warning link-hover">View Settings</a>
+            <a href="{{ route('admin.systems.index') }}" class="button button-warning link-hover">View Settings</a>
         </div>
     </div>
 </div>

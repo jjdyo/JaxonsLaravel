@@ -13,10 +13,14 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Services\Authorization\RoleHierarchy;
 use App\Services\Authorization\PermissionHierarchy;
+use App\Services\Settings\SettingsService;
 
 class UserManagementController extends Controller
 {
-    private const USERS_PER_PAGINATION = 15;
+    public function __construct(private readonly SettingsService $settings)
+    {
+    }
+
     /**
      * Display a listing of all users
      *
@@ -57,7 +61,8 @@ class UserManagementController extends Controller
                 break;
         }
 
-        $users = $query->paginate(self::USERS_PER_PAGINATION)->withQueryString();
+        $perPage = $this->settings->getUsersPerPage();
+        $users = $query->paginate($perPage)->withQueryString();
 
         /** @var View $view */
         $view = view('admin.users.index', [

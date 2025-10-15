@@ -15,12 +15,19 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        User::query()->firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
 
         // Call the PermissionSeeder to create roles and permissions
         $this->call(PermissionSeeder::class);
+
+        // Also seed 50 test users across roles for easy testing
+        $this->call(TestUsersSeeder::class);
     }
 }

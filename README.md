@@ -58,3 +58,14 @@ JaxonsLaravel is a robust Laravel-based web application that provides a comprehe
 - Comprehensive documentation browser
 
 ## Release Format - Major.Minor.Bug - 01.23.45
+
+## Seeding Test Users
+- Default: run `php artisan db:seed` to seed base data plus 50 test users across roles (user, csc, moderator, admin). The default password is `password` and emails look like `test.user+01@example.com`.
+- To run only the test users seeder:
+  - PowerShell (Windows): `php artisan db:seed --class "Database\\Seeders\\TestUsersSeeder"`
+  - CMD (Windows): `php artisan db:seed --class=Database\\Seeders\\TestUsersSeeder`
+  - macOS/Linux (bash/zsh): `php artisan db:seed --class=Database\\Seeders\\TestUsersSeeder`
+
+Notes:
+- If you previously ran the seeder, it is idempotent and will not create duplicates; it will update roles/permissions to the intended distribution.
+- Roles and guard are read from `config/roles.php`. Adjust the hierarchy there if needed.
