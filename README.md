@@ -6,7 +6,7 @@
 
 ## About JaxonsLaravel
 
-JaxonsLaravel is a robust Laravel-based web application that provides a comprehensive platform with advanced features for user management, content presentation, and system administration. Built on the Laravel framework, it follows standard MVC architecture while incorporating custom enhancements for security, styling, and user experience.
+JaxonsLaravel is a custom Laravel 12 platform template I am developing for most anything I may need a server/processing application for. This application comes pre-loaded with examples of our Role-Based-Access-Control, integrations to third-party APIs, queues, and more. This is an on-going process and no publicly accessible endpoints are hosted yet. Please feel free to fork this repo if it benefits you; Ample documentaiton is provided within the documentation/ directory.
 
 ## Routing
 ![Routing Schema](/public/media/diagrams/Routing.jpg)
